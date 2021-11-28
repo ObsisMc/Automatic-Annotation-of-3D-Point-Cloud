@@ -24,6 +24,7 @@ for file in files:
             continue
         s = line.split()
         tk = 0
+        tk2 = 0
         alpha = float(s[5])
         y_r = float(s[16])
         theta = y_r - alpha
@@ -32,9 +33,15 @@ for file in files:
         th = s[11]
         acc = abs((math.sin(theta) + 1) * (math.sin(alpha) + 1))
         if abs(1 - acc) < abs(1 - tk):
-            tk = acc
-            l = tl
-            h = th
+            if abs(1 - acc) < abs(4 - tk2):
+                tk = acc
+                l = tl
+                h = th
+        elif abs(4 - acc) < abs(4 - tk2):
+            if abs(4 - acc) < abs(1 - tk):
+                tk2 = acc
+                l = tl
+                h = th
         else:
             w = tw
             h = th
