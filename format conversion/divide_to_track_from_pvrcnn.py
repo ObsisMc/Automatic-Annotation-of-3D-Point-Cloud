@@ -19,12 +19,14 @@ def switchname(name):
         return 2
     return -1
 
-
+f = open(output.format('000000'), 'w+')
 for i in range(len(data)):
     num = len(data[i].get('name'))
-    f = open(output.format(data[i].get('frame_id')), 'w+')
     int1 = int(data[i].get('frame_id'))
     for j in range(num):
+        score = float(data[i].get('score')[j])
+        if score <= 0.5:
+            continue
         f.write(str(int1))
         f.write(' ')
         f.write(str(switchname(data[i].get('name')[j])))
@@ -39,7 +41,7 @@ for i in range(len(data)):
             f.write(str(i1))
             f.write(' ')
         # f.write(str(data[i].get('bbox')[j]))
-        f.write(str(data[i].get('score')[j]))
+        f.write(str(score))
         f.write(' ')
 
         for idx in range(len(data[i].get('dimensions')[j])):
@@ -59,4 +61,4 @@ for i in range(len(data)):
         #         #     f.write(' ')
         #         # f.write(str(data[i].get('boxes_lidar')[j]))
         f.write('\n')
-    f.close()
+f.close()
