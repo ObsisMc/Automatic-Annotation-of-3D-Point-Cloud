@@ -11,42 +11,44 @@ for file in files:
     f = open(path + "/" + file)
     iter_f = iter(f)
     flag = True
+    count = 0
     l = 0
     w = 0
     h = 0
+    tk = 1000
+    tk2 = 1000
+    tk3 = 1000
     for line in iter_f:
         if flag:
             flag = False
             s = line.split()
+            count += 1
             l = s[12]
-            w = s[10]
-            h = s[11]
+            w = s[11]
+            h += float(s[10])
             continue
         s = line.split()
-        tk = 0
-        tk2 = 0
+
         alpha = float(s[5])
         y_r = float(s[16])
         theta = y_r - alpha
         tl = s[12]
-        tw = s[10]
-        th = s[11]
-        acc = abs((math.sin(theta) + 1) * (math.sin(alpha) + 1))
+        tw = s[11]
+        h += float(s[10])
+        count += 1
+        acc = abs((abs(math.sin(theta)) + 1) * (abs(math.sin(alpha)) + 1))
         if abs(1 - acc) < abs(1 - tk):
             if abs(1 - acc) < abs(4 - tk2):
                 tk = acc
                 l = tl
-                h = th
         elif abs(4 - acc) < abs(4 - tk2):
             if abs(4 - acc) < abs(1 - tk):
                 tk2 = acc
                 l = tl
-                h = th
-        else:
+        elif abs(2 - acc) < abs(2 - tk3):
+            tk3 = acc
             w = tw
-            h = th
-
-for file in files:
+    h = h / count
     f = open(path + "/" + file)
     iter_f = iter(f)
     for line in iter_f:
@@ -55,9 +57,9 @@ for file in files:
         s = ''
         for i in range(len(line_t)):
             if i == 10:
-                s += str(w)
-            elif i == 11:
                 s += str(h)
+            elif i == 11:
+                s += str(w)
             elif i == 12:
                 s += str(l)
             elif i == len(line_t) - 1:
