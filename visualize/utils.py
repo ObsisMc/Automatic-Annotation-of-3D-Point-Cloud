@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from scipy.spatial import Delaunay
 
 
@@ -99,11 +100,12 @@ def lidar_to_shapenet(points, box):
     points_new = rotate_points_along_x(points, rot)
 
     box_new = box.copy()
-    box_new[4], box_new[5] = box_new[5], box_new[4]
+    box_new[4], box_new[5] = box_new[5], box_new[4]  # 只换dy 和 dz，不用改中心（因为已经把中心移到零点了）
+    # box_new[6] = rot_y  # 这是以z为轴转，但实际要以y为轴
     return points_new.squeeze(), box_new
 
 
-def points_to_canonical(points, box):
+def points_to_canonical(points, box,oriangle=False):
     '''
     Transform points within bbox to a canonical pose and normalized scale
     Args:
@@ -113,20 +115,27 @@ def points_to_canonical(points, box):
         points_canonical: (N, 3)
     '''
     center = box[:3].reshape(1, 3)
-    rot = -box[-1].reshape(1)
+    rot = -box[-1].reshape(1)  # 将点转正
     points_centered = (points - center).reshape(1, -1, 3)
-    points_centered_rot = rotate_points_along_z(points_centered, rot)
+    if not oriangle:
+        points_centered_rot = rotate_points_along_z(points_centered, rot)
+    else:
+        points_centered_rot = points_centered
     scale = (1 / np.abs(box[3:6]).max()) * 0.999999
     points_canonical = points_centered_rot * scale
 
     box_canonical = box.copy()
-    box_canonical[:3] = 0
-    box_canonical[-1] = 0
-    box_canonical = box_canonical * scale
+    box_canonical[:3] = 0  # 中心移到零点
+    if not oriangle:
+        box_canonical[-1] = 0  # 沿y的角度为0
+        box_canonical = box_canonical * scale
+    else:
+        box_canonical[:6] = box_canonical[:6] * scale
+
     return points_canonical.squeeze(), box_canonical
 
 
-def boxes_to_corners_3d(boxes3d):
+def boxes_to_corners_3d(boxes3d, oriangle=False):
     """
         7 -------- 4
        /|         /|
@@ -146,7 +155,11 @@ def boxes_to_corners_3d(boxes3d):
     ]) / 2
 
     corners3d = boxes3d[:, None, 3:6] * template[None, :, :]  # padding for multiply
-    corners3d = rotate_points_along_z(corners3d, boxes3d[:, 6]).reshape(-1, 8, 3)
+    if oriangle:
+        corners3d = rotate_points_along_y(corners3d, boxes3d[:, 6]).reshape(-1, 8, 3)
+    else:
+        corners3d = rotate_points_along_z(corners3d, boxes3d[:, 6]).reshape(-1, 8,
+                                                                            3)  # rotate corners3d along z angle
     corners3d += boxes3d[:, None, 0:3]
     return corners3d
 
@@ -162,10 +175,26 @@ def rotate_points_along_x(points, angle):
     sina = np.sin(angle)
     ones = np.ones_like(angle, dtype=np.float32)
     zeros = np.zeros_like(angle, dtype=np.float32)
+    # 沿x轴旋转
     rot_matrix = np.stack((
         ones, zeros, zeros,
         zeros, cosa, sina,
         zeros, -sina, cosa
+    ), axis=1).reshape(-1, 3, 3)
+    points_rot = np.matmul(points, rot_matrix)
+    return points_rot
+
+
+def rotate_points_along_y(points, angle):
+    cosa = np.cos(angle)
+    sina = np.sin(angle)
+    ones = np.ones_like(angle, dtype=np.float32)
+    zeros = np.zeros_like(angle, dtype=np.float32)
+    # 沿x轴旋转
+    rot_matrix = np.stack((
+        cosa, zeros, -sina,
+        zeros, ones, zeros,
+        sina, zeros, cosa
     ), axis=1).reshape(-1, 3, 3)
     points_rot = np.matmul(points, rot_matrix)
     return points_rot
@@ -192,10 +221,14 @@ def rotate_points_along_z(points, angle):
 
 
 def write_bboxes(bboxes, save_path):
-    np.save(save_path, bboxes)
+    if not os.path.exists(save_path[0]):
+        os.makedirs(save_path[0])
+    np.save(os.path.join(save_path[0], save_path[1]), bboxes)
     return
 
 
 def write_points(points, save_path):
-    np.save(save_path, points)
+    if not os.path.exists(save_path[0]):
+        os.makedirs(save_path[0])
+    np.save(os.path.join(save_path[0], save_path[1]), points)
     return

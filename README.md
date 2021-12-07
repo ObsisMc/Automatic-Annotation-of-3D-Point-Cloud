@@ -1,4 +1,10 @@
 # InnovativePractice1_SUSTech
 
-Visualize model is cloned from https://github.com/junming259/Partial_Point_Clouds_Generation but there are some changes which allows the code to run in script.
+## Visualize module
+Visualize module is cloned from https://github.com/junming259/Partial_Point_Clouds_Generation and there are some changes:
+#### run in .py
+Argument *shrun* of functions allows you to run codes in .py files.
+#### no angle correction
+Argument *oriangle* of functions allows you to extract points without angle correction and visualize it with original angle.
+However, remember that if you extract points without correction, you should visualize it without correction as well.
 

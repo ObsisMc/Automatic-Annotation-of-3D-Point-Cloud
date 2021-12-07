@@ -1,4 +1,3 @@
-import os
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
@@ -50,18 +49,20 @@ def sample(pos, n):
 
 
 class pseudoargs():
-    def __init__(self, idx, i, cate):
+    def __init__(self, idx, i, cate, oriangle):
         self.idx = idx
         self.i = i
         self.category = cate
+        self.oriangle = oriangle
 
 
-def main(shrun=False, i=0, idx='000936', category='car'):
+def main(shrun=False, i=0, idx='000936', category='car', oriangle=False):
     if not shrun:
         parser = argparse.ArgumentParser()
         parser.add_argument("--i", type=int, default=0, help="points_{i}.npy")
         parser.add_argument("--idx", type=str, default='000936',
                             help='specify data index: {idx}.bin')
+        parser.add_argument("--oriangle", action="store_true")
         parser.add_argument('--category', type=str, default='car',
                             help='specify the category' +
                                  '{ \
@@ -75,7 +76,7 @@ def main(shrun=False, i=0, idx='000936', category='car'):
                                  }')
         args = parser.parse_args()
     else:
-        args = pseudoargs(idx, i, category)
+        args = pseudoargs(idx, i, category, oriangle)
 
     ######### Visualize in matplotlib ########
     fig = plt.figure()
@@ -87,11 +88,12 @@ def main(shrun=False, i=0, idx='000936', category='car'):
     bbox_path = 'output/{}_{}_bbox_{}.npy'.format(args.idx, args.category, args.i)
     pts = np.load(pts_path).reshape(-1, 3)
     bbox = np.load(bbox_path).reshape(-1, 7)
-    corners3d = boxes_to_corners_3d(bbox)
+    corners3d = boxes_to_corners_3d(bbox, args.oriangle)
+
     # pts = sample(pts, 5000)
 
     ax.scatter(pts[:, 0], pts[:, 1], pts[:, 2], s=5, c='g', lw=0, alpha=1)
-    visualize_3d_boxes(corners3d, ax)
+    visualize_3d_boxes(corners3d, ax)  # show box
 
     visual_right_scale(corners3d.reshape(-1, 3), ax)
     ax.title.set_text(args.category)
