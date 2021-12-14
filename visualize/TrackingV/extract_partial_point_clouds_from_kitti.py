@@ -7,12 +7,13 @@ output = "output/tracking/"
 
 
 class pseduoargs():
-    def __init__(self, sceneid, oriangle):
+    def __init__(self, sceneid, oriangle, dilate):
         self.sceneid = sceneid
         self.oriangle = oriangle
+        self.dilate = dilate
 
 
-def main(shrun=False, sceneid='0003', oriangle=False, calib="kitti/training/tracking/calib/",
+def main(shrun=False, sceneid='0003', oriangle=False, dilate=1, calib="kitti/training/tracking/calib/",
          label="kitti/training/tracking/label_2/", velodyn="kitti/training/tracking/velodyne/"):
     global output
     if not shrun:
@@ -22,11 +23,11 @@ def main(shrun=False, sceneid='0003', oriangle=False, calib="kitti/training/trac
         parser.add_argument("--oriangle", action="store_true")
         args = parser.parse_args()
     else:
-        args = pseduoargs(sceneid, oriangle)
+        args = pseduoargs(sceneid, oriangle,dilate)
 
     label_path = label + '{}.txt'.format(args.sceneid)
     points_path = velodyn + "{}/".format(args.sceneid)
-    bboxes, cates = utils.load_3d_boxes(label_path)  # with dontcare
+    bboxes, cates = utils.load_3d_boxes(label_path, dilate=args.dilate)  # with dontcare
     calib_path = calib + '{}.txt'.format(args.sceneid)
     calib = Calibration(calib_path)
 
