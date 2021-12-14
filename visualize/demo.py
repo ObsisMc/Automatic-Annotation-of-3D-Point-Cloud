@@ -3,8 +3,8 @@ from visualize.TrackingV.visualize import main as VTra
 
 
 def main():
-    # extractTra(True, idx='0003', category='car')
-    VTra(True, frame=0, idx='0003', category='Car',pid=0)
+    extractTra(True, sceneid='0003')
+    # VTra(True, frame=0, sceneid='0003', category='Car',pid=2)
 
 
 if __name__=="__main__":

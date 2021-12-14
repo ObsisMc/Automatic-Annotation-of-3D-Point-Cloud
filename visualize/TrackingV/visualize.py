@@ -43,25 +43,25 @@ def visualize_3d_boxes(corners3d, ax):
 
 def sample(pos, n):
     num = pos.shape[0]
-    idx = np.random.choice(num, n, False)
-    return pos[idx]
+    sceneid = np.random.choice(num, n, False)
+    return pos[sceneid]
 
 
 class pseudoargs():
-    def __init__(self, idx, pid, cate, oriangle, frame=0):
-        self.idx = idx
+    def __init__(self, sceneid, pid, cate, oriangle, frame=0):
+        self.sceneid = sceneid
         self.pid = pid
         self.category = cate
         self.oriangle = oriangle
         self.frame = frame
 
 
-def main(shrun=False, pid=0, idx='0003', frame=0, category='car', oriangle=False):
+def main(shrun=False, pid=0, sceneid='0003', frame=0, category='car', oriangle=False):
     if not shrun:
         parser = argparse.ArgumentParser()
         parser.add_argument("--i", type=int, default=0, help="points_{i}.npy")
-        parser.add_argument("--idx", type=str, default='000936',
-                            help='specify data index: {idx}.bin')
+        parser.add_argument("--sceneid", type=str, default='000936',
+                            help='specify data index: {sceneid}.bin')
         parser.add_argument("--oriangle", action="store_true")
         parser.add_argument('--category', type=str, default='car',
                             help='specify the category' +
@@ -76,16 +76,15 @@ def main(shrun=False, pid=0, idx='0003', frame=0, category='car', oriangle=False
                                  }')
         args = parser.parse_args()
     else:
-        args = pseudoargs(idx, pid, category, oriangle,frame)
+        args = pseudoargs(sceneid, pid, category, oriangle, frame)
 
     ######### Visualize in matplotlib ########
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    # pts_path = 'output/points.npy'
-    # bbox_path = 'output/bboxes.npy'
-    pts_path = 'output/tracking/{}_{}_{}_{}point.npy'.format(args.pid, args.category, args.frame, args.idx, )
-    bbox_path = 'output/tracking/{}_{}_{}_{}bbox.npy'.format(args.pid, args.category, args.frame, args.idx)
+    readpath = "output/tracking/{}/{}_{}/".format(args.sceneid, args.category, args.pid)
+    pts_path = readpath + 'point{}.npy'.format(args.frame)
+    bbox_path = readpath + 'bbox{}.npy'.format(args.frame)
     pts = np.load(pts_path).reshape(-1, 3)
     bbox = np.load(bbox_path).reshape(-1, 7)
     corners3d = boxes_to_corners_3d(bbox, args.oriangle)

@@ -18,7 +18,7 @@ def load_point_clouds(path):
     return points[:, :3]
 
 
-def load_3d_boxes(path, category):
+def load_3d_boxes(path):
     '''
     Load 3d bounding boxes from label
     Args:
