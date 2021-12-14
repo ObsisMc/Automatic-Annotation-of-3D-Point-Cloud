@@ -30,16 +30,16 @@ def main(shrun=False, sceneid='0003', oriangle=False, calib="kitti/training/trac
     calib_path = calib + '{}.txt'.format(args.sceneid)
     calib = Calibration(calib_path)
 
-    framen = utils.getFrameNumber(velodyn)
+    framen = utils.getFrameNumber(points_path)
     framep = 0
     output = output + "{}/".format(args.sceneid)
-    for i in range(2):
+    for i in range(framen):
         framepoints_path = points_path + '{:06}.bin'.format(i)
         points = utils.load_point_clouds(framepoints_path)
 
         framebboxes = []
         framecates = []
-        while True:
+        while framep < len(bboxes):
             if bboxes[framep][0] == i:
                 if cates[framep] != "DontCare":
                     framebboxes.append(bboxes[framep])
@@ -68,8 +68,8 @@ def main(shrun=False, sceneid='0003', oriangle=False, calib="kitti/training/trac
                 pidpath = "{}_{}/".format(framecates[j], int(framebboxes[j][1]))  # cate, pid
                 pts_name = 'point{}'.format(i)  # tracking id, cate, frameid,sceneid
                 box_name = 'bbox{}'.format(i)
-                utils.write_points(points_canonical, [output+pidpath, pts_name])
-                utils.write_bboxes(box_canonical, [output+pidpath, box_name])
+                utils.write_points(points_canonical, [output + pidpath, pts_name])
+                utils.write_bboxes(box_canonical, [output + pidpath, box_name])
 
         points_is_within_3d_box = np.concatenate(points_is_within_3d_box, axis=0)
         points = points_is_within_3d_box
