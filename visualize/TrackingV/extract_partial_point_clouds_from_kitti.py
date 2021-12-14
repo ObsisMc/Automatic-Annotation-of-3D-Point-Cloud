@@ -3,7 +3,7 @@ import numpy as np
 import visualize.TrackingV.utils as utils
 from visualize.TrackingV.calibration import Calibration
 
-output = "output"
+output = "output/tracking"
 
 
 class pseduoargs():
@@ -13,8 +13,8 @@ class pseduoargs():
         self.oriangle = oriangle
 
 
-def main(shrun=False, idx='000936', category='car', oriangle=False, calib="kitti/training/calib/",
-         label="kitti/training/label_2/", velodyn="kitti/training/velodyne/"):
+def main(shrun=False, idx='0003', category='car', oriangle=False, calib="kitti/training/tracking/calib/",
+         label="kitti/training/tracking/label_2/", velodyn="kitti/training/tracking/velodyne/"):
     if not shrun:
         parser = argparse.ArgumentParser(description='arg parser')
         parser.add_argument('--idx', type=str, default='000936',
@@ -35,36 +35,57 @@ def main(shrun=False, idx='000936', category='car', oriangle=False, calib="kitti
     else:
         args = pseduoargs(idx, category, oriangle)
 
-    points_path = velodyn + '{}.bin'.format(args.idx)
     label_path = label + '{}.txt'.format(args.idx)
+    points_path = velodyn + "{}/".format(args.idx)
+    bboxes, cates = utils.load_3d_boxes(label_path, args.category)  # with dontcare
     calib_path = calib + '{}.txt'.format(args.idx)
-
     calib = Calibration(calib_path)
-    points = utils.load_point_clouds(points_path)
-    bboxes = utils.load_3d_boxes(label_path, args.category)
-    bboxes = calib.bbox_rect_to_lidar(bboxes)
 
-    corners3d = utils.boxes_to_corners_3d(bboxes)
-    points_flag = utils.is_within_3d_box(points, corners3d)
+    framen = utils.getFrameNumber(velodyn)
+    framep = 0
+    for i in range(1):
+        points_path = points_path + '{:06}.bin'.format(i)
+        points = utils.load_point_clouds(points_path)
 
-    points_is_within_3d_box = []
-    for i in range(len(points_flag)):
-        p = points[points_flag[i]]
-        if len(p) > 0:
-            points_is_within_3d_box.append(p)
-            box = bboxes[i]
-            points_canonical, box_canonical = utils.points_to_canonical(p, box, args.oriangle)
-            points_canonical, box_canonical = utils.lidar_to_shapenet(points_canonical, box_canonical)
-            pts_name = '{}_{}_point_{}'.format(args.idx, args.category, i)
-            box_name = '{}_{}_bbox_{}'.format(args.idx, args.category, i)
-            utils.write_points(points_canonical, [output, pts_name])
-            utils.write_bboxes(box_canonical, [output, box_name])
+        framebboxes = []
+        framecates = []
+        while True:
+            if bboxes[framep][0] == i:
+                if cates[framep] != "DontCare":
+                    framebboxes.append(bboxes[framep])
+                    framecates.append(cates[framep])
+            else:
+                break
+            framep += 1
+        if len(framebboxes) == 0:
+            continue
 
-    points_is_within_3d_box = np.concatenate(points_is_within_3d_box, axis=0)
-    points = points_is_within_3d_box
+        # load all object of frame i without dontcare
+        framebboxes = np.array(framebboxes)
+        framebboxestmp = calib.bbox_rect_to_lidar(framebboxes[:, 2:])
 
-    utils.write_points(points, 'output/points')
-    utils.write_bboxes(bboxes, 'output/bboxes')
+        corners3d = utils.boxes_to_corners_3d(framebboxestmp)
+        points_flag = utils.is_within_3d_box(points, corners3d)
+
+        points_is_within_3d_box = []
+        for j in range(len(points_flag)):
+            p = points[points_flag[j]]
+            if len(p) > 0:
+                points_is_within_3d_box.append(p)
+                box = framebboxestmp[j]
+                points_canonical, box_canonical = utils.points_to_canonical(p, box, args.oriangle)
+                points_canonical, box_canonical = utils.lidar_to_shapenet(points_canonical, box_canonical)
+                pts_name = '{}_{}_{}_{}point'.format(int(framebboxes[j][1]), framecates[j], i,
+                                                     args.idx)  # tracking id, cate, frameid,sceneid
+                box_name = '{}_{}_{}_{}bbox'.format(int(framebboxes[j][1]), framecates[j], i, args.idx)
+                utils.write_points(points_canonical, [output, pts_name])
+                utils.write_bboxes(box_canonical, [output, box_name])
+
+        points_is_within_3d_box = np.concatenate(points_is_within_3d_box, axis=0)
+        points = points_is_within_3d_box
+
+        utils.write_points(points, 'output/points')
+        utils.write_bboxes(framebboxes, 'output/bboxes')
 
 
 if __name__ == "__main__":

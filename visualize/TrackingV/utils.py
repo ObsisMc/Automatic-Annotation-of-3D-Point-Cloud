@@ -3,6 +3,10 @@ import os
 from scipy.spatial import Delaunay
 
 
+def getFrameNumber(path):
+    return len(os.listdir(path))
+
+
 def load_point_clouds(path):
     '''
     Args:
@@ -27,27 +31,28 @@ def load_3d_boxes(path, category):
 
     def parse_line(line):
         label = line.strip().split(' ')
-        lable = [float(item) for item in label[1:]]
-        cat = label[0]
-        h, w, l = [label[8]], [label[9]], [label[10]]
-        loc = label[11:14]
-        heading = [label[14]]
-        boxes = loc + l + h + w + heading
+        framei = [label[0]]
+        id = [label[1]]
+        cat = label[2]
+        h, w, l = [label[10]], [label[11]], [label[12]]
+        loc = label[13:16]
+        heading = [label[16]]
+        boxes = framei + id + loc + l + h + w + heading
         return np.array(boxes, dtype=np.float32), cat
 
     with open(path, 'r') as f:
         lines = f.readlines()
 
     boxes = []
+    cates = []
     for line in lines:
         box, cat = parse_line(line)
-        if cat.lower() == category.lower():
-            boxes.append(box)
+        boxes.append(box)
+        cates.append(cat)
 
-    print('{} {}s are labeled in the point clouds'.format(len(boxes), category))
     assert len(boxes) != 0
 
-    return np.array(boxes)
+    return np.array(boxes), cates
 
 
 def label_rect_to_lidar(label):
@@ -105,7 +110,7 @@ def lidar_to_shapenet(points, box):
     return points_new.squeeze(), box_new
 
 
-def points_to_canonical(points, box,oriangle=False):
+def points_to_canonical(points, box, oriangle=False):
     '''
     Transform points within bbox to a canonical pose and normalized scale
     Args:
