@@ -18,7 +18,7 @@ def load_point_clouds(path):
     return points[:, :3]
 
 
-def load_3d_boxes(path):
+def load_3d_boxes(path, dilate=1):
     '''
     Load 3d bounding boxes from label
     Args:
@@ -38,7 +38,8 @@ def load_3d_boxes(path):
         loc = label[13:16]
         heading = [label[16]]
         boxes = framei + id + loc + l + h + w + heading
-        return np.array(boxes, dtype=np.float32), cat
+        # 为啥对不上h,w,l???
+        return np.array(boxes, dtype=np.float32) * np.array([1] * 5 + [dilate, dilate, dilate * 1.2] + [1]), cat
 
     with open(path, 'r') as f:
         lines = f.readlines()
