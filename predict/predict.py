@@ -10,7 +10,7 @@ def calc_next_s(alpha, x):
 
 
 def time_predict(x):
-    alpha = 0.4
+    alpha = 0.8
     s1 = calc_next_s(alpha, x)
     s2 = calc_next_s(alpha, s1)
     s3 = calc_next_s(alpha, s2)
