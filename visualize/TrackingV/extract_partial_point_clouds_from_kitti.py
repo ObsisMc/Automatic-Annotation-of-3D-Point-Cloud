@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
-import utils
-from calibration import Calibration
+import visualize.TrackingV.utils as utils
+from visualize.TrackingV.calibration import Calibration
 
 output = "output"
 
@@ -13,7 +13,8 @@ class pseduoargs():
         self.oriangle = oriangle
 
 
-def main(shrun=False, idx='000936', category='car', oriangle=False):
+def main(shrun=False, idx='000936', category='car', oriangle=False, calib="kitti/training/calib/",
+         label="kitti/training/label_2/", velodyn="kitti/training/velodyne/"):
     if not shrun:
         parser = argparse.ArgumentParser(description='arg parser')
         parser.add_argument('--idx', type=str, default='000936',
@@ -34,9 +35,9 @@ def main(shrun=False, idx='000936', category='car', oriangle=False):
     else:
         args = pseduoargs(idx, category, oriangle)
 
-    points_path = 'kitti/training/velodyne/{}.bin'.format(args.idx)
-    label_path = 'kitti/training/label_2/{}.txt'.format(args.idx)
-    calib_path = 'kitti/training/calib/{}.txt'.format(args.idx)
+    points_path = velodyn + '{}.bin'.format(args.idx)
+    label_path = label + '{}.txt'.format(args.idx)
+    calib_path = calib + '{}.txt'.format(args.idx)
 
     calib = Calibration(calib_path)
     points = utils.load_point_clouds(points_path)

@@ -1,8 +1,7 @@
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
-from utils import boxes_to_corners_3d
+from visualize.TrackingV.utils import boxes_to_corners_3d
 
 
 def visual_right_scale(pos, ax):
