@@ -3,7 +3,8 @@ import numpy as np
 
 def calc_next_s(alpha, x):
     s = [0 for i in range(len(x))]
-    s[0] = np.sum(x[0:3]) / float(3)
+    # s[0] = np.sum(x[0:3]) / float(3)
+    s[0] = x[0]
     for i in range(1, len(s)):
         s[i] = alpha * x[i] + (1 - alpha) * s[i - 1]
     return s
