@@ -40,7 +40,6 @@ if __name__ == '__main__':
             y.append(float(line_split[14]))
             z.append(float(line_split[15]))
             rotate.append(float(line_split[16]))
-    f.close()
     pred_x = time_predict(x)
     pred_y = time_predict(y)
     pred_z = time_predict(z)
