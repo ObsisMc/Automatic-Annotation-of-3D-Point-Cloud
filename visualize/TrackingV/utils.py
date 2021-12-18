@@ -18,7 +18,7 @@ def load_point_clouds(path):
     return points[:, :3]
 
 
-def load_3d_boxes(path, dilate=1):
+def load_3d_boxes(path, dilate=1, error=False):
     '''
     Load 3d bounding boxes from label
     Args:
@@ -38,8 +38,11 @@ def load_3d_boxes(path, dilate=1):
         loc = label[13:16]
         heading = [label[16]]
         boxes = framei + id + loc + l + h + w + heading
-        # 为啥对不上h,w,l???
-        return np.array(boxes, dtype=np.float32) * np.array([1] * 5 + [dilate, dilate, dilate * 1.2] + [1]), cat
+        if error:
+            boxes = boxes + label[17:21]
+
+        return np.array(boxes, dtype=np.float32) * np.array(
+            [1] * 5 + [dilate, dilate, dilate * 1.2] + [1] * (5 if error else 1)), cat
 
     with open(path, 'r') as f:
         lines = f.readlines()
@@ -238,3 +241,10 @@ def write_points(points, save_path):
         os.makedirs(save_path[0])
     np.save(os.path.join(save_path[0], save_path[1]), points)
     return
+
+
+def write_labels(label, frameid, save_path):
+    if not os.path.exists(save_path[0]):
+        os.makedirs(save_path[0])
+    with open(save_path[0] + save_path[1], 'a+') as f:
+        f.write("{} {}\n".format(frameid, " ".join([str(error) for error in label])))
