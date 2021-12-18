@@ -3,9 +3,10 @@ from visualize.TrackingV.visualize import main as VTra
 
 
 def main():
-    # extractTra(True, sceneid='0003')
-    VTra(True, sceneid='0003', category='Car', frame=50,pid=0)
+    # extract 和 V 最好分开运行
+    extractTra(True, sceneid='0000', dilate=1.5,generror=True)
+    # VTra(True, sceneid='0000', category='Car', frame=117,pid=5,subcate=1)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()

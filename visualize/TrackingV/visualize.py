@@ -48,15 +48,20 @@ def sample(pos, n):
 
 
 class pseudoargs():
-    def __init__(self, sceneid, pid, cate, oriangle, frame=0):
+    def __init__(self, sceneid, pid, cate, oriangle, frame=0, subcate=1):
         self.sceneid = sceneid
         self.pid = pid
         self.category = cate
         self.oriangle = oriangle
         self.frame = frame
+        self.subcate = "groundtruth" if subcate == 0 else "error"
 
 
-def main(shrun=False, pid=0, sceneid='0003', frame=0, category='car', oriangle=False):
+prefix = "../Data/"
+output = "Mydataset/"
+
+
+def main(shrun=False, pid=0, sceneid='0003', frame=0, category='car', oriangle=False, subcate=0):
     if not shrun:
         parser = argparse.ArgumentParser()
         parser.add_argument("--i", type=int, default=0, help="points_{i}.npy")
@@ -76,13 +81,13 @@ def main(shrun=False, pid=0, sceneid='0003', frame=0, category='car', oriangle=F
                                  }')
         args = parser.parse_args()
     else:
-        args = pseudoargs(sceneid, pid, category, oriangle, frame)
+        args = pseudoargs(sceneid, pid, category, oriangle, frame, subcate)
 
     ######### Visualize in matplotlib ########
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    readpath = "output/tracking/{}/{}_{}/".format(args.sceneid, args.category, args.pid)
+    readpath = prefix + output + "{}/{}/{}_{}/".format(args.sceneid, args.subcate, args.category, args.pid)
     pts_path = readpath + 'point{}.npy'.format(args.frame)
     bbox_path = readpath + 'bbox{}.npy'.format(args.frame)
     pts = np.load(pts_path).reshape(-1, 3)
