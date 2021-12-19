@@ -4,8 +4,8 @@ from visualize.TrackingV.visualize import main as VTra
 
 def main():
     # extract 和 V 最好分开运行
-    extractTra(True, sceneid='0000', dilate=1.5,generror=True)
-    # VTra(True, sceneid='0000', category='Car', frame=117,pid=5,subcate=1)
+    # extractTra(True, sceneid='0000', dilate=1.5,generror=True)
+    VTra(True, sceneid='0000', category='Van', frame=0,pid=0,subcate=1)
 
 
 if __name__ == "__main__":

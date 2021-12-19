@@ -3,6 +3,10 @@ import os
 import numpy as np
 from torch.utils.data import Dataset
 
+error_dir = "../Data/Mydataset/{:04}/error"
+gt_dir = "../Data/Mydataset/{:04}/groundtruth"
+label_dir = "../Data/Mydataset/{:04}/label"
+
 
 class MyDataSet(Dataset):
     def __init__(self, data_path):
@@ -19,3 +23,7 @@ class MyDataSet(Dataset):
 
     def __len__(self):
         return self.data_num
+
+
+if __name__ == "__main__":
+    print(os.listdir(error_dir.format(0)))
