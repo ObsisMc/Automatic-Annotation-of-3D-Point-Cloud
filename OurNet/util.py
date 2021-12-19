@@ -31,9 +31,12 @@ def createTrainingSet(sceneid=0, id="Van_0"):
 
             errorname = "point{}.npy".format(frame)
             gtname = "point{}.npy".format(frame - 1)
-            shutil.copy(error_dir + errorname, points_dir + errorname)
-            shutil.copy(gt_dir + gtname, points_dir + gtname)
-            setlen += 1
+            try:
+                shutil.copy(error_dir + errorname, points_dir + errorname)
+                shutil.copy(gt_dir + gtname, points_dir + gtname)
+                setlen += 1
+            except:
+                break
 
 
 def checkSamePoint(p1_path, p2_path):
