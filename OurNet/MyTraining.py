@@ -7,7 +7,6 @@ import random
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
-from tqdm import tqdm
 
 from MyDataSet import MyDataSet
 from MyModel import PointNetCls
@@ -83,7 +82,6 @@ for epoch in range(opt.nepoch):
         optimizer.step()
         print('[%d: %d/%d] train loss: %f' % (
             epoch, i, num_batch, loss.item()))
-        # TODO: The following content is from PointNet and needs to be modified.
         if i % 10 == 0:
             j, data = next(enumerate(testdataloader, 0))
             points, target = data
@@ -91,27 +89,27 @@ for epoch in range(opt.nepoch):
             points = points.transpose(2, 1)
             points, target = points.cuda(), target.cuda()
             classifier = classifier.eval()
-            pred, _, _ = classifier(points)
-            loss = F.nll_loss(pred, target)
-            pred_choice = pred.data.max(1)[1]
-            correct = pred_choice.eq(target.data).cpu().sum()
-            print('[%d: %d/%d] %s loss: %f accuracy: %f' % (
-            epoch, i, num_batch, blue('test'), loss.item(), correct.item() / float(opt.batchSize)))
+            pred1, pred2 = classifier(points)
+            loss1 = F.cross_entropy(pred1, target[0])
+            loss2 = F.mse_loss(pred2, target[1:])
+            loss = loss1 + loss2
+            print('[%d: %d/%d] %s loss: %f' % (
+                epoch, i, num_batch, blue('test'), loss.item()))
 
     torch.save(classifier.state_dict(), '%s/cls_model_%d.pth' % (opt.outf, epoch))
 
-total_correct = 0
-total_testset = 0
-for i, data in tqdm(enumerate(testdataloader, 0)):
-    points, target = data
-    target = target[:, 0]
-    points = points.transpose(2, 1)
-    points, target = points.cuda(), target.cuda()
-    classifier = classifier.eval()
-    pred, _, _ = classifier(points)
-    pred_choice = pred.data.max(1)[1]
-    correct = pred_choice.eq(target.data).cpu().sum()
-    total_correct += correct.item()
-    total_testset += points.size()[0]
-
-print("final accuracy {}".format(total_correct / float(total_testset)))
+# total_correct = 0
+# total_testset = 0
+# for i, data in tqdm(enumerate(testdataloader, 0)):
+#     points, target = data
+#     target = target[:, 0]
+#     points = points.transpose(2, 1)
+#     points, target = points.cuda(), target.cuda()
+#     classifier = classifier.eval()
+#     pred, _, _ = classifier(points)
+#     pred_choice = pred.data.max(1)[1]
+#     correct = pred_choice.eq(target.data).cpu().sum()
+#     total_correct += correct.item()
+#     total_testset += points.size()[0]
+#
+# print("final accuracy {}".format(total_correct / float(total_testset)))
