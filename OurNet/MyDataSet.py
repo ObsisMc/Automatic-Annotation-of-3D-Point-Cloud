@@ -2,7 +2,6 @@ import os
 
 import numpy as np
 from torch.utils.data import Dataset
-import util
 
 error_dir = "../Data/Mydataset/{:04}/error"
 gt_dir = "../Data/Mydataset/{:04}/groundtruth"
@@ -25,8 +24,8 @@ class MyDataSet(Dataset):
             label.append(1)
         vp = self.velodynes_path + self.data_velodynes[item]
         points_name = os.listdir(vp)
-        points1 = np.load(os.path.join( vp,points_name[0]))
-        points2 = np.load(os.path.join( vp,points_name[1]))
+        points1 = np.load(os.path.join(vp, points_name[0]))
+        points2 = np.load(os.path.join(vp, points_name[1]))
 
         return [points1, points2], label
 

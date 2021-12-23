@@ -7,9 +7,10 @@ import random
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
-from pointnet.dataset import ShapeNetDataset, ModelNetDataset
-from pointnet.model import PointNetCls, feature_transform_regularizer
 from tqdm import tqdm
+
+from MyDataSet import MyDataSet
+from MyModel import PointNetCls
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -23,8 +24,6 @@ parser.add_argument(
 parser.add_argument('--outf', type=str, default='cls', help='output folder')
 parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str, required=True, help="dataset path")
-parser.add_argument('--dataset_type', type=str, default='shapenet', help="dataset type shapenet|modelnet40")
-parser.add_argument('--feature_transform', action='store_true', help="use feature transform")
 
 opt = parser.parse_args()
 print(opt)
@@ -36,31 +35,8 @@ print("Random Seed: ", opt.manualSeed)
 random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 
-if opt.dataset_type == 'shapenet':
-    dataset = ShapeNetDataset(
-        root=opt.dataset,
-        classification=True,
-        npoints=opt.num_points)
-
-    test_dataset = ShapeNetDataset(
-        root=opt.dataset,
-        classification=True,
-        split='test',
-        npoints=opt.num_points,
-        data_augmentation=False)
-elif opt.dataset_type == 'modelnet40':
-    dataset = ModelNetDataset(
-        root=opt.dataset,
-        npoints=opt.num_points,
-        split='trainval')
-
-    test_dataset = ModelNetDataset(
-        root=opt.dataset,
-        split='test',
-        npoints=opt.num_points,
-        data_augmentation=False)
-else:
-    exit('wrong dataset type')
+dataset = MyDataSet()
+test_dataset = MyDataSet(data_path="../Data/Mydataset/testing/")
 
 dataloader = torch.utils.data.DataLoader(
     dataset,
@@ -75,15 +51,12 @@ testdataloader = torch.utils.data.DataLoader(
     num_workers=int(opt.workers))
 
 print(len(dataset), len(test_dataset))
-num_classes = len(dataset.classes)
-print('classes', num_classes)
-
 try:
     os.makedirs(opt.outf)
 except OSError:
     pass
 
-classifier = PointNetCls(k=num_classes, feature_transform=opt.feature_transform)
+classifier = PointNetCls()
 
 if opt.model != '':
     classifier.load_state_dict(torch.load(opt.model))
@@ -98,22 +71,19 @@ for epoch in range(opt.nepoch):
     scheduler.step()
     for i, data in enumerate(dataloader, 0):
         points, target = data
-        target = target[:, 0]
         points = points.transpose(2, 1)
         points, target = points.cuda(), target.cuda()
         optimizer.zero_grad()
         classifier = classifier.train()
-        pred, trans, trans_feat = classifier(points)
-        loss = F.nll_loss(pred, target)
-        if opt.feature_transform:
-            loss += feature_transform_regularizer(trans_feat) * 0.001
+        pred1, pred2 = classifier(points)
+        loss1 = F.cross_entropy(pred1, target[0])
+        loss2 = F.mse_loss(pred2, target[1:])
+        loss = loss1 + loss2
         loss.backward()
         optimizer.step()
-        pred_choice = pred.data.max(1)[1]
-        correct = pred_choice.eq(target.data).cpu().sum()
-        print('[%d: %d/%d] train loss: %f accuracy: %f' % (
-        epoch, i, num_batch, loss.item(), correct.item() / float(opt.batchSize)))
-
+        print('[%d: %d/%d] train loss: %f' % (
+            epoch, i, num_batch, loss.item()))
+        # TODO: The following content is from PointNet and needs to be modified.
         if i % 10 == 0:
             j, data = next(enumerate(testdataloader, 0))
             points, target = data
