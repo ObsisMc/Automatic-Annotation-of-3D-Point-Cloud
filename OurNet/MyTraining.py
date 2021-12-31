@@ -75,13 +75,15 @@ for epoch in range(opt.nepoch):
         optimizer.zero_grad()
         classifier = classifier.train()
         pred1, pred2 = classifier(points)
-        loss1 = F.cross_entropy(pred1, target[0])
-        loss2 = F.mse_loss(pred2, target[1:])
+        loss1 = F.cross_entropy(pred1, target[4])
+        loss2 = F.mse_loss(pred2, target[:4])
+        # if the actual value of target[4] is 0, then the loss2 is 0
+        loss2 = loss2 * (target[4] != 0).float()
         loss = loss1 + loss2
         loss.backward()
         optimizer.step()
-        print('[%d: %d/%d] train loss: %f' % (
-            epoch, i, num_batch, loss.item()))
+        print('[%d: %d/%d] train loss1: %f  loss2: %f  total loss: %f' % (
+            epoch, i, num_batch, loss1.item(), loss2.item(), loss.item()))
         if i % 10 == 0:
             j, data = next(enumerate(testdataloader, 0))
             points, target = data
@@ -96,7 +98,7 @@ for epoch in range(opt.nepoch):
             print('[%d: %d/%d] %s loss: %f' % (
                 epoch, i, num_batch, blue('test'), loss.item()))
 
-    torch.save(classifier.state_dict(), '%s/cls_model_%d.pth' % (opt.outf, epoch))
+    torch.save(classifier.state_dict(), '%s/cls_model_%f.pth' % (opt.outf, epoch))
 
 # total_correct = 0
 # total_testset = 0

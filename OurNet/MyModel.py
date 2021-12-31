@@ -79,6 +79,7 @@ class PointNetfeat(nn.Module):
         x = x.view(-1, 1024)
         return x, trans, trans_feat
 
+
 class PointNetCls(nn.Module):
     def __init__(self, k=5):
         super(PointNetCls, self).__init__()
@@ -98,5 +99,4 @@ class PointNetCls(nn.Module):
         x = F.relu(self.bn1(self.fc1(x)))
         x = F.relu(self.bn2(self.dropout(self.fc2(x))))
         x = self.fc3(x)
-        x = x.view(1, -1)
-        return F.sigmoid(x[0]), x[1:]
+        return F.sigmoid(x[:, 4]), x[:, :4]
