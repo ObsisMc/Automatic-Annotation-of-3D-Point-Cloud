@@ -20,7 +20,7 @@ parser.add_argument(
     '--workers', type=int, help='number of data loading workers', default=4)
 parser.add_argument(
     '--nepoch', type=int, default=250, help='number of epochs to train for')
-parser.add_argument('--outf', type=str, default='cls', help='output folder')
+parser.add_argument('--outf', type=str, default='checkpoints', help='output folder')
 parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str, required=True, help="dataset path")
 
@@ -98,7 +98,7 @@ for epoch in range(opt.nepoch):
             print('[%d: %d/%d] %s loss: %f' % (
                 epoch, i, num_batch, blue('test'), loss.item()))
 
-    torch.save(classifier.state_dict(), '%s/cls_model_%f.pth' % (opt.outf, epoch))
+    torch.save(classifier.state_dict(), '%s/model_%d.pth' % (opt.outf, epoch))
 
 # total_correct = 0
 # total_testset = 0
