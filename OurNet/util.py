@@ -34,10 +34,15 @@ def createTrainingSet(sceneid=0, id="Van_0"):
             try:
                 shutil.copy(error_dir + errorname, points_dir + errorname)
                 shutil.copy(gt_dir + gtname, points_dir + gtname)
-                setlen += 1
+                # TODO 降采样，填充点
+
             except:
                 break
+            setlen += 1
 
+
+def adjustPointNum(points, n=2048):
+    pass
 
 def checkSamePoint(p1_path, p2_path):
     """
@@ -54,6 +59,6 @@ def checkSamePoint(p1_path, p2_path):
 
 
 if __name__ == "__main__":
-    # createTrainingSet()
-    print(checkSamePoint("../Data/Mydataset/training/velodyne/0002/point1.npy",
-                         "../Data/Mydataset/0000/groundtruth/Van_0/point1.npy"))
+    createTrainingSet()
+    # print(checkSamePoint("../Data/Mydataset/training/velodyne/0002/point1.npy",
+    #                      "../Data/Mydataset/0000/groundtruth/Van_0/point1.npy"))

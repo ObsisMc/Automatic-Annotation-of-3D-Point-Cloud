@@ -25,8 +25,8 @@ class MyDataSet(Dataset):
             label.append(1)
         vp = self.velodynes_path + self.data_velodynes[item]
         points_name = os.listdir(vp)
-        points1 = np.load(os.path.join( vp,points_name[0]))
-        points2 = np.load(os.path.join( vp,points_name[1]))
+        points1 = np.load(os.path.join(vp, points_name[0]))
+        points2 = np.load(os.path.join(vp, points_name[1]))
 
         return [points1, points2], label
 
@@ -37,6 +37,8 @@ class MyDataSet(Dataset):
 if __name__ == "__main__":
     dataset = MyDataSet()
     for i in range(100):
-        input, label = dataset.__getitem__(0)
+        input, label = dataset.__getitem__(i)
         print(label)
-
+    testpoints = np.load("../Data/Mydataset/training/velodyne/{:04}/point0.npy".format(1))
+    input, label = dataset.__getitem__(0)
+    print(np.all(input[0] == testpoints))
