@@ -2,7 +2,6 @@ import os
 
 import numpy as np
 from torch.utils.data import Dataset
-import util
 
 error_dir = "../Data/Mydataset/{:04}/error"
 gt_dir = "../Data/Mydataset/{:04}/groundtruth"
