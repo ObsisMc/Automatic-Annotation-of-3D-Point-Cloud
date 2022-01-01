@@ -4,6 +4,8 @@ import argparse
 import os
 import random
 
+import numpy as np
+import torch
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
@@ -14,7 +16,7 @@ from MyModel import PointNetCls
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '--batchSize', type=int, default=32, help='input batch size')
+    '--batchSize', type=int, default=1, help='input batch size')
 parser.add_argument(
     '--num_points', type=int, default=2500, help='input batch size')
 parser.add_argument(
@@ -41,7 +43,8 @@ torch.manual_seed(opt.manualSeed)
 dataset = MyDataSet()
 # Dataset is divided into training set and validation set.
 train_dataset, valid_dataset = torch.utils.data.random_split(
-    dataset, [int(0.8 * len(dataset)), len(dataset) - int(0.8 * len(dataset))], generator=torch.Generator())
+    dataset, [int(0.8 * len(dataset)), len(dataset) - int(0.8 * len(dataset))],
+    generator=torch.Generator().manual_seed(opt.manualSeed))
 
 train_dataloader = torch.utils.data.DataLoader(
     train_dataset,
@@ -74,14 +77,18 @@ classifier.cuda()
 num_batch = len(dataset) / opt.batchSize
 
 for epoch in range(opt.nepoch):
-    scheduler.step()
     for i, data in enumerate(train_dataloader, 0):
         points, target = data
-        points = points.transpose(2, 1)
-        points, target = points.cuda(), target.cuda()
+        points1 = points[0].transpose(2, 1)
+        points2 = points[1].transpose(2, 1)
+        target = np.array(target, dtype=np.float32)
+        target = torch.from_numpy(target)
+        points1 = points1.type(torch.FloatTensor)
+        points2 = points2.type(torch.FloatTensor)
+        points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
         optimizer.zero_grad()
         classifier = classifier.train()
-        pred1, pred2 = classifier(points[0], points[1])
+        pred1, pred2 = classifier(points1, points2)
         loss1 = F.cross_entropy(pred1, target[4])
         loss2 = F.mse_loss(pred2, target[:4])
         # if the actual value of target[4] is 0, then the loss2 is 0
@@ -89,16 +96,21 @@ for epoch in range(opt.nepoch):
         loss = loss1 + loss2
         loss.backward()
         optimizer.step()
+        scheduler.step()
         print('[%d: %d/%d] train loss1: %f  loss2: %f  total loss: %f' % (
             epoch, i, num_batch, loss1.item(), loss2.item(), loss.item()))
         if i % 10 == 0:
             j, data = next(enumerate(valid_dataloader, 0))
             points, target = data
-            target = target[:, 0]
-            points = points.transpose(2, 1)
-            points, target = points.cuda(), target.cuda()
+            points1 = points[0].transpose(2, 1)
+            points2 = points[1].transpose(2, 1)
+            target = np.array(target, dtype=np.float32)
+            target = torch.from_numpy(target)
+            points1 = points1.type(torch.FloatTensor)
+            points2 = points2.type(torch.FloatTensor)
+            points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
             classifier = classifier.eval()
-            pred1, pred2 = classifier(points)
+            pred1, pred2 = classifier(points1, points2)
             loss1 = F.cross_entropy(pred1, target[4])
             loss2 = F.mse_loss(pred2, target[:4])
             loss2 = loss2 * (target[4] != 0).float()
