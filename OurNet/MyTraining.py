@@ -11,6 +11,7 @@ import torch.utils.data
 from MyDataSet import MyDataSet
 from MyModel import PointNetCls
 
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--batchSize', type=int, default=32, help='input batch size')
@@ -22,7 +23,9 @@ parser.add_argument(
     '--nepoch', type=int, default=250, help='number of epochs to train for')
 parser.add_argument('--outf', type=str, default='checkpoints', help='output folder')
 parser.add_argument('--model', type=str, default='', help='model path')
-parser.add_argument('--dataset', type=str, required=True, help="dataset path")
+parser.add_argument('--dataset', type=str,
+                    default='/data/11912626/IP/InnovativePractice1_SUSTech/Data/Mydataset/training',
+                    help="dataset path")
 
 opt = parser.parse_args()
 print(opt)
@@ -74,7 +77,7 @@ for epoch in range(opt.nepoch):
         points, target = points.cuda(), target.cuda()
         optimizer.zero_grad()
         classifier = classifier.train()
-        pred1, pred2 = classifier(points)
+        pred1, pred2 = classifier(points[0], points[1])
         loss1 = F.cross_entropy(pred1, target[4])
         loss2 = F.mse_loss(pred2, target[:4])
         # if the actual value of target[4] is 0, then the loss2 is 0
@@ -92,8 +95,8 @@ for epoch in range(opt.nepoch):
             points, target = points.cuda(), target.cuda()
             classifier = classifier.eval()
             pred1, pred2 = classifier(points)
-            loss1 = F.cross_entropy(pred1, target[0])
-            loss2 = F.mse_loss(pred2, target[1:])
+            loss1 = F.cross_entropy(pred1, target[4])
+            loss2 = F.mse_loss(pred2, target[:4])
             loss = loss1 + loss2
             print('[%d: %d/%d] %s loss: %f' % (
                 epoch, i, num_batch, blue('test'), loss.item()))
