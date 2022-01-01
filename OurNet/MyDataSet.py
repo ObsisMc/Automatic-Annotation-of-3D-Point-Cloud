@@ -19,9 +19,8 @@ class MyDataSet(Dataset):
     def __getitem__(self, item):
         # label格式： dx, dy, dz, d\theta, confidence
         with open(self.labels_path + self.data_labels[item], "r") as f:
-            lb = f.readlines()  # 注意转换数据的时候是否去掉了换行符
-            label = [int(lb[i]) for i in range(1, len(lb))]
-            label.append(1)
+            lb = f.readline().rstrip("\n").split(" ")  # 注意转换数据的时候是否去掉了换行符
+            label = [float(lb[i]) for i in range(1, len(lb))]
         vp = self.velodynes_path + self.data_velodynes[item]
         points_name = os.listdir(vp)
         points1 = np.load(os.path.join(vp, points_name[0]))
@@ -35,9 +34,11 @@ class MyDataSet(Dataset):
 
 if __name__ == "__main__":
     dataset = MyDataSet()
-    for i in range(100):
-        input, label = dataset.__getitem__(i)
-        print(label)
-    testpoints = np.load("../Data/Mydataset/training/velodyne/{:04}/point0.npy".format(1))
-    input, label = dataset.__getitem__(0)
-    print(np.all(input[0] == testpoints))
+    input, label = dataset.__getitem__(1)
+    print(label)
+    # for i in range(100):
+    #     input, label = dataset.__getitem__(i)
+    #     print(label)
+    # testpoints = np.load("../Data/Mydataset/training/velodyne/{:04}/point0.npy".format(1))
+    # input, label = dataset.__getitem__(0)
+    # print(np.all(input[0] == testpoints))
