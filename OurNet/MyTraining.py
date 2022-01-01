@@ -97,6 +97,7 @@ for epoch in range(opt.nepoch):
             pred1, pred2 = classifier(points)
             loss1 = F.cross_entropy(pred1, target[4])
             loss2 = F.mse_loss(pred2, target[:4])
+            loss2 = loss2 * (target[4] != 0).float()
             loss = loss1 + loss2
             print('[%d: %d/%d] %s loss: %f' % (
                 epoch, i, num_batch, blue('test'), loss.item()))
