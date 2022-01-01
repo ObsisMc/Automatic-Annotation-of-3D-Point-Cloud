@@ -21,7 +21,8 @@ parser.add_argument(
     '--workers', type=int, help='number of data loading workers', default=4)
 parser.add_argument(
     '--nepoch', type=int, default=250, help='number of epochs to train for')
-parser.add_argument('--outf', type=str, default='checkpoints', help='output folder')
+parser.add_argument('--outf', type=str, default='/data/11912626/IP/InnovativePractice1_SUSTech/checkpoints',
+                    help='output folder')
 parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str,
                     default='/data/11912626/IP/InnovativePractice1_SUSTech/Data/Mydataset/training',
@@ -99,6 +100,9 @@ for epoch in range(opt.nepoch):
             loss2 = F.mse_loss(pred2, target[:4])
             loss2 = loss2 * (target[4] != 0).float()
             loss = loss1 + loss2
+            with open(opt.outf + '/log.txt', 'a') as f:
+                f.write('[%d: %d/%d] loss1: %f  loss2: %f  total loss: %f\n' % (
+                    epoch, i, num_batch, loss1.item(), loss2.item(), loss.item()))
             print('[%d: %d/%d] %s loss: %f' % (
                 epoch, i, num_batch, blue('test'), loss.item()))
 
