@@ -39,21 +39,24 @@ random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 
 dataset = MyDataSet()
-test_dataset = MyDataSet(data_path="../Data/Mydataset/testing/")
+# Dataset is divided into training set and validation set.
+train_dataset, valid_dataset = torch.utils.data.random_split(
+    dataset, [int(0.8 * len(dataset)), len(dataset) - int(0.8 * len(dataset))], generator=torch.Generator())
 
-dataloader = torch.utils.data.DataLoader(
-    dataset,
+train_dataloader = torch.utils.data.DataLoader(
+    train_dataset,
     batch_size=opt.batchSize,
     shuffle=True,
     num_workers=int(opt.workers))
 
-testdataloader = torch.utils.data.DataLoader(
-    test_dataset,
+valid_dataloader = torch.utils.data.DataLoader(
+    valid_dataset,
     batch_size=opt.batchSize,
     shuffle=True,
     num_workers=int(opt.workers))
 
-print(len(dataset), len(test_dataset))
+print(blue('# of training samples: %d' % len(train_dataset)))
+print(blue('# of validation samples: %d' % len(valid_dataset)))
 try:
     os.makedirs(opt.outf)
 except OSError:
@@ -72,7 +75,7 @@ num_batch = len(dataset) / opt.batchSize
 
 for epoch in range(opt.nepoch):
     scheduler.step()
-    for i, data in enumerate(dataloader, 0):
+    for i, data in enumerate(train_dataloader, 0):
         points, target = data
         points = points.transpose(2, 1)
         points, target = points.cuda(), target.cuda()
@@ -89,7 +92,7 @@ for epoch in range(opt.nepoch):
         print('[%d: %d/%d] train loss1: %f  loss2: %f  total loss: %f' % (
             epoch, i, num_batch, loss1.item(), loss2.item(), loss.item()))
         if i % 10 == 0:
-            j, data = next(enumerate(testdataloader, 0))
+            j, data = next(enumerate(valid_dataloader, 0))
             points, target = data
             target = target[:, 0]
             points = points.transpose(2, 1)
