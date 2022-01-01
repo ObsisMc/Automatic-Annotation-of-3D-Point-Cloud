@@ -37,7 +37,7 @@ def load_3d_boxes(path, dilate=1, error=False):
         h, w, l = [label[10]], [label[11]], [label[12]]
         loc = label[13:16]
         heading = [label[16]]
-        boxes = framei + id + loc + l + h + w + heading
+        boxes = framei + id + loc + l + h + w + heading  # 9
         if error:
             boxes = boxes + label[17:22]  # label[21]为判断是否有车
 

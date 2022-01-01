@@ -8,14 +8,15 @@ output = prefix + "Mydataset/"
 
 
 class pseduoargs():
-    def __init__(self, sceneid, oriangle, dilate, generror):
+    def __init__(self, sceneid, oriangle, dilate, generror, withgt):
         self.sceneid = sceneid
         self.oriangle = oriangle
         self.dilate = dilate
         self.generror = generror
+        self.withgt = withgt
 
 
-def main(shrun=False, sceneid='0003', oriangle=False, dilate=1, generror=False,
+def main(shrun=False, sceneid='0003', oriangle=False, dilate=1, generror=False, withgt=True,
          calib=prefix + "kitti/training/tracking/calib/",
          label=prefix + "kitti/training/tracking/label_02_error/",
          velodyn=prefix + "kitti/training/tracking/velodyne/"):
@@ -28,7 +29,7 @@ def main(shrun=False, sceneid='0003', oriangle=False, dilate=1, generror=False,
         parser.add_argument("--oriangle", action="store_true")
         args = parser.parse_args()
     else:
-        args = pseduoargs(sceneid, oriangle, dilate, generror)
+        args = pseduoargs(sceneid, oriangle, dilate, generror, withgt)
 
     label_path = label + '{}.txt'.format(args.sceneid)
     points_path = velodyn + "{}/".format(args.sceneid)
@@ -85,12 +86,15 @@ def main(shrun=False, sceneid='0003', oriangle=False, dilate=1, generror=False,
         # load all object of frame i without dontcare
         # framebboxes‘ len is 9 or 14
         framebboxes = np.array(framebboxes)
-        extract(framebboxes[:, :9], i, "groundtruth/")
+        # 生成groundtruth
+        if args.withgt:
+            extract(framebboxes[:, :9], i, "groundtruth/")
 
         # # 如果要生成偏移数据
         if generror:
             errorlabel = np.c_[
                 (framebboxes[:, 9:12] - framebboxes[:, 2:5]), (framebboxes[:, 12] - framebboxes[:, 8])]
+            errorlabel = np.c_[errorlabel, framebboxes[:, 13]]
             framebboxes[:, 2:5] = framebboxes[:, 9:12]
             framebboxes[:, 8] = framebboxes[:, 12]
             extract(framebboxes[:, :9], i, "error/", errorlabel)
