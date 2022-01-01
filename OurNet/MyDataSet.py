@@ -15,6 +15,7 @@ class MyDataSet(Dataset):
         self.labels_path = data_path + "label/"
         self.data_velodynes = os.listdir(self.velodynes_path)
         self.data_labels = os.listdir(self.labels_path)  # 获取label列表
+        self.data_num = len(self.data_labels)
 
     def __getitem__(self, item):
         # label格式： dx, dy, dz, d\theta, confidence
