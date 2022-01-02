@@ -4,8 +4,6 @@ import argparse
 import os
 import random
 
-import numpy as np
-import torch
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
@@ -81,16 +79,17 @@ for epoch in range(opt.nepoch):
         points, target = data
         points1 = points[0].transpose(2, 1)
         points2 = points[1].transpose(2, 1)
-        target = np.array(target, dtype=np.float32)
-        target = torch.from_numpy(target)
+        target = torch.tensor(target, dtype=torch.long)
         points1 = points1.type(torch.FloatTensor)
         points2 = points2.type(torch.FloatTensor)
         points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
         optimizer.zero_grad()
         classifier = classifier.train()
         pred1, pred2 = classifier(points1, points2)
-        loss1 = F.cross_entropy(pred1, target[4])
-        loss2 = F.mse_loss(pred2, target[:4])
+        pred1 = pred1.unsqueeze(0)
+        target_cls = target[4].unsqueeze(0)
+        loss1 = F.cross_entropy(pred1, target_cls).to(torch.float32)
+        loss2 = F.mse_loss(pred2, target[:4].unsqueeze(0).to(torch.float32))
         # if the actual value of target[4] is 0, then the loss2 is 0
         loss2 = loss2 * (target[4] != 0).float()
         loss = loss1 + loss2
@@ -104,15 +103,17 @@ for epoch in range(opt.nepoch):
             points, target = data
             points1 = points[0].transpose(2, 1)
             points2 = points[1].transpose(2, 1)
-            target = np.array(target, dtype=np.float32)
-            target = torch.from_numpy(target)
+            target = torch.tensor(target, dtype=torch.long)
             points1 = points1.type(torch.FloatTensor)
             points2 = points2.type(torch.FloatTensor)
             points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
-            classifier = classifier.eval()
+            optimizer.zero_grad()
+            classifier = classifier.train()
             pred1, pred2 = classifier(points1, points2)
-            loss1 = F.cross_entropy(pred1, target[4])
-            loss2 = F.mse_loss(pred2, target[:4])
+            pred1 = pred1.unsqueeze(0)
+            target_cls = target[4].unsqueeze(0)
+            loss1 = F.cross_entropy(pred1, target_cls).to(torch.float32)
+            loss2 = F.mse_loss(pred2, target[:4].unsqueeze(0).to(torch.float32))
             loss2 = loss2 * (target[4] != 0).float()
             loss = loss1 + loss2
             with open(opt.outf + '/log.txt', 'a') as f:
