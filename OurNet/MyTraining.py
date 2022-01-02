@@ -27,7 +27,7 @@ parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str,
                     default='../Data/Mydataset/training',
                     help="dataset path")
-parser.add_argument('--cpu', action="store_true", default=True)
+parser.add_argument('--cpu', action="store_true", default=False)
 
 
 def main():
@@ -93,15 +93,15 @@ def main():
             pred1, pred2 = classifier(points1, points2)
             target_cls = target[4].to(torch.long).unsqueeze(0)
             loss1 = F.cross_entropy(pred1, target_cls).to(torch.float32)
-            loss2 = F.mse_loss(pred2, target[:4].unsqueeze(0).to(torch.float32))
+            loss2 = F.mse_loss(pred2, target[:4].unsqueeze(0).to(torch.float32)) * 20
             # if the actual value of target[4] is 0, then the loss2 is 0
             loss2 = loss2 * (target[4] != 0).float()
             loss = loss1 + loss2
             loss.backward()
             optimizer.step()
             scheduler.step()
-            print('[%d: %d/%d] train loss1: %f  loss2: %f  total loss: %f' % (
-                epoch, i, num_batch, loss1.item(), loss2.item(), loss.item()))
+            # print('[%d: %d/%d] train loss1: %f  loss2: %f  total loss: %f' % (
+            #     epoch, i, num_batch, loss1.item(), loss2.item(), loss.item()))
             if i % 10 == 0:
                 j, data = next(enumerate(valid_dataloader, 0))
                 points, target = data
@@ -118,13 +118,13 @@ def main():
                 target_cls = target[4].to(torch.long).unsqueeze(0)
                 loss1 = F.cross_entropy(pred1, target_cls).to(torch.float32)
                 loss2 = F.mse_loss(pred2, target[:4].unsqueeze(0).to(torch.float32))
-                loss2 = loss2 * (target[4] != 0).float()
+                loss2 = loss2 * (target[4] != 0).float() * 20
                 loss = loss1 + loss2
                 with open(opt.outf + '/log.txt', 'a') as f:
                     f.write('[%d: %d/%d] loss1: %f  loss2: %f  total loss: %f\n' % (
-                        epoch, i, num_batch, loss1.item(), loss2.item(), loss.item()))
+                        epoch, i, len(train_dataset), loss1.item(), loss2.item(), loss.item()))
                 print('[%d: %d/%d] %s loss: %f' % (
-                    epoch, i, num_batch, blue('test'), loss.item()))
+                    epoch, i, len(train_dataset), blue('test'), loss.item()))
 
         torch.save(classifier.state_dict(), '%s/model_%d.pth' % (opt.outf, epoch))
 
