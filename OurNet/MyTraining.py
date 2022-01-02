@@ -11,6 +11,8 @@ import torch.utils.data
 from MyDataSet import MyDataSet
 from MyModel import PointNetCls
 
+print('CUDA available:', torch.cuda.is_available())
+
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -21,11 +23,11 @@ parser.add_argument(
     '--workers', type=int, help='number of data loading workers', default=4)
 parser.add_argument(
     '--nepoch', type=int, default=250, help='number of epochs to train for')
-parser.add_argument('--outf', type=str, default='/data/11912626/IP/InnovativePractice1_SUSTech/checkpoints',
+parser.add_argument('--outf', type=str, default='../checkpoints',
                     help='output folder')
 parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str,
-                    default='/data/11912626/IP/InnovativePractice1_SUSTech/Data/Mydataset/training',
+                    default='../Data/Mydataset/training',
                     help="dataset path")
 
 opt = parser.parse_args()
@@ -74,11 +76,19 @@ classifier.cuda()
 
 num_batch = len(dataset) / opt.batchSize
 
+print(len(train_dataloader))
+
+# for i in range(len(train_dataloader)):
+#     print(train_dataloader.)
+#     print('///////')
+#     print(i)
+
 for epoch in range(opt.nepoch):
     for i, data in enumerate(train_dataloader, 0):
         points, target = data
         points1 = points[0].transpose(2, 1)
         points2 = points[1].transpose(2, 1)
+        target = [aa.tolist() for aa in target]
         target = torch.tensor(target, dtype=torch.long)
         points1 = points1.type(torch.FloatTensor)
         points2 = points2.type(torch.FloatTensor)
