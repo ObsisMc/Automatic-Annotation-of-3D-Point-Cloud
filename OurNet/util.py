@@ -19,9 +19,10 @@ def createTrainingSet(sceneid=0, id="Van_0"):
     with open(label_dir, "r") as f:
         labels = f.readlines()
         setlen = 1
+
         for i in range(1, len(labels)):
             label = labels[i].rstrip("\n")
-            frame = int(label[0])
+            frame = int(label.split(" ")[0])
             with open(outlabel + "{:04}.txt".format(setlen), "w") as lb:
                 lb.write(label)
 
@@ -33,16 +34,21 @@ def createTrainingSet(sceneid=0, id="Van_0"):
             gtname = "point{}.npy".format(frame - 1)
             try:
                 shutil.copy(error_dir + errorname, points_dir + errorname)
-                shutil.copy(gt_dir + gtname, points_dir + gtname)
-                # TODO 降采样，填充点
-
             except:
-                break
+                # error数据可能里面没有点所以没有生成点云文件
+                padding = np.array([0, 0, 0])
+                np.save(error_dir + errorname, points_dir + errorname,padding)
+
+            shutil.copy(gt_dir + gtname, points_dir + gtname)
+
+            # TODO 降采样，填充点
+
             setlen += 1
 
 
 def adjustPointNum(points, n=2048):
     pass
+
 
 def checkSamePoint(p1_path, p2_path):
     """
@@ -59,6 +65,6 @@ def checkSamePoint(p1_path, p2_path):
 
 
 if __name__ == "__main__":
-    createTrainingSet()
-    # print(checkSamePoint("../Data/Mydataset/training/velodyne/0002/point1.npy",
-    #                      "../Data/Mydataset/0000/groundtruth/Van_0/point1.npy"))
+    # createTrainingSet()
+    print(checkSamePoint("../Data/Mydataset/training/velodyne/0011/point10.npy",
+                         "../Data/Mydataset/0000/groundtruth/Van_0/point10.npy"))

@@ -57,14 +57,15 @@ def main(shrun=False, sceneid='0003', oriangle=False, dilate=1, generror=False, 
                 pidpath = "{}_{}/".format(framecates[j], int(innerboxes[j][1]))  # cate, pid
                 pts_name = 'point{}'.format(frameid)  # tracking id, cate, frameid,sceneid
                 box_name = 'bbox{}'.format(frameid)
-                # generate label
-                if boxlabel is not None:
-                    labelpath = output + "label/"
-                    labelname = "{}_{}.txt".format(framecates[j], int(innerboxes[j][1]))
-                    utils.write_labels(errorlabel[j], frameid, [labelpath, labelname])
 
                 utils.write_points(points_canonical, [outpath + pidpath, pts_name])
                 utils.write_bboxes(box_canonical, [outpath + pidpath, box_name])
+            # generate label
+            if boxlabel is not None:
+                labelpath = output + "label/"
+                labelname = "{}_{}.txt".format(framecates[j], int(innerboxes[j][1]))
+                utils.write_labels(errorlabel[j], frameid, [labelpath, labelname])
+
 
     for i in range(framen):
         framepoints_path = points_path + '{:06}.bin'.format(i)

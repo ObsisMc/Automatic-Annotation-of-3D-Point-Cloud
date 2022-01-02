@@ -35,8 +35,12 @@ class MyDataSet(Dataset):
 
 if __name__ == "__main__":
     dataset = MyDataSet()
-    input, label = dataset.__getitem__(1)
-    print(label)
+    for i in range(len(dataset)):
+        input, label = dataset.__getitem__(i)
+        try:
+            print(label[4])
+        except:
+            print("wrong in {}!!!!!!!".format(i))
     # for i in range(100):
     #     input, label = dataset.__getitem__(i)
     #     print(label)

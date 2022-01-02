@@ -10,7 +10,7 @@ def main():
     # extractTra(True, sceneid='0000', dilate=1.5,generror=True,label=prefix+"kitti/training/tracking/label_02_training/")
     # extractPoint(True, sceneid='0000', dilate=1.5, generror=True,
     #              label=prefix + "kitti/training/tracking/label_02_training/")
-    VTra(True, sceneid='0000', category='Car', frame=114, pid=4, subcate=0)
+    VTra(True, sceneid='0000', category='Cyclist', frame=0, pid=1, subcate=0)
 
 
 if __name__ == "__main__":
