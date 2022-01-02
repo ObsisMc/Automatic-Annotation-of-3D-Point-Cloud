@@ -110,7 +110,8 @@ def main():
                 target = torch.tensor(target, dtype=torch.float32)
                 points1 = points1.type(torch.FloatTensor)
                 points2 = points2.type(torch.FloatTensor)
-                points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
+                if not opt.cpu:
+                    points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
                 optimizer.zero_grad()
                 classifier = classifier.train()
                 pred1, pred2 = classifier(points1, points2)
