@@ -73,12 +73,15 @@ class PointNetfeat(nn.Module):
 
 
 class PointNetCls(nn.Module):
-    def __init__(self, k=6):
+    def __init__(self, k=4):
         super(PointNetCls, self).__init__()
         self.feat = PointNetfeat()
         self.fc1 = nn.Linear(2048, 1024)
         self.fc2 = nn.Linear(1024, 512)
-        self.fc3 = nn.Linear(512, k)
+        self.fc3 = nn.Linear(512, 256)
+        self.fc4 = nn.Linear(256, 2)
+        self.fc5 = nn.Linear(512, 256)
+        self.fc6 = nn.Linear(256, k)
         self.dropout = nn.Dropout(p=0.3)
         # self.bn1 = nn.BatchNorm1d(512)
         # self.bn2 = nn.BatchNorm1d(256)
@@ -90,5 +93,8 @@ class PointNetCls(nn.Module):
         x = torch.cat((x1, x2), 1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.dropout(self.fc2(x)))
-        x = self.fc3(x)
-        return F.sigmoid(x[:, 4:]), x[:, :4]
+        out1 = F.relu(self.fc3(x))
+        out1 = F.sigmoid(self.fc4(out1))
+        out2 = F.relu(self.fc5(x))
+        out2 = self.fc6(out2)
+        return out1, out2
