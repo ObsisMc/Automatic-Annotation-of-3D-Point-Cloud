@@ -35,9 +35,9 @@ def createTrainingSet(sceneid=0, id="Van_0"):
             try:
                 shutil.copy(error_dir + errorname, points_dir + errorname)
             except:
-                # error数据可能里面没有点所以没有生成点云文件
-                padding = np.array([0, 0, 0])
-                np.save(error_dir + errorname, points_dir + errorname,padding)
+                #     error数据可能里面没有点所以没有生成点云文件
+                padding = np.array([[0, 0, 0]])
+                np.save(points_dir + errorname, padding)
 
             shutil.copy(gt_dir + gtname, points_dir + gtname)
 
@@ -65,6 +65,6 @@ def checkSamePoint(p1_path, p2_path):
 
 
 if __name__ == "__main__":
-    # createTrainingSet()
-    print(checkSamePoint("../Data/Mydataset/training/velodyne/0011/point10.npy",
-                         "../Data/Mydataset/0000/groundtruth/Van_0/point10.npy"))
+    createTrainingSet()
+    # print(checkSamePoint("../Data/Mydataset/training/velodyne/0011/point10.npy",
+    #                      "../Data/Mydataset/0000/groundtruth/Van_0/point10.npy"))
