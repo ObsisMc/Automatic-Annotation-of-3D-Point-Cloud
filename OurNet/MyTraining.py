@@ -27,7 +27,7 @@ parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str,
                     default='../Data/Mydataset/training',
                     help="dataset path")
-parser.add_argument('--cpu', action="store_true", default=False)
+parser.add_argument('--cpu', action="store_true", default=True)
 
 
 def main():
