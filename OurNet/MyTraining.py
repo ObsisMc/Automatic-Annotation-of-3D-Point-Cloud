@@ -50,7 +50,7 @@ def main():
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=opt.batchSize,
-        shuffle=True,
+        shuffle=False,
         num_workers=int(opt.workers))
 
     valid_dataloader = torch.utils.data.DataLoader(
@@ -73,7 +73,7 @@ def main():
         classifier.load_state_dict(torch.load(opt.model))
 
     optimizer1 = optim.SGD(classifier.parameters(), lr=0.01, momentum=0.9)
-    optimizer2 = optim.SGD(predictor.parameters(), lr=0.01, momentum=0.9)
+    optimizer2 = optim.Adam(predictor.parameters(), lr=0.001, betas=(0.9, 0.999))
     scheduler1 = optim.lr_scheduler.StepLR(optimizer1, step_size=10, gamma=0.5)
     scheduler2 = optim.lr_scheduler.StepLR(optimizer2, step_size=10, gamma=0.5)
     if not opt.cpu:
@@ -100,33 +100,38 @@ def main():
             optimizer2.zero_grad()
             classifier = classifier.train()
             pred1 = classifier(points1, points2)
-            predictor = predictor.train()
-            pred2 = predictor(points1, points2)
+            # print("pred1: ", pred1.item())
+            # predictor = predictor.train()
+            # pred2 = predictor(points1, points2)
             target_cls = target[4].unsqueeze(0).unsqueeze(0)
+            # print("target_cls: ", target_cls)
             loss1 = F.binary_cross_entropy_with_logits(pred1, target_cls).to(torch.float32)
-            loss2 = F.smooth_l1_loss(pred2, target[:4].unsqueeze(0).to(torch.float32)) * 30
+            # print(loss1.item())
+            # loss2 = F.smooth_l1_loss(pred2, target[:4].unsqueeze(0).to(torch.float32)) * 30
             # if the actual value of target[4] is 0, then the loss2 is 0
-            loss2 = loss2 * (target[4].to(torch.long) != 0).float()
-            loss = loss1 + loss2
+            # loss2 = loss2 * (target[4].to(torch.long) != 0).float()
+            loss = loss1  # + loss2
             if target[4].to(torch.long) != 0:
-                loss1.backward()
-                # loss2.backward()
+                loss1.backward(retain_graph=True)
+                # loss2.backward(retain_graph=True)
+                optimizer1.step()
+                # optimizer2.step()
             else:
-                loss1.backward()
+                loss1.backward(retain_graph=True)
+                optimizer1.step()
             total_loss1_1 += loss1.item()
-            total_loss1_2 += loss2.item()
+            # total_loss1_2 += loss2.item()
             total_loss1 += loss.item()
-            optimizer1.step()
-            optimizer2.step()
         total_loss1_1 /= len(train_dataset)
         total_loss1_2 /= len(train_dataset)
         total_loss1 /= len(train_dataset)
         print('train: epoch %d, loss1: %f, loss2: %f, average loss: %f' % (
         epoch, total_loss1_1, total_loss1_2, total_loss1))
         scheduler1.step()
-        scheduler2.step()
+        # scheduler2.step()
         # print('[%d: %d/%d] train loss1: %f  loss2: %f  total loss: %f' % (
         #     epoch, i, len(train_dataset), loss1.item(), loss2.item(), loss.item()))
+        true_num = 0
         for j, data in enumerate(valid_dataloader, 0):
             points, target = data
             points1 = points[0].transpose(2, 1)
@@ -142,6 +147,10 @@ def main():
             pred1 = classifier(points1, points2)
             predictor = predictor.train()
             pred2 = predictor(points1, points2)
+            if pred1.item() > 0.5 and target[4].to(torch.long) == 1:
+                true_num += 1
+            elif pred1.item() < 0.5 and target[4].to(torch.long) == 0:
+                true_num += 1
             target_cls = target[4].unsqueeze(0).unsqueeze(0)
             loss1 = F.binary_cross_entropy_with_logits(pred1, target_cls).to(torch.float32)
             loss2 = F.smooth_l1_loss(pred2, target[:4].unsqueeze(0).to(torch.float32)) * 30
@@ -149,8 +158,9 @@ def main():
             loss2 = loss2 * (target[4].to(torch.long) != 0).float()
             loss = loss1 + loss2
             total_loss2 += loss.item()
+        accu = true_num / len(valid_dataset)
         total_loss2 /= len(valid_dataset)
-        print(blue('test: epoch %d, average loss: %f' % (epoch, total_loss2)))
+        print(blue('test: epoch %d, average loss: %f, accuracy: %f' % (epoch, total_loss2, accu)))
         # with open(opt.outf + '/log.txt', 'a') as f:
         #     f.write('epoch: %d, loss: %f\n' % (epoch, total_loss2))
         if min_loss > total_loss1:

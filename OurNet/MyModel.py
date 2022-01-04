@@ -93,7 +93,7 @@ class PointNetCls(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.dropout(self.fc2(x)))
         out1 = F.relu(self.fc3(x))
-        out1 = F.sigmoid(out1)
+        out1 = out1
         # out2 = self.fc5(x)
         # out2 = self.fc6(out2)
         return out1
