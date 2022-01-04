@@ -38,6 +38,7 @@ def createTrainingSet(sceneid=0, id="Van_0"):
                 #     error数据可能里面没有点所以没有生成点云文件
                 padding = np.array([[0, 0, 0]])
                 np.save(points_dir + errorname, padding)
+                print(np.load(points_dir + errorname))
 
             shutil.copy(gt_dir + gtname, points_dir + gtname)
 
