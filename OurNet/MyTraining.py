@@ -27,7 +27,7 @@ parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str,
                     default='../Data/Mydataset/training',
                     help="dataset path")
-parser.add_argument('--cpu', action="store_true", default=True)
+parser.add_argument('--cpu', action="store_true", default=False)
 
 
 def main():
@@ -71,14 +71,15 @@ def main():
     if opt.model != '':
         classifier.load_state_dict(torch.load(opt.model))
 
-    optimizer = optim.Adam(classifier.parameters(), lr=0.001, betas=(0.9, 0.999))
+    optimizer = optim.Adam(classifier.parameters(), lr=0.0001, betas=(0.9, 0.999))
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
     if not opt.cpu:
         classifier.cuda()
 
-    num_batch = len(dataset) / opt.batchSize
+    num_batch = len(train_dataset) / opt.batchSize
 
     for epoch in range(opt.nepoch):
+        total_loss = 0
         for i, data in enumerate(train_dataloader, 0):
             points, target = data
             points1 = points[0].transpose(2, 1)
@@ -93,40 +94,39 @@ def main():
             pred1, pred2 = classifier(points1, points2)
             target_cls = target[4].to(torch.long).unsqueeze(0)
             loss1 = F.cross_entropy(pred1, target_cls).to(torch.float32)
-            loss2 = F.mse_loss(pred2, target[:4].unsqueeze(0).to(torch.float32))
+            loss2 = F.mse_loss(pred2, target[:4].unsqueeze(0).to(torch.float32)) * 20
             # if the actual value of target[4] is 0, then the loss2 is 0
             loss2 = loss2 * (target[4] != 0).float()
             loss = loss1 + loss2
             loss.backward()
             optimizer.step()
-            scheduler.step()
-            print('[%d: %d/%d] train loss1: %f  loss2: %f  total loss: %f' % (
-                epoch, i, num_batch, loss1.item(), loss2.item(), loss.item()))
-            if i % 10 == 0:
-                j, data = next(enumerate(valid_dataloader, 0))
-                points, target = data
-                points1 = points[0].transpose(2, 1)
-                points2 = points[1].transpose(2, 1)
-                target = torch.tensor(target, dtype=torch.float32)
-                points1 = points1.type(torch.FloatTensor)
-                points2 = points2.type(torch.FloatTensor)
-                if not opt.cpu:
-                    points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
-                optimizer.zero_grad()
-                classifier = classifier.train()
-                pred1, pred2 = classifier(points1, points2)
-                target_cls = target[4].to(torch.long).unsqueeze(0)
-                loss1 = F.cross_entropy(pred1, target_cls).to(torch.float32)
-                loss2 = F.mse_loss(pred2, target[:4].unsqueeze(0).to(torch.float32))
-                loss2 = loss2 * (target[4] != 0).float()
-                loss = loss1 + loss2
-                with open(opt.outf + '/log.txt', 'a') as f:
-                    f.write('[%d: %d/%d] loss1: %f  loss2: %f  total loss: %f\n' % (
-                        epoch, i, num_batch, loss1.item(), loss2.item(), loss.item()))
-                print('[%d: %d/%d] %s loss: %f' % (
-                    epoch, i, num_batch, blue('test'), loss.item()))
+        scheduler.step()
+        # print('[%d: %d/%d] train loss1: %f  loss2: %f  total loss: %f' % (
+        #     epoch, i, len(train_dataset), loss1.item(), loss2.item(), loss.item()))
+        for j, data in enumerate(valid_dataloader, 0):
+            points, target = data
+            points1 = points[0].transpose(2, 1)
+            points2 = points[1].transpose(2, 1)
+            target = torch.tensor(target, dtype=torch.float32)
+            points1 = points1.type(torch.FloatTensor)
+            points2 = points2.type(torch.FloatTensor)
+            if not opt.cpu:
+                points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
+            optimizer.zero_grad()
+            classifier = classifier.train()
+            pred1, pred2 = classifier(points1, points2)
+            target_cls = target[4].to(torch.long).unsqueeze(0)
+            loss1 = F.cross_entropy(pred1, target_cls).to(torch.float32)
+            loss2 = F.mse_loss(pred2, target[:4].unsqueeze(0).to(torch.float32))
+            loss2 = loss2 * (target[4] != 0).float() * 20
+            loss = loss1 + loss2
+            total_loss += loss.item()
+        total_loss /= len(valid_dataset)
+        print('epoch %d, average loss: %f' % (epoch, total_loss))
+        with open(opt.outf + '/log.txt', 'a') as f:
+            f.write('epoch: %d, loss: %f\n' % (epoch, total_loss))
 
-        torch.save(classifier.state_dict(), '%s/model_%d.pth' % (opt.outf, epoch))
+        torch.save(classifier.state_dict(), '%s/model_%d_%f.pth' % (opt.outf, epoch, total_loss))
 
     # total_correct = 0
     # total_testset = 0
