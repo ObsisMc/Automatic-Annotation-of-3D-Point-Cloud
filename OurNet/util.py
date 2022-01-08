@@ -3,7 +3,7 @@ import os
 import shutil
 
 
-def createTrainingSet(sceneid=0, id="Van_0"):
+def createTrainingSet(sceneid=0, maxgap=1, id="Van_0"):
     error_dir = "../Data/Mydataset/{:04}/error/{}/".format(sceneid, id)
     gt_dir = "../Data/Mydataset/{:04}/groundtruth/{}/".format(sceneid, id)
     label_dir = "../Data/Mydataset/{:04}/label/{}.txt".format(sceneid, id)
@@ -20,31 +20,34 @@ def createTrainingSet(sceneid=0, id="Van_0"):
         labels = f.readlines()
         setlen = 1
 
-        for i in range(1, len(labels)):
-            label = labels[i].rstrip("\n")
-            frame = int(label.split(" ")[0])
-            with open(outlabel + "{:04}.txt".format(setlen), "w") as lb:
-                lb.write(label)
+        # 只适用于连续帧有标签
+        for gap in range(1, maxgap + 1):
+            for i in range(0, len(labels) - gap):
+                idx = gap + i
+                label = labels[idx].rstrip("\n")
+                framei = int(label.split(" ")[0])
+                with open(outlabel + "{:04}.txt".format(setlen), "w") as lb:
+                    lb.write(label)
 
-            points_dir = outvelodyne + "{:04}/".format(setlen)
-            if not os.path.exists(points_dir):
-                os.makedirs(points_dir)
+                points_dir = outvelodyne + "{:04}/".format(setlen)
+                if not os.path.exists(points_dir):
+                    os.makedirs(points_dir)
 
-            errorname = "point{}.npy".format(frame)
-            gtname = "point{}.npy".format(frame - 1)
-            try:
-                shutil.copy(error_dir + errorname, points_dir + errorname)
-            except:
-                #     error数据可能里面没有点所以没有生成点云文件
-                padding = np.array([[0, 0, 0]])
-                np.save(points_dir + errorname, padding)
-                print(np.load(points_dir + errorname))
+                errorname = "point{}.npy".format(framei)
+                gtname = "point{}.npy".format(framei - gap)
+                try:
+                    shutil.copy(error_dir + errorname, points_dir + errorname)
+                except:
+                    # error数据可能里面没有点所以没有生成点云文件
+                    padding = np.array([[0, 0, 0]])
+                    np.save(points_dir + errorname, padding)
+                    print(np.load(points_dir + errorname))
 
-            shutil.copy(gt_dir + gtname, points_dir + gtname)
+                shutil.copy(gt_dir + gtname, points_dir + gtname)
 
-            # TODO 降采样，填充点
+                # TODO 降采样，填充点
 
-            setlen += 1
+                setlen += 1
 
 
 def adjustPointNum(points, n=2048):
@@ -66,6 +69,6 @@ def checkSamePoint(p1_path, p2_path):
 
 
 if __name__ == "__main__":
-    createTrainingSet()
-    # print(checkSamePoint("../Data/Mydataset/training/velodyne/0011/point10.npy",
-    #                      "../Data/Mydataset/0000/groundtruth/Van_0/point10.npy"))
+    createTrainingSet(maxgap=20)
+    # print(checkSamePoint("../Data/Mydataset/training/velodyne/0156/point2.npy",
+    #                      "../Data/Mydataset/0000/groundtruth/Van_0/point2.npy"))
