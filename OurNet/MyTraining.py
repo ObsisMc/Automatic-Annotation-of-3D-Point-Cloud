@@ -163,10 +163,10 @@ def main():
         print(blue('test: epoch %d, average loss: %f, accuracy: %f' % (epoch, total_loss2, accu)))
         # with open(opt.outf + '/log.txt', 'a') as f:
         #     f.write('epoch: %d, loss: %f\n' % (epoch, total_loss2))
-        if min_loss > total_loss1:
-            min_loss = total_loss1
+        if min_loss > total_loss2:
+            min_loss = total_loss2
             if epoch >= 10:
-                torch.save(classifier.state_dict(), '%s/model_%d_%f.pth' % (opt.outf, epoch, total_loss1))
+                torch.save(classifier.state_dict(), '%s/model_%d_%f.pth' % (opt.outf, epoch, total_loss2))
 
     # total_correct = 0
     # total_testset = 0
