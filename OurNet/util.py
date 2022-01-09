@@ -36,9 +36,10 @@ def createTrainingSet(sceneid=0, maxgap=1, padding=500, id="Van_0"):
     if not os.path.exists(outvelodyne):
         os.makedirs(outvelodyne)
 
+    setlen = 1
     with open(label_dir, "r") as f:
         labels = f.readlines()
-        setlen = 1
+
 
         # 只适用于连续帧有标签
         for gap in range(1, maxgap + 1):

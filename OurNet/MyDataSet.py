@@ -35,16 +35,20 @@ class MyDataSet(Dataset):
 
 if __name__ == "__main__":
     dataset = MyDataSet()
-    # for i in range(len(dataset)):
-    #     input, label = dataset.__getitem__(i)
-    #     try:
-    #         print(label)
-    #     except:
-    #         print("wrong in {}!!!!!!!".format(i))
+    for i in range(len(dataset)):
+        input, label = dataset.__getitem__(i)
+        try:
+            if label[-1] != 0 and label[-1] != 1:
+                print("wrong label value")
+            if len(label) == 0:
+                print("empty label")
+            # print(label, i)
+        except:
+            print("wrong in {}!!!!!!!".format(i))
     # 23错了
-    data, label = dataset.__getitem__(46)
-    print(data)
-    print(label)
+    # data, label = dataset.__getitem__(23)
+    # print(data)
+    # print(label)
     # for i in range(100):
     #     input, label = dataset.__getitem__(i)
     #     print(label)
