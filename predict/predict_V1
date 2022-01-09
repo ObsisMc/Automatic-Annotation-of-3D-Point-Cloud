@@ -1,0 +1,83 @@
+import os
+
+path = '../my_divide_car'
+files = os.listdir(path)
+
+def calc_next_s(alpha, x):
+    s = [0 for i in range(len(x))]
+    # s[0] = np.sum(x[0:3]) / float(3)
+    s[0] = x[0]
+    for i in range(1, len(s)):
+        s[i] = alpha * x[i] + (1 - alpha) * s[i - 1]
+    return s
+
+
+def time_predict(x):
+    alpha = 0.8
+    s1 = calc_next_s(alpha, x)
+    s2 = calc_next_s(alpha, s1)
+    s3 = calc_next_s(alpha, s2)
+    a3 = [(3 * s1[i] - 3 * s2[i] + s3[i]) for i in range(len(s3))]
+    b3 = [((alpha / (2 * (1 - alpha) ** 2)) * (
+            (6 - 5 * alpha) * s1[i] - 2 * (5 - 4 * alpha) * s2[i] + (4 - 3 * alpha) * s3[i])) for i in
+          range(len(s3))]
+    c3 = [(alpha ** 2 / (2 * (1 - alpha) ** 2) * (s1[i] - 2 * s2[i] + s3[i])) for i in range(len(s3))]
+    pred = a3[-1] + b3[-1] * 1 + c3[-1] * (1 ** 2)
+    return pred
+
+def bb_overlab(x, y, z, r, w, l):
+    for file in files:
+        f = open(path + "/" + file)
+        iter_f = iter(f)
+        for line in iter_f:
+            line_split = line.split()
+            x1 = float(line_split[13])
+            y1 = float(line_split[14])
+            z1 = float(line_split[15])
+            r1 = float(line_split[16])
+            w1 = float(line_split[11])
+            l1 = float(line_split[12])
+            if abs(x - x1) > 0.5 or abs(y - y1) > 0.5 or abs(z - z1) > 0.5:
+                break
+            if abs(r - r1) > 1:
+                break
+            if abs(w * l - w1 * l1) > 2:
+                break
+            return file
+    return -1
+
+if __name__ == '__main__':
+    for file in files:
+        x = []
+        y = []
+        z = []
+        w, h, l = 0, 0, 0
+        rotate = []
+        f = open(path + "/" + file)
+        iter_f = iter(f)
+        for line in iter_f:
+            line_split = line.split()
+            x.append(float(line_split[13]))
+            y.append(float(line_split[14]))
+            z.append(float(line_split[15]))
+            rotate.append(float(line_split[16]))
+            h = float(line_split[10])
+            w = float(line_split[11])
+            l = float(line_split[12])
+        pred_x = time_predict(x)
+        pred_y = time_predict(y)
+        pred_z = time_predict(z)
+        pred_rotate = time_predict(rotate)
+        s = bb_overlab(pred_x, pred_y, pred_z, pred_rotate, w, l)
+        if s == -1:
+            continue
+        print(file, s)
+        f = open(path + "/" + file, 'a')
+        f1 = open(path + "/" + s)
+        iter_f = iter(f1)
+        for line in iter_f:
+            f.write(line)
+        f.close()
+        f1.close()
+        files.remove(s)
+        os.remove(path + "/" + s)
