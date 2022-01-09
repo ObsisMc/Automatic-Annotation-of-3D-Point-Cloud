@@ -9,7 +9,7 @@ def main():
     # extractPoint(True, sceneid='0000', dilate=1.5, generror=True,
     #              label=prefix + "kitti/training/tracking/label_02_training/")
     # VTra(True, sceneid='0000', category='Van', frame=0, pid=0, subcate=0)
-    Vtraining("../Data/Mydataset/0000/groundtruth/Van_0/bbox0.npy", idx=1, gt=0)
+    Vtraining("../Data/Mydataset/0000/groundtruth/Van_0/bbox0.npy", idx=2, gt=0)
 
 
 if __name__ == "__main__":
