@@ -38,7 +38,10 @@ if __name__ == "__main__":
     for i in range(len(dataset)):
         input, label = dataset.__getitem__(i)
         try:
-            print(label[4])
+            if label[-1] != 0 and label[-1] != 1:
+                print("wrong label value")
+            if len(label) == 0:
+                print("empty label")
         except:
             print("wrong in {}!!!!!!!".format(i))
     # for i in range(100):
