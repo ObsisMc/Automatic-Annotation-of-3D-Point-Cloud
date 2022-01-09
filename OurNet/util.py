@@ -3,7 +3,26 @@ import os
 import shutil
 
 
-def createTrainingSet(sceneid=0, maxgap=1, id="Van_0"):
+def normPointNum(path, padding):
+    try:
+        points = np.load(path)
+        num = points.shape[0]
+        if num >= padding:
+            points = points[np.random.choice(len(points), size=padding, replace=False)]
+        else:
+            points = np.r_[
+                points,
+                points[np.random.choice(a=points, size=-num + padding, replace=True)]
+            ]
+    except:
+        # error数据可能里面没有点所以没有生成点云文件
+        points = np.array([[0, 0, 0] for _ in range(padding)])
+
+    # print(points.shape)
+    return points
+
+
+def createTrainingSet(sceneid=0, maxgap=1, padding=500, id="Van_0"):
     error_dir = "../Data/Mydataset/{:04}/error/{}/".format(sceneid, id)
     gt_dir = "../Data/Mydataset/{:04}/groundtruth/{}/".format(sceneid, id)
     label_dir = "../Data/Mydataset/{:04}/label/{}.txt".format(sceneid, id)
@@ -35,17 +54,13 @@ def createTrainingSet(sceneid=0, maxgap=1, id="Van_0"):
 
                 errorname = "point{}.npy".format(framei)
                 gtname = "point{}.npy".format(framei - gap)
-                try:
-                    shutil.copy(error_dir + errorname, points_dir + errorname)
-                except:
-                    # error数据可能里面没有点所以没有生成点云文件
-                    padding = np.array([[0, 0, 0]])
-                    np.save(points_dir + errorname, padding)
-                    print(np.load(points_dir + errorname))
 
-                shutil.copy(gt_dir + gtname, points_dir + gtname)
+                # 处理点数量
+                errorpoints = normPointNum(error_dir + errorname, padding)
+                gtpoints = normPointNum(gt_dir + gtname, padding)
 
-                # TODO 降采样，填充点
+                np.save(points_dir + errorname, errorpoints)
+                np.save(points_dir + gtname, gtpoints)
 
                 setlen += 1
 
@@ -69,6 +84,6 @@ def checkSamePoint(p1_path, p2_path):
 
 
 if __name__ == "__main__":
-    createTrainingSet(maxgap=20)
+    createTrainingSet(maxgap=20, padding=1024)
     # print(checkSamePoint("../Data/Mydataset/training/velodyne/0156/point2.npy",
     #                      "../Data/Mydataset/0000/groundtruth/Van_0/point2.npy"))
