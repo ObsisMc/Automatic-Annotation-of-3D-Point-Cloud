@@ -12,11 +12,12 @@ def normPointNum(path, padding):
         else:
             points = np.r_[
                 points,
-                points[np.random.choice(a=points, size=-num + padding, replace=True)]
+                points[np.random.choice(len(points), size=-num + padding, replace=True)]
             ]
     except:
         # error数据可能里面没有点所以没有生成点云文件
         points = np.array([[0, 0, 0] for _ in range(padding)])
+        print(path, "has no points.")
 
     # print(points.shape)
     return points
@@ -65,8 +66,19 @@ def createTrainingSet(sceneid=0, maxgap=1, padding=500, id="Van_0"):
                 setlen += 1
 
 
-def adjustPointNum(points, n=2048):
-    pass
+def checkCode(padding=800):
+    path = "../Data/Mydataset/training/velodyne/"
+    datap = os.listdir(path)
+
+    nonpoint = np.array([[0, 0, 0] for _ in range(padding)])
+    errorp = set()
+    for i in range(len(datap)):
+        points = path + datap[i]
+        pts = os.listdir(points)
+        for j in range(2):
+            if np.all(nonpoint == np.load(os.path.join(points, pts[j]))):
+                errorp.add(os.path.join(points, pts[j]))
+    print(errorp)
 
 
 def checkSamePoint(p1_path, p2_path):
@@ -85,5 +97,6 @@ def checkSamePoint(p1_path, p2_path):
 
 if __name__ == "__main__":
     createTrainingSet(maxgap=20, padding=800)
+    # checkCode(800)
     # print(checkSamePoint("../Data/Mydataset/training/velodyne/0156/point2.npy",
     #                      "../Data/Mydataset/0000/groundtruth/Van_0/point2.npy"))
