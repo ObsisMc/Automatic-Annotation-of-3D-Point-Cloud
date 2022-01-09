@@ -18,7 +18,7 @@ class STN3d(nn.Module):
         self.fc1 = nn.Linear(1024, 512)
         self.fc2 = nn.Linear(512, 256)
         self.fc3 = nn.Linear(256, 9)
-        self.relu = nn.ReLU()
+        self.relu = nn.LeakyReLU()
 
         # self.bn1 = nn.BatchNorm1d(64)
         # self.bn2 = nn.BatchNorm1d(128)
@@ -28,14 +28,14 @@ class STN3d(nn.Module):
 
     def forward(self, x):
         batchsize = x.size()[0]
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
-        x = F.relu(self.conv3(x))
+        x = F.leaky_relu(self.conv1(x))
+        x = F.leaky_relu(self.conv2(x))
+        x = F.leaky_relu(self.conv3(x))
         x = torch.max(x, 2, keepdim=True)[0]
         x = x.view(-1, 1024)
 
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
+        x = F.leaky_relu(self.fc1(x))
+        x = F.leaky_relu(self.fc2(x))
         x = self.fc3(x)
 
         iden = Variable(torch.from_numpy(np.array([1, 0, 0, 0, 1, 0, 0, 0, 1]).astype(np.float32))).view(1, 9).repeat(
@@ -63,9 +63,9 @@ class PointNetfeat(nn.Module):
         x = x.transpose(2, 1)
         x = torch.bmm(x, trans)
         x = x.transpose(2, 1)
-        x = F.relu(self.conv1(x))
+        x = F.leaky_relu(self.conv1(x))
 
-        x = F.relu(self.conv2(x))
+        x = F.leaky_relu(self.conv2(x))
         x = self.conv3(x)
         x = torch.max(x, 2, keepdim=True)[0]
         x = x.view(-1, 1024)
@@ -84,16 +84,15 @@ class PointNetCls(nn.Module):
         self.dropout = nn.Dropout(p=0.3)
         # self.bn1 = nn.BatchNorm1d(512)
         # self.bn2 = nn.BatchNorm1d(256)
-        self.relu = nn.ReLU()
+        self.relu = nn.LeakyReLU()
 
     def forward(self, x1, x2):
         x1, trans1, trans_feat1 = self.feat(x1)
         x2, trans2, trans_feat2 = self.feat(x2)
         x = torch.cat((x1, x2), 1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.dropout(self.fc2(x)))
-        out1 = F.relu(self.fc3(x))
-        out1 = out1
+        x = F.leaky_relu(self.fc1(x))
+        x = F.leaky_relu(self.dropout(self.fc2(x)))
+        out1 = self.fc3(x)
         # out2 = self.fc5(x)
         # out2 = self.fc6(out2)
         return out1
@@ -112,14 +111,14 @@ class PointNetPred(nn.Module):
         self.dropout = nn.Dropout(p=0.3)
         # self.bn1 = nn.BatchNorm1d(512)
         # self.bn2 = nn.BatchNorm1d(256)
-        self.relu = nn.ReLU()
+        self.relu = nn.LeakyReLU()
 
     def forward(self, x1, x2):
         x1, trans1, trans_feat1 = self.feat(x1)
         x2, trans2, trans_feat2 = self.feat(x2)
         x = torch.cat((x1, x2), 1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.dropout(self.fc2(x)))
+        x = F.leaky_relu(self.fc1(x))
+        x = F.leaky_relu(self.dropout(self.fc2(x)))
         # out1 = F.relu(self.fc3(x))
         # out1 = F.sigmoid(self.fc4(out1))
         out2 = self.fc3(x)
