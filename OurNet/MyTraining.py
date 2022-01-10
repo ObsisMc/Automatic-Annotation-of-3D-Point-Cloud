@@ -10,6 +10,7 @@ import torch.utils.data
 
 from MyDataSet import MyDataSet
 from MyModel import PointNetCls, PointNetPred
+from Visualize import Visualizer
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 parser = argparse.ArgumentParser()
@@ -32,6 +33,7 @@ parser.add_argument('--cpu', action="store_true", default=False)
 
 def main():
     opt = parser.parse_args()
+    visualizer = Visualizer(opt.batchSize)
     print(opt)
 
     blue = lambda x: '\033[94m' + x + '\033[0m'
@@ -121,9 +123,11 @@ def main():
             total_loss1_1 += loss1.item()
             total_loss1_2 += loss2.item()
             total_loss1 += loss.item()
-            # if i % 100 == 0:
-            #     print('[%d: %d/%d] train loss1: %f  loss2: %f  total loss: %f' % (
-            #         epoch, i, len(train_dataset), loss1.item(), loss2.item(), loss.item()))
+            if i % 100 == 0:
+                visualizer.log(["cls loss (real time)"], [loss1])
+                if target[4].to(torch.long) != 0:
+                    visualizer.log(["adjustment loss (real time)"], [loss2])
+                visualizer.log(["total loss (real time)"], [loss])
         total_loss1_1 /= len(train_dataset)
         total_loss1_2 /= len(train_dataset)
         total_loss1 /= len(train_dataset)
@@ -163,6 +167,10 @@ def main():
         print(blue('test: epoch %d, average loss: %f, accuracy: %f' % (epoch, total_loss2, accu)))
         # with open(opt.outf + '/log.txt', 'a') as f:
         #     f.write('epoch: %d, loss: %f\n' % (epoch, total_loss2))
+
+        visualizer.log(["cls accuracy"], [accu])
+        visualizer.log(["adjustment average loss"], [total_loss2])
+
         if min_loss > total_loss2:
             min_loss = total_loss2
             if epoch >= 10:
