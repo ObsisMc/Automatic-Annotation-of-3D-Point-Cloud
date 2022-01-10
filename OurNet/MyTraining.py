@@ -123,6 +123,11 @@ def main():
             total_loss1_1 += loss1.item()
             total_loss1_2 += loss2.item()
             total_loss1 += loss.item()
+
+            vpred = pred2.detach().numpy().tolist()[0] + pred1.detach().numpy().tolist()[0]
+            vtarget = target.detach().numpy().tolist()
+            vpoints1 = points1.detach().numpy()[0].T  # 第一维是batch
+            visualizer.tablelog(vtarget, vpred, vpoints1)
             if i % 100 == 0:
                 visualizer.log(["cls loss (real time)"], [loss1])
                 if target[4].to(torch.long) != 0:
@@ -136,6 +141,7 @@ def main():
         scheduler1.step()
         scheduler2.step()
         true_num = 0
+        visualizer.finishtable("table{}".format(epoch))
         for j, data in enumerate(valid_dataloader, 0):
             points, target = data
             points1 = points[0].transpose(2, 1)
