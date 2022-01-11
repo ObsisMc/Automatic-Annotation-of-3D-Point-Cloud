@@ -3,7 +3,28 @@ import os
 import shutil
 
 
-def createTrainingSet(sceneid=0, id="Van_0"):
+def normPointNum(path, padding, ifpad=True):
+    try:
+        points = np.load(path)
+        if ifpad:
+            num = points.shape[0]
+            if num >= padding:
+                points = points[np.random.choice(len(points), size=padding, replace=False)]
+            else:
+                points = np.r_[
+                    points,
+                    points[np.random.choice(len(points), size=-num + padding, replace=True)]
+                ]
+    except:
+        # error数据可能里面没有点所以没有生成点云文件
+        points = np.array([[0, 0, 0] for _ in range(padding if ifpad else 1)])
+        print(path, "has no points.")
+
+    # print(points.shape)
+    return points
+
+
+def createTrainingSet(sceneid=0, maxgap=1, padding=500, id="Van_0", ifpad=True):
     error_dir = "../Data/Mydataset/{:04}/error/{}/".format(sceneid, id)
     gt_dir = "../Data/Mydataset/{:04}/groundtruth/{}/".format(sceneid, id)
     label_dir = "../Data/Mydataset/{:04}/label/{}.txt".format(sceneid, id)
@@ -16,38 +37,49 @@ def createTrainingSet(sceneid=0, id="Van_0"):
     if not os.path.exists(outvelodyne):
         os.makedirs(outvelodyne)
 
+    setlen = 1
     with open(label_dir, "r") as f:
         labels = f.readlines()
-        setlen = 1
 
-        for i in range(1, len(labels)):
-            label = labels[i].rstrip("\n")
-            frame = int(label.split(" ")[0])
-            with open(outlabel + "{:04}.txt".format(setlen), "w") as lb:
-                lb.write(label)
+        # 只适用于连续帧有标签
+        for gap in range(1, maxgap + 1):
+            for i in range(0, len(labels) - gap):
+                idx = gap + i
+                label = labels[idx].rstrip("\n")
+                framei = int(label.split(" ")[0])
+                with open(outlabel + "{:04}.txt".format(setlen), "w") as lb:
+                    lb.write(label)
 
-            points_dir = outvelodyne + "{:04}/".format(setlen)
-            if not os.path.exists(points_dir):
-                os.makedirs(points_dir)
+                points_dir = outvelodyne + "{:04}/".format(setlen)
+                if not os.path.exists(points_dir):
+                    os.makedirs(points_dir)
 
-            errorname = "point{}.npy".format(frame)
-            gtname = "point{}.npy".format(frame - 1)
-            try:
-                shutil.copy(error_dir + errorname, points_dir + errorname)
-            except:
-                # error数据可能里面没有点所以没有生成点云文件
-                padding = np.array([0, 0, 0])
-                np.save(error_dir + errorname, points_dir + errorname,padding)
+                errorname = "point{}.npy".format(framei)
+                gtname = "point{}.npy".format(framei - gap)
 
-            shutil.copy(gt_dir + gtname, points_dir + gtname)
+                # 处理点数量
+                errorpoints = normPointNum(error_dir + errorname, padding, ifpad)
+                gtpoints = normPointNum(gt_dir + gtname, padding, ifpad)
 
-            # TODO 降采样，填充点
+                np.save(points_dir + errorname, errorpoints)
+                np.save(points_dir + gtname, gtpoints)
 
-            setlen += 1
+                setlen += 1
 
 
-def adjustPointNum(points, n=2048):
-    pass
+def checkCode(padding=800):
+    path = "../Data/Mydataset/training/velodyne/"
+    datap = os.listdir(path)
+
+    nonpoint = np.array([[0, 0, 0] for _ in range(padding)])
+    errorp = set()
+    for i in range(len(datap)):
+        points = path + datap[i]
+        pts = os.listdir(points)
+        for j in range(2):
+            if np.all(nonpoint == np.load(os.path.join(points, pts[j]))):
+                errorp.add(os.path.join(points, pts[j]))
+    print(errorp)
 
 
 def checkSamePoint(p1_path, p2_path):
@@ -65,6 +97,7 @@ def checkSamePoint(p1_path, p2_path):
 
 
 if __name__ == "__main__":
-    # createTrainingSet()
-    print(checkSamePoint("../Data/Mydataset/training/velodyne/0011/point10.npy",
-                         "../Data/Mydataset/0000/groundtruth/Van_0/point10.npy"))
+    createTrainingSet(maxgap=20, padding=800, ifpad=False)
+    # checkCode(800)
+    # print(checkSamePoint("../Data/Mydataset/training/velodyne/0305/point151.npy",
+    #                      "../Data/Mydataset/0000/groundtruth/Van_0/point151.npy"))
