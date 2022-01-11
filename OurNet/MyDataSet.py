@@ -38,24 +38,27 @@ class MyDataSet(Dataset):
 cprp = "../Data/Mydataset/0000/groundtruth/Van_0/point{}.npy"
 if __name__ == "__main__":
     dataset = MyDataSet()
+    input, label,frame = dataset.__getitem__(37)
+    print(label)
+    print(frame)
     # 只能测试gap为1的数据
-    for i in range(153):
-        input, label = dataset.__getitem__(i)
-        try:
-            if label[-1] != 0 and label[-1] != 1:
-                print("wrong label value")
-            if len(label) == 0:
-                print("empty label")
-
-            gtpoint = np.load(cprp.format(i % 153))
-            if not np.all(gtpoint == input[0]):
-                info = "unknown error"
-                if np.all(gtpoint == input[1]):
-                    info = "reverse point"
-                print("wrong point {} ({})".format(i, info))
-
-        except:
-            print("wrong in {}!!!!!!!".format(i))
+    # for i in range(153):
+    #     input, label = dataset.__getitem__(i)
+    #     try:
+    #         if label[-1] != 0 and label[-1] != 1:
+    #             print("wrong label value")
+    #         if len(label) == 0:
+    #             print("empty label")
+    # 
+    #         gtpoint = np.load(cprp.format(i % 153))
+    #         if not np.all(gtpoint == input[0]):
+    #             info = "unknown error"
+    #             if np.all(gtpoint == input[1]):
+    #                 info = "reverse point"
+    #             print("wrong point {} ({})".format(i, info))
+    # 
+    #     except:
+    #         print("wrong in {}!!!!!!!".format(i))
     # for i in range(100):
     #     input, label = dataset.__getitem__(i)
     #     print(label)
