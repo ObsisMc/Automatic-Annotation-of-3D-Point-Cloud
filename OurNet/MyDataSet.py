@@ -23,7 +23,8 @@ class MyDataSet(Dataset):
             lb = f.readline().rstrip("\n").split(" ")  # 注意转换数据的时候是否去掉了换行符
             label = [float(lb[i]) for i in range(1, len(lb))]
         vp = self.velodynes_path + self.data_velodynes[item]
-        points_name = os.listdir(vp)
+        points_name = os.listdir(vp)  # 注意不要依赖于系统排序！！
+        points_name = sorted(points_name, key=lambda x: int(x.strip("point").rstrip(".npy")), reverse=False)  # 按idx升序
         points1 = np.load(os.path.join(vp, points_name[0]))
         points2 = np.load(os.path.join(vp, points_name[1]))
 
@@ -33,8 +34,10 @@ class MyDataSet(Dataset):
         return self.data_num
 
 
+cprp = "../Data/Mydataset/0000/groundtruth/Van_0/point{}.npy"
 if __name__ == "__main__":
     dataset = MyDataSet()
+    # 只能测试gap为1的数据
     for i in range(len(dataset)):
         input, label = dataset.__getitem__(i)
         try:
@@ -42,6 +45,14 @@ if __name__ == "__main__":
                 print("wrong label value")
             if len(label) == 0:
                 print("empty label")
+
+            gtpoint = np.load(cprp.format(i % 153))
+            if not np.all(gtpoint == input[0]):
+                info = "unknown error"
+                if np.all(gtpoint == input[1]):
+                    info = "reverse point"
+                print("wrong point {} ({})".format(i, info))
+
         except:
             print("wrong in {}!!!!!!!".format(i))
     # for i in range(100):
