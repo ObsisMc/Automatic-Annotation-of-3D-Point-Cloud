@@ -21,7 +21,7 @@ parser.add_argument(
 parser.add_argument(
     '--workers', type=int, help='number of data loading workers', default=4)
 parser.add_argument(
-    '--nepoch', type=int, default=250, help='number of epochs to train for')
+    '--nepoch', type=int, default=60, help='number of epochs to train for')
 parser.add_argument('--outf', type=str, default='../checkpoints',
                     help='output folder')
 parser.add_argument('--model', type=str, default='', help='model path')
@@ -76,8 +76,8 @@ def main():
 
     optimizer1 = optim.Adam(classifier.parameters(), lr=0.001)
     optimizer2 = optim.Adam(predictor.parameters(), lr=0.001)
-    scheduler1 = optim.lr_scheduler.StepLR(optimizer1, step_size=20, gamma=0.5)
-    scheduler2 = optim.lr_scheduler.StepLR(optimizer2, step_size=20, gamma=0.5)
+    scheduler1 = optim.lr_scheduler.StepLR(optimizer1, step_size=10, gamma=0.5)
+    scheduler2 = optim.lr_scheduler.StepLR(optimizer2, step_size=10, gamma=0.5)
     if not opt.cpu:
         classifier.cuda()
         predictor.cuda()
@@ -124,9 +124,9 @@ def main():
             total_loss1_2 += loss2.item()
             total_loss1 += loss.item()
 
-            vpred = pred2.detach().numpy().tolist()[0] + pred1.detach().numpy().tolist()[0]
-            vtarget = target.detach().numpy().tolist()
-            vpoints1 = points1.detach().numpy()[0].T  # 第一维是batch
+            vpred = pred2.cpu().detach().numpy().tolist()[0] + pred1.cpu().detach().numpy().tolist()[0]
+            vtarget = target.cpu().detach().numpy().tolist()
+            vpoints1 = points1.cpu().detach().numpy()[0].T  # 第一维是batch
             visualizer.tablelog(vtarget, vpred, vpoints1)
             if i % 100 == 0:
                 visualizer.log(["cls loss (real time)"], [loss1])
