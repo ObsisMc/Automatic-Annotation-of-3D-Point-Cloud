@@ -124,11 +124,11 @@ def main():
             total_loss1_2 += loss2.item()
             total_loss1 += loss.item()
 
-            vpred = pred2.cpu().detach().numpy().tolist()[0] + pred1.detach().numpy().tolist()[0]
-            vtarget = target.cpu().detach().numpy().tolist()
-            vpoints1 = points1.cpu().detach().numpy()[0].T  # 第一维是batch
-            vpoints2 = points2.cpu().detach().numpy()[0].T  # 第一维是batch
-            visualizer.tablelog(vtarget, vpred, vpoints1,vpoints2)
+            vpred = pred2.detach().numpy().tolist()[0] + pred1.detach().numpy().tolist()[0]
+            vtarget = target.detach().numpy().tolist()
+            vpoints1 = points1.detach().numpy()[0].T  # 第一维是batch
+            vpoints2 = points2.detach().numpy()[0].T  # 第一维是batch
+            visualizer.tablelog(vtarget, vpred, vpoints1, vpoints2, i)
             if i % 100 == 0:
                 visualizer.log(["cls loss (real time)"], [loss1])
                 if target[4].to(torch.long) != 0:
