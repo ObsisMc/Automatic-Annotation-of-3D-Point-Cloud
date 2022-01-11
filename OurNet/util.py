@@ -3,27 +3,28 @@ import os
 import shutil
 
 
-def normPointNum(path, padding):
+def normPointNum(path, padding, ifpad=True):
     try:
         points = np.load(path)
-        num = points.shape[0]
-        if num >= padding:
-            points = points[np.random.choice(len(points), size=padding, replace=False)]
-        else:
-            points = np.r_[
-                points,
-                points[np.random.choice(len(points), size=-num + padding, replace=True)]
-            ]
+        if ifpad:
+            num = points.shape[0]
+            if num >= padding:
+                points = points[np.random.choice(len(points), size=padding, replace=False)]
+            else:
+                points = np.r_[
+                    points,
+                    points[np.random.choice(len(points), size=-num + padding, replace=True)]
+                ]
     except:
         # error数据可能里面没有点所以没有生成点云文件
-        points = np.array([[0, 0, 0] for _ in range(padding)])
+        points = np.array([[0, 0, 0] for _ in range(padding if ifpad else 1)])
         print(path, "has no points.")
 
     # print(points.shape)
     return points
 
 
-def createTrainingSet(sceneid=0, maxgap=1, padding=500, id="Van_0"):
+def createTrainingSet(sceneid=0, maxgap=1, padding=500, id="Van_0", ifpad=True):
     error_dir = "../Data/Mydataset/{:04}/error/{}/".format(sceneid, id)
     gt_dir = "../Data/Mydataset/{:04}/groundtruth/{}/".format(sceneid, id)
     label_dir = "../Data/Mydataset/{:04}/label/{}.txt".format(sceneid, id)
@@ -39,7 +40,6 @@ def createTrainingSet(sceneid=0, maxgap=1, padding=500, id="Van_0"):
     setlen = 1
     with open(label_dir, "r") as f:
         labels = f.readlines()
-
 
         # 只适用于连续帧有标签
         for gap in range(1, maxgap + 1):
@@ -58,8 +58,8 @@ def createTrainingSet(sceneid=0, maxgap=1, padding=500, id="Van_0"):
                 gtname = "point{}.npy".format(framei - gap)
 
                 # 处理点数量
-                errorpoints = normPointNum(error_dir + errorname, padding)
-                gtpoints = normPointNum(gt_dir + gtname, padding)
+                errorpoints = normPointNum(error_dir + errorname, padding, ifpad)
+                gtpoints = normPointNum(gt_dir + gtname, padding, ifpad)
 
                 np.save(points_dir + errorname, errorpoints)
                 np.save(points_dir + gtname, gtpoints)
@@ -97,7 +97,7 @@ def checkSamePoint(p1_path, p2_path):
 
 
 if __name__ == "__main__":
-    createTrainingSet(maxgap=20, padding=800)
+    createTrainingSet(maxgap=20, padding=800, ifpad=False)
     # checkCode(800)
     # print(checkSamePoint("../Data/Mydataset/training/velodyne/0156/point2.npy",
     #                      "../Data/Mydataset/0000/groundtruth/Van_0/point2.npy"))

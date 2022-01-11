@@ -33,6 +33,7 @@ class MyDataSet(Dataset):
         return self.data_num
 
 
+cprp = "../Data/Mydataset/0000/groundtruth/Van_0/point{}.npy"
 if __name__ == "__main__":
     dataset = MyDataSet()
     for i in range(len(dataset)):
@@ -42,13 +43,13 @@ if __name__ == "__main__":
                 print("wrong label value")
             if len(label) == 0:
                 print("empty label")
-            # print(label, i)
+
+            gtpoint = np.load(cprp.format(i % 153))
+            if not np.all(gtpoint == input[0]):
+                print("wrong point {}".format(i))
+
         except:
             print("wrong in {}!!!!!!!".format(i))
-    # 23错了
-    # data, label = dataset.__getitem__(23)
-    # print(data)
-    # print(label)
     # for i in range(100):
     #     input, label = dataset.__getitem__(i)
     #     print(label)
