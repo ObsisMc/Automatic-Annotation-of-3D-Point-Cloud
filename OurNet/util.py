@@ -99,5 +99,5 @@ def checkSamePoint(p1_path, p2_path):
 if __name__ == "__main__":
     createTrainingSet(maxgap=20, padding=800, ifpad=False)
     # checkCode(800)
-    # print(checkSamePoint("../Data/Mydataset/training/velodyne/0010/point9.npy",
-    #                      "../Data/Mydataset/0000/groundtruth/Van_0/point9.npy"))
+    # print(checkSamePoint("../Data/Mydataset/training/velodyne/0305/point151.npy",
+    #                      "../Data/Mydataset/0000/groundtruth/Van_0/point151.npy"))

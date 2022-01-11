@@ -21,6 +21,7 @@ class MyDataSet(Dataset):
         # label格式： dx, dy, dz, d\theta, confidence
         with open(self.labels_path + self.data_labels[item], "r") as f:
             lb = f.readline().rstrip("\n").split(" ")  # 注意转换数据的时候是否去掉了换行符
+            frame = lb[0]
             label = [float(lb[i]) for i in range(1, len(lb))]
         vp = self.velodynes_path + self.data_velodynes[item]
         points_name = os.listdir(vp)  # 注意不要依赖于系统排序！！
@@ -28,7 +29,7 @@ class MyDataSet(Dataset):
         points1 = np.load(os.path.join(vp, points_name[0]))
         points2 = np.load(os.path.join(vp, points_name[1]))
 
-        return [points1, points2], label
+        return [points1, points2], label,frame
 
     def __len__(self):
         return self.data_num
@@ -37,23 +38,27 @@ class MyDataSet(Dataset):
 cprp = "../Data/Mydataset/0000/groundtruth/Van_0/point{}.npy"
 if __name__ == "__main__":
     dataset = MyDataSet()
-    for i in range(len(dataset)):
-        input, label = dataset.__getitem__(i)
-        try:
-            if label[-1] != 0 and label[-1] != 1:
-                print("wrong label value")
-            if len(label) == 0:
-                print("empty label")
-
-            gtpoint = np.load(cprp.format(i % 153))
-            if not np.all(gtpoint == input[0]):
-                info = "unknown error"
-                if np.all(gtpoint == input[1]):
-                    info = "reverse point"
-                print("wrong point {} ({})".format(i, info))
-
-        except:
-            print("wrong in {}!!!!!!!".format(i))
+    input, label,frame = dataset.__getitem__(37)
+    print(label)
+    print(frame)
+    # 只能测试gap为1的数据
+    # for i in range(153):
+    #     input, label = dataset.__getitem__(i)
+    #     try:
+    #         if label[-1] != 0 and label[-1] != 1:
+    #             print("wrong label value")
+    #         if len(label) == 0:
+    #             print("empty label")
+    # 
+    #         gtpoint = np.load(cprp.format(i % 153))
+    #         if not np.all(gtpoint == input[0]):
+    #             info = "unknown error"
+    #             if np.all(gtpoint == input[1]):
+    #                 info = "reverse point"
+    #             print("wrong point {} ({})".format(i, info))
+    # 
+    #     except:
+    #         print("wrong in {}!!!!!!!".format(i))
     # for i in range(100):
     #     input, label = dataset.__getitem__(i)
     #     print(label)
