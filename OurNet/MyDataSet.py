@@ -44,10 +44,13 @@ if __name__ == "__main__":
 
     gap = 3
     ln = 154
+    checkl = []
     for i in range(1, gap + 1):
         offset = ((ln - i + 1) + ln - 1) * (i - 1) // 2
         for j in range(0, ln - gap):
             input, label, frame = dataset.__getitem__(offset + j)
+            if int(frame) == 3:
+                checkl.append(input)
             try:
                 if label[-1] != 0 and label[-1] != 1:
                     print("wrong label value")
@@ -63,6 +66,12 @@ if __name__ == "__main__":
 
             except:
                 print("wrong in {}!!!!!!!".format(i))
+    print(checkl)
+    point = checkl[0][1]
+    for j in range(1, len(checkl)):
+        if not np.all(point == checkl[j][1]):
+            print("different error points for frame {}".format(3))
+
     # for i in range(100):
     #     input, label = dataset.__getitem__(i)
     #     print(label)
