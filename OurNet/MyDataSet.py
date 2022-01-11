@@ -21,6 +21,7 @@ class MyDataSet(Dataset):
         # label格式： dx, dy, dz, d\theta, confidence
         with open(self.labels_path + self.data_labels[item], "r") as f:
             lb = f.readline().rstrip("\n").split(" ")  # 注意转换数据的时候是否去掉了换行符
+            frame = lb[0]
             label = [float(lb[i]) for i in range(1, len(lb))]
         vp = self.velodynes_path + self.data_velodynes[item]
         points_name = os.listdir(vp)  # 注意不要依赖于系统排序！！
@@ -28,7 +29,7 @@ class MyDataSet(Dataset):
         points1 = np.load(os.path.join(vp, points_name[0]))
         points2 = np.load(os.path.join(vp, points_name[1]))
 
-        return [points1, points2], label
+        return [points1, points2], label,frame
 
     def __len__(self):
         return self.data_num
