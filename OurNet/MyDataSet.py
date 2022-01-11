@@ -23,7 +23,8 @@ class MyDataSet(Dataset):
             lb = f.readline().rstrip("\n").split(" ")  # 注意转换数据的时候是否去掉了换行符
             label = [float(lb[i]) for i in range(1, len(lb))]
         vp = self.velodynes_path + self.data_velodynes[item]
-        points_name = os.listdir(vp)
+        points_name = os.listdir(vp)  # 注意不要依赖于系统排序！！
+        points_name = sorted(points_name, key=lambda x: int(x.strip("point").rstrip(".npy")), reverse=False)  # 按idx升序
         points1 = np.load(os.path.join(vp, points_name[0]))
         points2 = np.load(os.path.join(vp, points_name[1]))
 
@@ -46,7 +47,10 @@ if __name__ == "__main__":
 
             gtpoint = np.load(cprp.format(i % 153))
             if not np.all(gtpoint == input[0]):
-                print("wrong point {}".format(i))
+                info = "unknown error"
+                if np.all(gtpoint == input[1]):
+                    info = "reverse point"
+                print("wrong point {} ({})".format(i, info))
 
         except:
             print("wrong in {}!!!!!!!".format(i))
