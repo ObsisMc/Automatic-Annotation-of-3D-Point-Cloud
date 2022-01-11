@@ -58,7 +58,7 @@ def main():
     valid_dataloader = torch.utils.data.DataLoader(
         valid_dataset,
         batch_size=opt.batchSize,
-        shuffle=True,
+        shuffle=False,
         num_workers=int(opt.workers))
 
     print(blue('# of training samples: %d' % len(train_dataset)))
@@ -124,10 +124,10 @@ def main():
             total_loss1_2 += loss2.item()
             total_loss1 += loss.item()
 
-            vpred = pred2.detach().numpy().tolist()[0] + pred1.detach().numpy().tolist()[0]
-            vtarget = target.detach().numpy().tolist()
-            vpoints1 = points1.detach().numpy()[0].T  # 第一维是batch
-            vpoints2 = points2.detach().numpy()[0].T  # 第一维是batch
+            vpred = pred2.cpu().detach().numpy().tolist()[0] + pred1.cpu().detach().numpy().tolist()[0]
+            vtarget = target.cpu().detach().numpy().tolist()
+            vpoints1 = points1.cpu().detach().numpy()[0].T  # 第一维是batch
+            vpoints2 = points2.cpu().detach().numpy()[0].T  # 第一维是batch
             visualizer.tablelog(vtarget, vpred, vpoints1, vpoints2, frame=int(frame[0]))
             if i % 100 == 0:
                 visualizer.log(["cls loss (real time)"], [loss1])
@@ -144,7 +144,7 @@ def main():
         true_num = 0
         visualizer.finishtable("table{}".format(epoch))
         for j, data in enumerate(valid_dataloader, 0):
-            points, target = data
+            points, target, frame = data
             points1 = points[0].transpose(2, 1)
             points2 = points[1].transpose(2, 1)
             target = torch.tensor(target, dtype=torch.float32)
