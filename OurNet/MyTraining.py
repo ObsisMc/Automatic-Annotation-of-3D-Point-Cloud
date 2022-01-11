@@ -128,7 +128,7 @@ def main():
             vtarget = target.detach().numpy().tolist()
             vpoints1 = points1.detach().numpy()[0].T  # 第一维是batch
             vpoints2 = points2.detach().numpy()[0].T  # 第一维是batch
-            visualizer.tablelog(vtarget, vpred, vpoints1,vpoints2)
+            visualizer.tablelog(vtarget, vpred, vpoints1, vpoints2, i)
             if i % 100 == 0:
                 visualizer.log(["cls loss (real time)"], [loss1])
                 if target[4].to(torch.long) != 0:
