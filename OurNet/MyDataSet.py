@@ -38,7 +38,7 @@ cprp = "../Data/Mydataset/0000/groundtruth/Van_0/point{}.npy"
 if __name__ == "__main__":
     dataset = MyDataSet()
     # 只能测试gap为1的数据
-    for i in range(len(dataset)):
+    for i in range(153):
         input, label = dataset.__getitem__(i)
         try:
             if label[-1] != 0 and label[-1] != 1:
