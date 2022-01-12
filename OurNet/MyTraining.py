@@ -100,7 +100,7 @@ def main():
                 points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
             optimizer1.zero_grad()
             optimizer2.zero_grad()
-            classifier = classifier.train()
+            classifier = classifier.train()  # todo: 不用sigmoid吗
             pred1 = classifier(points1, points2)
             # print("pred1: ", pred1.item())
             predictor = predictor.train()
@@ -141,7 +141,7 @@ def main():
             epoch, total_loss1_1, total_loss1_2, total_loss1))
         scheduler1.step()
         scheduler2.step()
-        true_num = 0
+        tp, fp, fn, tn = 0, 0, 0, 0
         visualizer.finishtable("table{}".format(epoch))
         for j, data in enumerate(valid_dataloader, 0):
             points, target = data
@@ -159,9 +159,13 @@ def main():
             predictor = predictor.train()
             pred2 = predictor(points1, points2)
             if pred1.item() > 0.5 and target[4].to(torch.long) == 1:
-                true_num += 1
-            elif pred1.item() < 0.5 and target[4].to(torch.long) == 0:
-                true_num += 1
+                tp += 1
+            if pred1.item() < 0.5 and target[4].to(torch.long) == 0:
+                tn += 1
+            if pred1.item() > 0.5 and target[4].to(torch.long) == 0:
+                fp += 1
+            if pred1.item() < 0.5 and target[4].to(torch.long) == 1:
+                fn += 1
             target_cls = target[4].unsqueeze(0).unsqueeze(0)
             loss1 = F.binary_cross_entropy_with_logits(pred1, target_cls).to(torch.float32)
             loss2 = F.smooth_l1_loss(pred2, target[:4].unsqueeze(0).to(torch.float32)) * 30
@@ -169,14 +173,20 @@ def main():
             loss2 = loss2 * (target[4].to(torch.long) != 0).float()
             loss = loss1 + loss2
             total_loss2 += loss.item()
-        accu = true_num / len(valid_dataset)
+        accu = (tp + tn) / len(valid_dataset)
+        paccu = tp / (tp + fp)
+        naccu = tn / (tn + fn)
+        recall = tp / (tp + fn)
+        specificity = tn / (tn + fp)
         total_loss2 /= len(valid_dataset)
         print(blue('test: epoch %d, average loss: %f, accuracy: %f' % (epoch, total_loss2, accu)))
         # with open(opt.outf + '/log.txt', 'a') as f:
         #     f.write('epoch: %d, loss: %f\n' % (epoch, total_loss2))
 
-        visualizer.log(["cls accuracy"], [accu])
-        visualizer.log(["adjustment average loss"], [total_loss2])
+        visualizer.log(["cls accuracy", "adjustment average loss",
+                        "positive accuracy", "recall",
+                        "negative accuracy", "specificity"],
+                       [accu, total_loss2, paccu, recall, naccu, specificity])
 
         if min_loss > total_loss1:
             min_loss = total_loss1
