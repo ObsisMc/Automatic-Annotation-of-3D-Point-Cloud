@@ -16,7 +16,7 @@ class Visualizer:
         }  # 设置参数，没啥用
         self.tablecol = ["cloud", "error cloud", "x", "y", "z", "theta", "cls", "frame"]
         self.table = wandb.Table(columns=self.tablecol)
-        wandb.run.name = "train_on_" + (datetime.datetime.now()).strftime('%Y%m%d-%H:%M')
+        wandb.run.name = "zrhtrain_on_" + (datetime.datetime.now()).strftime('%Y%m%d-%H:%M')
 
     def log(self, titles, values):
         """
