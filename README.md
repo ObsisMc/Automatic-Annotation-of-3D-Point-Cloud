@@ -1,5 +1,6 @@
 # InnovativePractice1_SUSTech
 
+This project's name is ***Joint Detection and Tracking for Automatic Annotation of 3D AD Data***. For details, please read report.
 ## Visualize module
 Visualize module is cloned from https://github.com/junming259/Partial_Point_Clouds_Generation and there are some changes:
 #### run in .py
