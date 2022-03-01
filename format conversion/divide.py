@@ -4,7 +4,6 @@ path='result.pkl'
 
 data0 = open(path, 'rb')
 data = pickle.load(data0)
-# print(data[0])
 
 for i in range(len(data)):
     num = len(data[i].get('name'))
@@ -23,7 +22,6 @@ for i in range(len(data)):
         for i1 in data[i].get('bbox')[j]:
             f.write(str(i1))
             f.write(' ')
-        # f.write(str(data[i].get('bbox')[j]))
         for i1 in reversed(data[i].get('dimensions')[j]):
             f.write(str(i1))
             f.write(' ')
