@@ -10,6 +10,7 @@ class Visualizer:
             name: wandb里面project的名称
             entity: 用户名
         """
+        wandb.login(key="f2076b389c098a877d7d81d64b21214c626db718")
         wandb.init(project=name, entity=entity)  # 初始化
         wandb.config = {
             "batch_size": batches

@@ -4,6 +4,7 @@ import argparse
 import os
 import random
 
+import numpy as np
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
@@ -12,7 +13,6 @@ from MyDataSet import MyDataSet
 from MyModel import PointNetCls, PointNetPred
 from Visualize import Visualizer
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--batchSize', type=int, default=1, help='input batch size')
@@ -28,12 +28,14 @@ parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str,
                     default='../Data/Mydataset/training',
                     help="dataset path")
-parser.add_argument('--cpu', action="store_true", default=True)
+parser.add_argument('--device', type=int, default=1, help="0 for cpu, 1 for gpu")
+parser.add_argument('--ncard', type=int, default=0, help="serial number of gpu you want to use")
 
 
 def main():
     opt = parser.parse_args()
     visualizer = Visualizer(opt.batchSize)
+    device = "cuda:{}".format(opt.ncard) if opt.device else "cpu"
     print(opt)
 
     blue = lambda x: '\033[94m' + x + '\033[0m'
@@ -78,9 +80,8 @@ def main():
     optimizer2 = optim.Adam(predictor.parameters(), lr=0.001)
     scheduler1 = optim.lr_scheduler.StepLR(optimizer1, step_size=20, gamma=0.5)
     scheduler2 = optim.lr_scheduler.StepLR(optimizer2, step_size=20, gamma=0.5)
-    if not opt.cpu:
-        classifier.cuda()
-        predictor.cuda()
+    classifier.to(device)
+    predictor.to(device)
 
     num_batch = len(train_dataset) / opt.batchSize
     min_loss = 1e10
@@ -96,8 +97,7 @@ def main():
             target = torch.tensor(target, dtype=torch.float32)
             points1 = points1.type(torch.FloatTensor)
             points2 = points2.type(torch.FloatTensor)
-            if not opt.cpu:
-                points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
+            points1, points2, target = points1.to(device), points2.to(device), target.to(device)
             optimizer1.zero_grad()
             optimizer2.zero_grad()
             classifier = classifier.train()  # todo: 不用sigmoid吗
@@ -124,10 +124,10 @@ def main():
             total_loss1_2 += loss2.item()
             total_loss1 += loss.item()
 
-            vpred = pred2.detach().numpy().tolist()[0] + pred1.detach().numpy().tolist()[0]
-            vtarget = target.detach().numpy().tolist()
-            vpoints1 = points1.detach().numpy()[0].T  # 第一维是batch
-            vpoints2 = points2.detach().numpy()[0].T  # 第一维是batch
+            vpred = pred2.to("cpu").detach().numpy().tolist()[0] + pred1.to("cpu").detach().numpy().tolist()[0]
+            vtarget = target.to("cpu").detach().numpy().tolist()
+            vpoints1 = points1.to("cpu").detach().numpy()[0].T  # 第一维是batch
+            vpoints2 = points2.to("cpu").detach().numpy()[0].T  # 第一维是batch
             visualizer.tablelog(vtarget, vpred, vpoints1, vpoints2, frame=int(frame[0]))
             if i % 100 == 0:
                 visualizer.log(["cls loss (real time)"], [loss1])
@@ -144,14 +144,13 @@ def main():
         tp, fp, fn, tn = 0, 0, 0, 0
         visualizer.finishtable("table{}".format(epoch))
         for j, data in enumerate(valid_dataloader, 0):
-            points, target = data
+            points, target, frame = data
             points1 = points[0].transpose(2, 1)
             points2 = points[1].transpose(2, 1)
             target = torch.tensor(target, dtype=torch.float32)
             points1 = points1.type(torch.FloatTensor)
             points2 = points2.type(torch.FloatTensor)
-            if not opt.cpu:
-                points1, points2, target = points1.cuda(), points2.cuda(), target.cuda()
+            points1, points2, target = points1.to(device), points2.to(device), target.to(device)
             optimizer1.zero_grad()
             optimizer2.zero_grad()
             classifier = classifier.train()
@@ -174,10 +173,10 @@ def main():
             loss = loss1 + loss2
             total_loss2 += loss.item()
         accu = (tp + tn) / len(valid_dataset)
-        paccu = tp / (tp + fp)
-        naccu = tn / (tn + fn)
-        recall = tp / (tp + fn)
-        specificity = tn / (tn + fp)
+        paccu = tp / (tp + fp) if tp + fp > 0 else np.Inf
+        naccu = tn / (tn + fn) if tn + fn > 0 else np.Inf
+        recall = tp / (tp + fn) if tp + fn > 0 else np.Inf
+        specificity = tn / (tn + fp) if tn + fp > 0 else np.Inf
         total_loss2 /= len(valid_dataset)
         print(blue('test: epoch %d, average loss: %f, accuracy: %f' % (epoch, total_loss2, accu)))
         # with open(opt.outf + '/log.txt', 'a') as f:
@@ -192,22 +191,6 @@ def main():
             min_loss = total_loss1
             if epoch >= 10:
                 torch.save(classifier.state_dict(), '%s/model_%d_%f.pth' % (opt.outf, epoch, total_loss1))
-
-    # total_correct = 0
-    # total_testset = 0
-    # for i, data in tqdm(enumerate(testdataloader, 0)):
-    #     points, target = data
-    #     target = target[:, 0]
-    #     points = points.transpose(2, 1)
-    #     points, target = points.cuda(), target.cuda()
-    #     classifier = classifier.eval()
-    #     pred, _, _ = classifier(points)
-    #     pred_choice = pred.data.max(1)[1]
-    #     correct = pred_choice.eq(target.data).cpu().sum()
-    #     total_correct += correct.item()
-    #     total_testset += points.size()[0]
-    #
-    # print("final accuracy {}".format(total_correct / float(total_testset)))
 
 
 if __name__ == "__main__":
