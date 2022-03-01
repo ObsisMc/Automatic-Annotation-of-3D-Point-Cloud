@@ -2,75 +2,76 @@ import numpy as np
 import os
 import shutil
 import pickle
+import random
 
 
-def trans_image(imfolder, num):
-    gf = os.path.join(output, 'image_02')
-    if not os.path.exists(gf):
-        os.makedirs(gf)
+def getfmt(generic):
+    if generic == "image_2":
+        return '.png'
+    elif generic == "velodyne":
+        return ".bin"
+    elif generic == "calib":
+        return ".txt"
+    else:
+        print("Wrong generic, please select from 'image_2', 'velodyne', 'calib'")
+        return None
+
+
+def trans_image(tracking_file, num, type="training", generic="image_2"):
+    fmt = getfmt(generic)
+    if not fmt:
+        return
+
+    outputfolder = os.path.join(output, type, generic)
+    if not os.path.exists(outputfolder):
+        os.makedirs(outputfolder)
     fn = 0
     for i in range(num):
-        ff = os.path.join(imfolder, '{:04d}'.format(i))
-        n = 0
-        for file in os.listdir(ff):
-            name = '{:06d}'.format(n + fn)
-            fp = os.path.join(ff, file)
-            nfp = os.path.join(ff, name)
-            os.rename(fp, nfp)
-            shutil.move(nfp, gf)
-            fname = '{:06d}.png'.format(n + fn)
-            os.rename(os.path.join(gf, name), os.path.join(gf, fname))
-            n += 1
-        fn += n
+        if generic == "calib":
+            ff = os.path.join(imfolder, '{:04d}'.format(i))
+            cff = os.path.join(tracking_file, '{:04d}.txt'.format(i))
+        else:
+            ff = os.path.join(tracking_file, '{:04d}'.format(i))
+        files = sorted(os.listdir(ff), key=lambda x: int(x.rstrip(fmt)))
+        p = 0
+        for file in files:
+            p = int(file.rstrip(fmt))
+            name = '{:06d}{}'.format(p + fn, fmt)
+            if generic == "calib":
+                fp = cff
+            else:
+                fp = os.path.join(ff, file)
+            ofp = os.path.join(outputfolder, name)
+            shutil.copy(fp, ofp)
+        fn += p + 1  # record num of files
         if i == 0:
             with open(os.path.join(output, splittext), 'w') as f:
                 f.write('')
         with open(os.path.join(output, splittext), 'a+') as f:
             f.write(str(fn))
             f.write('\n')
-    print("Finish image!")
+    print("Finish {}!".format(generic))
 
 
-def trans_velodyne(vf, num):
-    gf = os.path.join(output, 'velodyne')
-    if not os.path.exists(gf):
-        os.makedirs(gf)
-    fn = 0
-    for i in range(num):
-        ff = os.path.join(vf, '{:04d}'.format(i))
-        n = 0
-        for file in os.listdir(ff):
-            name = '{:06d}'.format(n + fn)
-            fp = os.path.join(ff, file)
-            nfp = os.path.join(ff, name)
-            os.rename(fp, nfp)
-            shutil.move(nfp, gf)
-            fname = '{:06d}.bin'.format(n + fn)
-            os.rename(os.path.join(gf, name), os.path.join(gf, fname))
-            n += 1
-        fn += n
-        if i == 0:
-            with open(os.path.join(output, splitve), 'w') as f:
-                f.write('')
-        with open(os.path.join(output, splitve), 'a+') as f:
-            f.write(str(fn))
-            f.write('\n')
-    print("Finish velodyne!")
+# def trans_calib(tracking_file, num, type="training", generic="image_2"):
+#     gf = os.path.join(output, 'calib')
+#     if not os.path.exists(gf):
+#         os.makedirs(gf)
+#     fn = 0
+#     for i in range(num):
+#         ff = os.path.join(tracking_file, '{:04d}.txt'.format(i))
+#         files = sorted(os.listdir(ff), key=lambda x: int(x.rstrip(".txt")))
+#         p = 0
+#         for file in files:
+#             p = int(file.rstrip(".txt"))
+#             name = '{:06d}.txt'.format(p + fn)
+#             shutil.copy(ff, os.path.join(gf, name))
+#         fn += p + 1
+#     print("Finish calib!")
 
 
-def trans_calib(calib, num):
-    gf = os.path.join(output, 'calib')
-    if not os.path.exists(gf):
-        os.makedirs(gf)
-    fn = 0
-    for i in range(num):
-        ff = os.path.join(calib, '{:04d}.txt'.format(i))
-        n = 154
-        for j in range(n):
-            name = '{:06d}.txt'.format(j)
-            shutil.copy(ff, os.path.join(gf, name))
-        fn += 1
-    print("Finish calib!")
+def track2object(tracking_file, num, type="training", generic="image_2"):
+    pass
 
 
 def changelabel(label):
@@ -143,19 +144,30 @@ def undo(folder):
     pass
 
 
-imfolder = 'E:\kitti\data_tracking\image_02'
+def tmpmethod():
+    for i in range(3):
+        path = os.path.join(imfolder, "{:04d}".format(i))
+        if not os.path.exists(path):
+            os.makedirs(path)
+        for j in range(random.randint(10, 20)):
+            with open(os.path.join(path, "{:06d}.txt".format(j)), 'w') as f:
+                f.write("%d" % (i * 100000 + j))
+
+
+imfolder = '../test/tracking/image_02/'
 vefolder = 'E:\kitti\data_tracking\\velodyne'
-cafolder = 'E:\kitti\data_tracking\\calib'
+cafolder = '../test/tracking/calib/'
 lafolder = 'E:\kitti\data_tracking\label_02'
-output = 'E:\\kitti\\data_tracking\\trans'
+output = '../test/object'
 splittext = 'splitpos.txt'
 splitve = 'splitve.txt'
 
 if __name__ == '__main__':
-    n = 1
-    # trans_image(imfolder, n)
+    n = 3
+    # tmpmethod()
+    trans_image(imfolder, n, type="training", generic="calib")
     # trans_velodyne(vefolder, n)
     # trans_calib(cafolder, n)
-    trans_label(lafolder, 1)
+    # trans_label(lafolder, 1)
     # undo(imfolder)
     # trans_image()
