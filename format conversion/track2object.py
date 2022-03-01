@@ -4,6 +4,17 @@ import shutil
 import pickle
 import random
 
+imfolder_test = '/public_dataset/kitti/tracking/data_tracking_image_2/testing/image_02'
+vefolder_test = '/public_dataset/kitti/tracking/data_tracking_velodyne/testing/velodyne'
+cafolder_test = '/public_dataset/kitti/tracking/data_tracking_calib/testing/calib'
+imfolder_train = '/public_dataset/kitti/tracking/data_tracking_image_2/training/image_02'
+vefolder_train = '/public_dataset/kitti/tracking/data_tracking_velodyne/training/velodyne'
+cafolder_train = '/public_dataset/kitti/tracking/data_tracking_calib/training/calib'
+
+lafolder = 'E:\kitti\data_tracking\label_02'
+output = '/home2/lie/InnovativePractice2/OpenPCDet/data/kitti'
+splittext = 'splitpos.txt'
+
 
 def getfmt(generic):
     if generic == "image_2":
@@ -28,15 +39,16 @@ def trans_image(tracking_file, num, type="training", generic="image_2"):
     fn = 0
     for i in range(num):
         if generic == "calib":
-            ff = os.path.join(imfolder, '{:04d}'.format(i))
+            ff = os.path.join(imfolder_train if type=="training" else imfolder_test, '{:04d}'.format(i))
             cff = os.path.join(tracking_file, '{:04d}.txt'.format(i))
+            fmt = ".png"
         else:
             ff = os.path.join(tracking_file, '{:04d}'.format(i))
         files = sorted(os.listdir(ff), key=lambda x: int(x.rstrip(fmt)))
         p = 0
         for file in files:
             p = int(file.rstrip(fmt))
-            name = '{:06d}{}'.format(p + fn, fmt)
+            name = '{:06d}{}'.format(p + fn, ".txt" if generic == "calib" else fmt)
             if generic == "calib":
                 fp = cff
             else:
@@ -50,28 +62,7 @@ def trans_image(tracking_file, num, type="training", generic="image_2"):
         with open(os.path.join(output, splittext), 'a+') as f:
             f.write(str(fn))
             f.write('\n')
-    print("Finish {}!".format(generic))
-
-
-# def trans_calib(tracking_file, num, type="training", generic="image_2"):
-#     gf = os.path.join(output, 'calib')
-#     if not os.path.exists(gf):
-#         os.makedirs(gf)
-#     fn = 0
-#     for i in range(num):
-#         ff = os.path.join(tracking_file, '{:04d}.txt'.format(i))
-#         files = sorted(os.listdir(ff), key=lambda x: int(x.rstrip(".txt")))
-#         p = 0
-#         for file in files:
-#             p = int(file.rstrip(".txt"))
-#             name = '{:06d}.txt'.format(p + fn)
-#             shutil.copy(ff, os.path.join(gf, name))
-#         fn += p + 1
-#     print("Finish calib!")
-
-
-def track2object(tracking_file, num, type="training", generic="image_2"):
-    pass
+    print("Finish {} {}!".format(type, generic))
 
 
 def changelabel(label):
@@ -115,35 +106,6 @@ def trans_label(labelfd, num):
     print("Finish labels!")
 
 
-def undo(folder):
-    mypath = os.path.join(output, 'image_02')
-    with open(os.path.join(output, splittext), 'r') as f:
-        files = os.listdir(mypath)
-        begin = 0
-        num = int(f.readline().rstrip('\n'))
-        index = 0
-        while True:
-            ff = os.path.join(folder, '{:04d}'.format(index))
-            if not os.path.exists(ff):
-                os.mkdir(ff)
-            for i in range(begin, num):
-                file = files[i]
-                filepath = os.path.join(mypath, file)
-                newfilepath = os.path.join(mypath, "{:06d}.png".format(i))
-                os.rename(filepath, newfilepath)
-                shutil.move(newfilepath, ff)
-            begin = num
-            strnum = f.readline().rstrip('\n')
-            if strnum == '':
-                break
-            num = int(strnum)
-            index += 1
-    with open(os.path.join(output, splittext), 'w') as f:
-        f.write('')
-    print("Finish undo!")
-    pass
-
-
 def tmpmethod():
     for i in range(3):
         path = os.path.join(imfolder, "{:04d}".format(i))
@@ -154,20 +116,10 @@ def tmpmethod():
                 f.write("%d" % (i * 100000 + j))
 
 
-imfolder = '../test/tracking/image_02/'
-vefolder = 'E:\kitti\data_tracking\\velodyne'
-cafolder = '../test/tracking/calib/'
-lafolder = 'E:\kitti\data_tracking\label_02'
-output = '../test/object'
-splittext = 'splitpos.txt'
-splitve = 'splitve.txt'
-
 if __name__ == '__main__':
-    n = 3
-    # tmpmethod()
-    trans_image(imfolder, n, type="training", generic="calib")
-    # trans_velodyne(vefolder, n)
-    # trans_calib(cafolder, n)
-    # trans_label(lafolder, 1)
-    # undo(imfolder)
-    # trans_image()
+    n = 2
+    data = {"testing": {"image_2": imfolder_test, "velodyne": vefolder_test, "calib": cafolder_test},
+            "training": {"image_2": imfolder_train, "velodyne": vefolder_train, "calib": cafolder_train}}
+    for type in data:
+        for generic in data[type]:
+            trans_image(data[type][generic], n, type=type, generic=generic)
