@@ -12,10 +12,10 @@ cafolder_test = '/public_dataset/kitti/tracking/data_tracking_calib/testing/cali
 imfolder_train = '/public_dataset/kitti/tracking/data_tracking_image_2/training/image_02'
 vefolder_train = '/public_dataset/kitti/tracking/data_tracking_velodyne/training/velodyne'
 cafolder_train = '/public_dataset/kitti/tracking/data_tracking_calib/training/calib'
-lafolder = '../test/tracking/label_02'
+lafolder = '/public_dataset/kitti/tracking/data_tracking_label_2/training/label_02'
 
-# output = '/home2/lie/InnovativePractice2/OpenPCDet/data/kitti'
-output = '../test/object'
+output = '/home2/lie/InnovativePractice2/OpenPCDet/data/kitti'
+# output = '../test/object'
 splittext = 'splitpos.txt'
 
 
@@ -31,7 +31,7 @@ def getfmt(generic):
         return None
 
 
-def trans_image(tracking_file, num, type="training", generic="image_2"):
+def maintransfer(tracking_file, num, type="training", generic="image_2"):
     fmt = getfmt(generic)
     if not fmt:
         return
@@ -60,9 +60,9 @@ def trans_image(tracking_file, num, type="training", generic="image_2"):
             shutil.copy(fp, ofp)
         fn += p + 1  # record num of files
         if i == 0:
-            with open(os.path.join(output, type + splittext), 'w') as f:
+            with open(os.path.join(output, type, splittext), 'w') as f:
                 f.write('')
-        with open(os.path.join(output, type + splittext), 'a+') as f:
+        with open(os.path.join(output, type, splittext), 'a+') as f:
             f.write(str(fn))
             f.write('\n')
     print("Finish {} {}!".format(type, generic))
@@ -72,6 +72,7 @@ def changelabel(label):
     if label != "DontCare" and label != "Cyclist" and label != "Pedestrian":
         return "Car"
     return label
+
 
 # before use this, delete previous labels.
 # Must guarantee that splitpos.txt match number of labels.
@@ -94,8 +95,6 @@ def trans_label(tracking_file, num):
             labels = f.readlines()
             for label in labels:
                 label = label.rstrip("\\n").split(" ")
-                if label[1] == "-1":
-                    continue
                 frame, objectlabel = int(label[0]), " ".join(label[2:])
                 name = "{:06d}.txt".format(frame + labelnum)
                 outlabel = open(os.path.join(outputfolder, name), 'a+')
@@ -118,9 +117,12 @@ def tmpmethod():
 
 if __name__ == '__main__':
     n = 2
-    # data = {"testing": {"image_2": imfolder_test, "velodyne": vefolder_test, "calib": cafolder_test},
-    #         "training": {"image_2": imfolder_train, "velodyne": vefolder_train, "calib": cafolder_train}}
-    # for type in data:
-    #     for generic in data[type]:
-    #         trans_image(data[type][generic], n, type=type, generic=generic)
-    trans_label(lafolder, 2)
+    data = {"testing": {"image_2": imfolder_test, "velodyne": vefolder_test, "calib": cafolder_test},
+            "training": {"image_2": imfolder_train, "velodyne": vefolder_train, "calib": cafolder_train,
+                         "label_2": lafolder}}
+    for type in data:
+        for generic in data[type]:
+            if generic == "label_2":
+                trans_label(data[type][generic], n)
+            else:
+                maintransfer(data[type][generic], n, type=type, generic=generic)
