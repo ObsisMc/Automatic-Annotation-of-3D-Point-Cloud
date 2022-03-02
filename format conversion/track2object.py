@@ -97,7 +97,11 @@ def trans_label(tracking_file, num):
                 label = label.rstrip("\\n").split(" ")
                 frame, objectlabel = int(label[0]), " ".join(label[2:])
                 name = "{:06d}.txt".format(frame + labelnum)
-                outlabel = open(os.path.join(outputfolder, name), 'a+')
+                outlabel = open(os.path.join(outputfolder, name),
+                                'a+')  # if there is nothing in a frame, a file still needs to be created
+                if label[1] == "-1":
+                    outlabel.close()
+                    continue
                 outlabel.write(objectlabel)
                 outlabel.close()
 
