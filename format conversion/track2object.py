@@ -93,17 +93,33 @@ def trans_label(tracking_file, num):
         ff = os.path.join(tracking_file, '{:04d}.txt'.format(i))
         with open(ff, 'r') as f:
             labels = f.readlines()
+            lastframe = 0
+            dontcare_stack = []
             for label in labels:
                 label = label.rstrip("\\n").split(" ")
                 frame, objectlabel = int(label[0]), " ".join(label[2:])
+                if lastframe != frame:
+                    name = "{:06d}.txt".format(lastframe + labelnum)
+                    with open(os.path.join(outputfolder, name), 'a+') as f:
+                        for doncare in dontcare_stack:
+                            f.write(doncare)
+                    dontcare_stack.clear()
+                if label[1] == "-1":
+                    dontcare_stack.append(objectlabel)
+                    lastframe = frame
+                    continue
                 name = "{:06d}.txt".format(frame + labelnum)
                 outlabel = open(os.path.join(outputfolder, name),
                                 'a+')  # if there is nothing in a frame, a file still needs to be created
-                if label[1] == "-1":
-                    outlabel.close()
-                    continue
                 outlabel.write(objectlabel)
                 outlabel.close()
+                lastframe = frame
+            if dontcare_stack:
+                name = "{:06d}.txt".format(lastframe + labelnum)
+                with open(os.path.join(outputfolder, name), 'a+') as f:
+                    for doncare in dontcare_stack:
+                        f.write(doncare)
+                dontcare_stack.clear()
 
     print("Finish training label!")
     splitposf.close()
