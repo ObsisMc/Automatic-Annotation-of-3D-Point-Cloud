@@ -120,6 +120,14 @@ def trans_label(tracking_file, num):
                     for doncare in dontcare_stack:
                         f.write(doncare)
                 dontcare_stack.clear()
+    padding = "DontCare -1 -1 -10.000000 679.310000 170.810000 731.400000 188.520000 -1000.000000 -1000.000000 -1000.000000 -10.000000 -1.000000 -1.000000 -1.000000"
+    num = int(splitposf.readline().rstrip("\\n"))
+    for i in range(num):
+        file = os.path.join(outputfolder, "{:06d}.txt".format(i))
+        if not os.path.exists(file):
+            f = open(file, 'w')
+            f.write(padding)
+            f.close()
 
     print("Finish training label!")
     splitposf.close()
@@ -136,7 +144,7 @@ def tmpmethod():
 
 
 if __name__ == '__main__':
-    n = 2
+    n = 10
     data = {"testing": {"image_2": imfolder_test, "velodyne": vefolder_test, "calib": cafolder_test},
             "training": {"image_2": imfolder_train, "velodyne": vefolder_train, "calib": cafolder_train,
                          "label_2": lafolder}}
