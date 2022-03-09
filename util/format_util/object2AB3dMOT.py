@@ -1,3 +1,4 @@
+# You should use test.py with '-save_to_file' to get txt firstly
 import os
 
 object_result = "/home2/lie/InnovativePractice2/OpenPCDet/output/cfgs/kitti_models/pv_rcnn/default/eval/epoch_8369/val/default/final_result/data"
