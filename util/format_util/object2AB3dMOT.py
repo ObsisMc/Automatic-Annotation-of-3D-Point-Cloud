@@ -57,7 +57,7 @@ def main():
                         label = label.split(" ")
                         framelabel = "{} {} {} {} {} {}".format(frame - baseframe, parserType(label[0]),
                                                                 " ".join(label[4:8]), label[-1],
-                                                                "".join(label[8:15]), label[3])
+                                                                " ".join(label[8:15]), label[3])
                         f.write(framelabel + '\n')
                 p += 1
         baseframe = endframe
