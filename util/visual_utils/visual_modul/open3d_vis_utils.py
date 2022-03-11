@@ -27,7 +27,7 @@ def get_coor_colors(obj_labels):
     colors = matplotlib.colors.XKCD_COLORS.values()
     max_color_num = obj_labels.max()
 
-    color_list = list(colors)[:max_color_num+1]
+    color_list = list(colors)[:max_color_num + 1]
     colors_rgba = [matplotlib.colors.to_rgba_array(color) for color in color_list]
     label_rgba = np.array(colors_rgba)[obj_labels]
     label_rgba = label_rgba.squeeze()[:, :3]
@@ -35,7 +35,8 @@ def get_coor_colors(obj_labels):
     return label_rgba
 
 
-def draw_scenes(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_scores=None, point_colors=None, draw_origin=True):
+def draw_scenes(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_scores=None, point_colors=None,
+                draw_origin=True):
     if isinstance(points, torch.Tensor):
         points = points.cpu().numpy()
     if isinstance(gt_boxes, torch.Tensor):
@@ -114,3 +115,23 @@ def draw_box(vis, gt_boxes, color=(0, 1, 0), ref_labels=None, score=None):
         #     corners = box3d.get_box_points()
         #     vis.add_3d_label(corners[5], '%.2f' % score[i])
     return vis
+
+
+def rotate_points_along_z(points, angle):
+    """
+    Args:
+        points: (B, N, 3)
+        angle: (B), angle along z-axis, angle increases x ==> y
+    Returns:
+    """
+    cosa = np.cos(angle)
+    sina = np.sin(angle)
+    ones = np.ones_like(angle, dtype=np.float32)
+    zeros = np.zeros_like(angle, dtype=np.float32)
+    rot_matrix = np.array(
+        [[cosa, sina, zeros],
+         [-sina, cosa, zeros],
+         [zeros, zeros, ones]]
+    )
+    points_rot = points @ rot_matrix
+    return points_rot
