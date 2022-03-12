@@ -16,6 +16,7 @@ box_colormap = [
 ]
 
 
+# draw a scene
 def get_coor_colors(obj_labels):
     """
     Args:
@@ -84,11 +85,7 @@ def translate_boxes_to_open3d_instance(gt_boxes):
           |/         |/
           2 -------- 0
     """
-    center = gt_boxes[0:3]
-    lwh = gt_boxes[3:6]
-    axis_angles = np.array([0, 0, gt_boxes[6] + 1e-10])
-    rot = open3d.geometry.get_rotation_matrix_from_axis_angle(axis_angles)
-    box3d = open3d.geometry.OrientedBoundingBox(center, rot, lwh)
+    box3d = extract_box(gt_boxes)
 
     line_set = open3d.geometry.LineSet.create_from_oriented_bounding_box(box3d)
 
@@ -99,6 +96,15 @@ def translate_boxes_to_open3d_instance(gt_boxes):
     line_set.lines = open3d.utility.Vector2iVector(lines)
 
     return line_set, box3d
+
+
+def extract_box(gt_boxes):
+    center = gt_boxes[0:3]
+    lwh = gt_boxes[3:6]
+    axis_angles = np.array([0, 0, gt_boxes[6] + 1e-10])
+    rot = open3d.geometry.get_rotation_matrix_from_axis_angle(axis_angles)
+    box3d = open3d.geometry.OrientedBoundingBox(center, rot, lwh)
+    return box3d
 
 
 def draw_box(vis, gt_boxes, color=(0, 1, 0), ref_labels=None, score=None):
@@ -115,6 +121,36 @@ def draw_box(vis, gt_boxes, color=(0, 1, 0), ref_labels=None, score=None):
         #     corners = box3d.get_box_points()
         #     vis.add_3d_label(corners[5], '%.2f' % score[i])
     return vis
+
+
+# extract a single object
+
+def draw_object(points: np.ndarray, boxes: np.array):
+    # init points
+    pcld = open3d.geometry.PointCloud()
+    pcld.points = open3d.utility.Vector3dVector(points)
+
+    # extract points in box
+    bound = extract_box(boxes)
+    pcld_crop = pcld.crop(bound)
+
+    # translate coordinates and rotate the points to be orthogonal
+    points_canonical = canonicalize(np.asarray(pcld_crop.points), boxes)[0]
+    pcld_crop.points = open3d.utility.Vector3dVector(points_canonical)
+
+    # visualize TODO: If there is axis, it will be better
+    open3d.visualization.draw_geometries([pcld_crop])
+
+
+def canonicalize(points: np.ndarray, boxes: np.array):
+    # translation
+    center = boxes[0:3].reshape(1, -1)
+    points_translated = (points - center).reshape(1, -1)
+
+    # rotation
+    points_canonical = rotate_points_along_z(points_translated.reshape(1, -1, 3), -boxes[-1])
+    # points_canonical = points_translated.reshape(1, -1, 3)
+    return points_canonical
 
 
 def rotate_points_along_z(points, angle):
