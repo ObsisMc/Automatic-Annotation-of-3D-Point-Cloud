@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 from visual_modul import open3d_vis_utils as V, io_utils as io
 from visual_modul.calibration import Calibration
 
@@ -27,15 +28,20 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, datatype
         with open(os.path.join(labelroot, labeltxt), "r") as f:
             label = f.readline().rstrip("\n")
             while label and label != "":
+                print(label)
                 labellist = label.split(" ")
+                label = f.readline().rstrip("\n")
+
+                confidence = labellist[17]
+                if float(confidence) < threshold:
+                    continue
 
                 # get necessary info
                 if datatype == 0:
-                    frameid, trajectoryid, category, confidence = labellist[0], labellist[1], labellist[2], label[17]
+                    frameid, trajectoryid, category = labellist[0], labellist[1], labellist[2]
                     box = labellist[13:16] + [labellist[12], labellist[10], labellist[11]] + [labellist[16]]
-                if int(confidence) < threshold:
-                    continue
-                box = calibration.bbox_rect_to_lidar(box)
+                box = calibration.bbox_rect_to_lidar(np.array(box, dtype=np.float32).reshape(-1, len(box))) \
+                    .reshape(len(box), )
 
                 # get .bin (velodyne)
                 pointspath = os.path.join(pointroot, sceneid, "{:06d}.bin".format(int(frameid)))
@@ -46,7 +52,12 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, datatype
                 outputpath = os.path.join(outputroot, sceneid, "{}#{}".format(category, trajectoryid))
                 npyname = "{:06d}.npy".format(int(frameid))
                 io.save_object(extracted_points, outputpath, npyname)
+                label = f.readline().rstrip("\n")
 
 
 if __name__ == "__main__":
-    extract_tracking_scene()
+    labelroot = "/home2/lie/InnovativePractice2/AB3DMOT/results/pvrcnn_0_9_test/data"
+    calibroot = "/public_dataset/kitti/tracking/data_tracking_calib/training/calib/0000.txt"
+    pointroot = "/public_dataset/kitti/tracking/data_tracking_velodyne/training/velodyne"
+    outputroot = "/home2/lie/InnovativePractice2/data/kitti/tracking/extracted_points"
+    extract_tracking_scene(labelroot, calibroot, pointroot, outputroot)
