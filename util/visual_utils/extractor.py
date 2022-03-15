@@ -28,7 +28,6 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, datatype
         with open(os.path.join(labelroot, labeltxt), "r") as f:
             label = f.readline().rstrip("\n")
             while label and label != "":
-                print(label)
                 labellist = label.split(" ")
                 label = f.readline().rstrip("\n")
 
@@ -53,6 +52,11 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, datatype
                 npyname = "{:06d}.npy".format(int(frameid))
                 io.save_object(extracted_points, outputpath, npyname)
                 label = f.readline().rstrip("\n")
+
+                if int(frameid) % 100 == 0:
+                    print("--> {} frames finished".format(int(frameid)))
+
+        print("Scene{} finished!".format(sceneid))
 
 
 if __name__ == "__main__":

@@ -125,10 +125,10 @@ def draw_box(vis, gt_boxes, color=(0, 1, 0), ref_labels=None, score=None):
 
 # extract a single object
 
-def extract_object(points: np.ndarray, boxes: np.array):
+def extract_object(points: np.ndarray, box: np.array):
     """
     input:
-    1. boxes: should be [location, l, h, w, angle]
+    1. box: should be [location, l, h, w, angle]
     output:
     1. points_canonical: np.ndarray
     2. pcld_crop: open3d.geometry.PointCloud
@@ -138,17 +138,17 @@ def extract_object(points: np.ndarray, boxes: np.array):
     pcld.points = open3d.utility.Vector3dVector(points)
 
     # extract points in box
-    bound = extract_box(boxes)
+    bound = extract_box(box)
     pcld_crop = pcld.crop(bound)
 
     # translate coordinates and rotate the points to be orthogonal
-    points_canonical = canonicalize(np.asarray(pcld_crop.points), boxes)[0]
+    points_canonical = canonicalize(np.asarray(pcld_crop.points), box)[0]
     pcld_crop.points = open3d.utility.Vector3dVector(points_canonical)
     return points_canonical, pcld_crop
 
 
-def draw_object(points: np.ndarray, boxes: np.array):
-    _, pcld_crop = extract_object(points, boxes)
+def draw_object(points: np.ndarray, box: np.array):
+    _, pcld_crop = extract_object(points, box)
 
     # visualize TODO: If there is axis, it will be better
     open3d.visualization.draw_geometries([pcld_crop])
