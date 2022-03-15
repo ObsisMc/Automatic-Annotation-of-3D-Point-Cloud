@@ -33,5 +33,5 @@ if __name__ == '__main__':
     boxes = calibration.bbox_rect_to_lidar(boxes)  # move coordinates
 
     # visualize
-    visualize_scene(points=points, ref_boxes=boxes)
-    # visualize_object(points=points, ref_boxes=boxes[0])
+    # visualize_scene(points=points, ref_boxes=boxes)
+    visualize_object(points=points, ref_boxes=boxes[0])

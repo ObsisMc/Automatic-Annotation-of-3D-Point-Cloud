@@ -1,4 +1,6 @@
 import numpy as np
+import open3d as o3d
+import os
 
 
 def load_points(pointspath):
@@ -21,3 +23,11 @@ def load_boxes_from_object_txt(boxpath):
             box = line[11:14] + [line[10], line[8], line[9]] + [line[14]]
             boxes.append(box)
     return np.array(boxes, dtype=np.float32)
+
+
+
+def save_object(points: np.ndarray, outputroot, name):
+    if not os.path.exists(outputroot):
+        os.makedirs(outputroot)
+    np.save(os.path.join(outputroot, name), points)
+
