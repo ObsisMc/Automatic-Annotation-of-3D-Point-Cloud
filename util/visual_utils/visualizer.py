@@ -19,7 +19,7 @@ def visualize_scene(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_
     )
 
 
-def visualize_object(points: np.ndarray, ref_boxes: np.array):
+def visualize_object(points: np.ndarray, ref_boxes=None):
     V.draw_object(points, ref_boxes)
 
 
@@ -34,4 +34,5 @@ if __name__ == '__main__':
 
     # visualize
     # visualize_scene(points=points, ref_boxes=boxes)
-    visualize_object(points=points, ref_boxes=boxes[0])
+    # visualize_object(points=points, ref_boxes=boxes[0])
+    visualize_object(points=points)

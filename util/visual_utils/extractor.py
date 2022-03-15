@@ -53,9 +53,6 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, datatype
                 io.save_object(extracted_points, outputpath, npyname)
                 label = f.readline().rstrip("\n")
 
-                if int(frameid) % 100 == 0:
-                    print("--> {} frames finished".format(int(frameid)))
-
         print("Scene{} finished!".format(sceneid))
 
 

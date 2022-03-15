@@ -148,7 +148,11 @@ def extract_object(points: np.ndarray, box: np.array):
 
 
 def draw_object(points: np.ndarray, box: np.array):
-    _, pcld_crop = extract_object(points, box)
+    if box:
+        _, pcld_crop = extract_object(points, box)
+    else:
+        pcld_crop = open3d.geometry.PointCloud()
+        pcld_crop.points = open3d.utility.Vector3dVector(points)
 
     # visualize TODO: If there is axis, it will be better
     open3d.visualization.draw_geometries([pcld_crop])
