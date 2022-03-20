@@ -1,6 +1,5 @@
 from testNet import PointNetCls as Net
-from MyDataSet import MyDataSet
-import random
+from OurNet.dataset.MyDataSet import MyDataSet
 
 import torch
 import torch.utils.data

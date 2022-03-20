@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
 
-from MyDataSet import MyDataSet
+from OurNet.dataset.MyDataSet import MyDataSet
 from MyModel import PointNetCls, PointNetPred
 from Visualize import Visualizer
 
