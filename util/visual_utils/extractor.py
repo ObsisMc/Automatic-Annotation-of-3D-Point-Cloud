@@ -25,7 +25,7 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, maxn=1, 
         if n == maxn:
             break
         # used to transfer the coordinates to lidar's
-        calibration = Calibration(calibroot + "{:04d}.txt".format(int(labeltxt.rstrip(".txt"))))
+        calibration = Calibration(os.path.join(calibroot, "{:04d}.txt".format(int(labeltxt.rstrip(".txt")))))
 
         # sceneId is int(labeltxt.rstrip(".txt"))
         sceneid = labeltxt.rstrip(".txt")
