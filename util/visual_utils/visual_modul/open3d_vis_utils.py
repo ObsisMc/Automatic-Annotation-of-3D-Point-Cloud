@@ -147,8 +147,8 @@ def extract_object(points: np.ndarray, box: np.array):
     return points_canonical, pcld_crop
 
 
-def draw_object(points: np.ndarray, box: np.array):
-    if box:
+def draw_object(points: np.ndarray, box=None):
+    if box is not None:
         _, pcld_crop = extract_object(points, box)
     else:
         pcld_crop = open3d.geometry.PointCloud()
