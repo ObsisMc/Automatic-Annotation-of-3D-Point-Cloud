@@ -16,8 +16,13 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, maxn=1, 
     root
       |-> 0000 // scene
             |-> Car#1 // type and trajectoryId
-                  |-> 000000.npy // points cloud in frameId
+                  |-> points
+                    |-> 000000.npy // points cloud in frameId
+                  |-> labels
+                    |-> 000000.txt
+
     """
+
     # load data
     labeltxts = sorted(os.listdir(labelroot), key=lambda x: int(x.rstrip(".txt")))
     n = 0
@@ -53,11 +58,12 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, maxn=1, 
                 pointspath = os.path.join(pointroot, sceneid, "{:06d}.bin".format(int(frameid)))
                 points = io.load_points(pointspath)
 
-                # extract and save points
+                # extract and save points; save label in a txt for every TID
                 extracted_points, _ = V.extract_object(points, box)
                 outputpath = os.path.join(outputroot, sceneid, "{}#{}".format(category, trajectoryid))
-                npyname = "{:06d}.npy".format(int(frameid))
-                io.save_object(extracted_points, outputpath, npyname)
+                name = "{:06d}".format(int(frameid))
+                io.save_object_points(extracted_points, os.path.join(outputpath, "points"), name + ".npy")
+                io.save_object_label(box[3:7], os.path.join(outputpath, "labels"), name + ".txt")
                 label = f.readline().rstrip("\n")
 
         print("Scene{} finished!".format(sceneid))

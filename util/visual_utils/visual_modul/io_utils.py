@@ -31,7 +31,18 @@ def load_boxes_from_object_txt(boxpath):
     return np.array(boxes, dtype=np.float32)
 
 
-def save_object(points: np.ndarray, outputroot, name):
+def save_object_points(points: np.ndarray, outputroot, name):
     if not os.path.exists(outputroot):
         os.makedirs(outputroot)
     np.save(os.path.join(outputroot, name), points)
+
+
+def save_object_label(label, outputroot, name):
+    """
+    label: [l,h,w,angle] float  without ""\n
+    """
+    if not os.path.exists(outputroot):
+        os.makedirs(outputroot)
+    with open(os.path.join(outputroot, name), "w") as f:
+        f.write("{} {} {} {}".format(*label))
+        f.write("\n")
