@@ -63,7 +63,8 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, maxn=1, 
                 outputpath = os.path.join(outputroot, sceneid, "{}#{}".format(category, trajectoryid))
                 name = "{:06d}".format(int(frameid))
                 io.save_object_points(extracted_points, os.path.join(outputpath, "points"), name + ".npy")
-                io.save_object_label(box[3:7], os.path.join(outputpath, "labels"), name + ".txt")
+                io.save_object_label(box[[0, 1, 2, 6]], os.path.join(outputpath, "labels"),
+                                     name + ".txt")  # save location and angle
                 label = f.readline().rstrip("\n")
 
         print("Scene{} finished!".format(sceneid))
