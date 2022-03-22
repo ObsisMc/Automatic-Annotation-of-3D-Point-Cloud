@@ -1,6 +1,7 @@
 import numpy as np
 from torch.utils.data import Dataset
-from dataset_utils import DatasetCreator as datacreator, Argumentor as argumentor, utils
+from dataset_utils import DatasetCreator as datacreator, Argumentor as argumentor
+from dataset_utils.utils import Sampler
 import numpy
 
 
@@ -17,10 +18,15 @@ class NewDataSet(Dataset):
 
     def __init__(self, datapath):
         self.data_list = self.create_data(datapath)
+        self.sampler = Sampler()
 
     def __getitem__(self, item):
+        """
+        return: (2,N,3)
+        """
         data_root = self.data_list[item]
-        source, raw_target = np.load(data_root[0]), np.load(data_root[1])
+        source, raw_target = self.sampler.fps(np.load(data_root[0])), self.sampler.fps(
+            np.load(data_root[1]))
         target, label = argumentor.guassianArgu(raw_target)
         return [source, target], label
 

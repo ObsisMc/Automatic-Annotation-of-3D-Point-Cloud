@@ -86,3 +86,25 @@ class PointNetfeat(nn.Module):
         else:
             x = x.view(-1, 1024, 1).repeat(1, 1, n_pts)
             return torch.cat([x, pointfeat], 1), trans, trans_feat
+
+
+class SimplePointNet(nn.Module):
+    def __init__(self, k=3):
+        super(SimplePointNet, self).__init__()
+        self.backbone = self.getBackone(k=k)
+
+    def getBackone(self, k=3, mlp=[64, 128, 512, 1024]):
+        seq = nn.Sequential()
+        input_d = k
+        for i, output_d in enumerate(mlp):
+            seq.add_module("conv%d" % (i + 1), nn.Conv1d(input_d, output_d, 1))
+            seq.add_module("bn%d" % (i + 1), nn.BatchNorm1d(output_d))
+            seq.add_module("relu%d" % (i + 1), nn.LeakyReLU())
+            input_d = output_d
+        return seq
+
+    def forward(self, x):
+        x = self.backbone(x)
+        x = torch.max(x, 2, keepdim=True)[0]
+        x = x.view(-1, 1024)
+        return x
