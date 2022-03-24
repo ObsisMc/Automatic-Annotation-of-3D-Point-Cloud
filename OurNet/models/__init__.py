@@ -1,3 +1,3 @@
 import sys
-
-sys.path.append("./models")
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
