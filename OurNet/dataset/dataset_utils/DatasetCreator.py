@@ -2,7 +2,7 @@ import os
 import numpy
 
 
-def gapTwoInTradj(datapath, gap=1, scenen=1, starts=0):
+def gapTwoInTradj(datapath, gap=1, scenen=1, starts=0, type=("Car", "Van")):
     """
     data_root
       |-> 0000 // scene
@@ -19,6 +19,8 @@ def gapTwoInTradj(datapath, gap=1, scenen=1, starts=0):
         tid_dir = os.path.join(datapath, scene)
         tid_list = os.listdir(tid_dir)
         for tid in tid_list:
+            if tid.split("#")[0] not in type:
+                continue
             object_points_dir = os.path.join(tid_dir, tid, "points")
             points_list = sorted(os.listdir(os.path.join(object_points_dir)), key=lambda x: int(x.rstrip(".npy")))
             # labels_list = sorted(os.listdir(os.path.join(object_list, "labels")), key=lambda x: int(x.rstrip(".txt")))
