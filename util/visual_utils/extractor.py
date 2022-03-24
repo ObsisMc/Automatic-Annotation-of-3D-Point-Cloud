@@ -5,7 +5,7 @@ from visual_modul import open3d_vis_utils as V, io_utils as io
 from visual_modul.calibration import Calibration
 
 
-def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, maxn=1, datatype=0, threshold=0.7,
+def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1.3, maxn=1, datatype=0, threshold=0.7,
                            inference=True):
     """
     All directory structure is the same as kitti-tracking data.
@@ -51,7 +51,8 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, maxn=1, 
                     if category == "DontCare":
                         continue
                     box = labellist[13:16] + [labellist[12], labellist[10], labellist[11]] + [labellist[16]]
-                box = calibration.bbox_rect_to_lidar(np.array(box, dtype=np.float32).reshape(-1, len(box))) \
+                    extend_mtx = np.array([1, 1, 1, extend, extend, extend, 1]).reshape(1, -1)
+                box = calibration.bbox_rect_to_lidar(np.array(box, dtype=np.float32).reshape(-1, len(box)) * extend_mtx) \
                     .reshape(len(box), )
 
                 # get .bin (velodyne)
