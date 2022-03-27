@@ -25,8 +25,8 @@ def main(epochs=200, batch=1, shuffle=False, wokers=4, cudan=0):
     print(blue('# of training samples: %d' % len(train_dataset)))
     print(blue('# of validation samples: %d' % len(valid_dataset)))
 
-    # net = SiameseNet.Siamese2c()
-    net = PointNetPred(5)
+    net = SiameseNet.Siamese2c()
+    # net = PointNetPred(5)
     net.to(device)
 
     optimizer = optim.Adam(net.parameters(), lr=0.001)
