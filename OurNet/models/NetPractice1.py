@@ -104,22 +104,18 @@ class PointNetPred(nn.Module):
         self.feat = PointNetfeat()
         self.fc1 = nn.Linear(2048, 1024)
         self.fc2 = nn.Linear(1024, 512)
-        self.fc3 = nn.Linear(512, k)
-        # self.fc4 = nn.Linear(256, k)
-        # self.fc5 = nn.Linear(512, 256)
-        # self.fc6 = nn.Linear(256, k)
+        self.fc3 = nn.Linear(512, k)  # dx, dy, dz, d\theta, confidence
         self.dropout = nn.Dropout(p=0.3)
-        # self.bn1 = nn.BatchNorm1d(512)
-        # self.bn2 = nn.BatchNorm1d(256)
         self.relu = nn.LeakyReLU()
 
     def forward(self, x1, x2):
-        x1, trans1, trans_feat1 = self.feat(x1)
-        x2, trans2, trans_feat2 = self.feat(x2)
+        """
+        input: (B,N,3)
+        """
+        x1, trans1, trans_feat1 = self.feat(x1.permute(0, 2, 1))
+        x2, trans2, trans_feat2 = self.feat(x2.permute(0, 2, 1))
         x = torch.cat((x1, x2), 1)
         x = F.leaky_relu(self.fc1(x))
         x = F.leaky_relu(self.dropout(self.fc2(x)))
-        # out1 = F.relu(self.fc3(x))
-        # out1 = F.sigmoid(self.fc4(out1))
         out2 = self.fc3(x)
         return out2
