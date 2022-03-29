@@ -1,14 +1,7 @@
 import numpy as np
-
+import yaml
 from visual_modul import open3d_vis_utils as V, io_utils as io
 from visual_modul.calibration import Calibration
-
-basepath = ""
-pointspath = basepath + "/home/zrh/Data/kitti/data_tracking_velodyne/0000/000000.bin"
-objectpath = basepath + "/home/zrh/Data/kitti/tracking/extracted_points/0000/Van#0/points/000000.npy"
-objectpath2 = basepath + "/home/zrh/Data/kitti/tracking/extracted_points/0000/Van#0/points/000001.npy"
-boxpath = basepath + "/home/zrh/Data/kitti/data_tracking_label_2/training/label_2/0000.txt"  # label's path (in object format)
-calibpath = basepath + "/home/zrh/Data/kitti/data_tracking_calib/training/calib/0000.txt"
 
 
 def visualize_scene(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_scores=None, point_colors=None,
@@ -21,17 +14,19 @@ def visualize_scene(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_
     )
 
 
-def visualize_object(points: np.ndarray, ref_boxes=None,points2 = None):
+def visualize_object(points: np.ndarray, ref_boxes=None, points2=None):
     V.draw_object(points, ref_boxes, points2)
 
 
 if __name__ == '__main__':
+    cfg = yaml.load(open("config.yaml", encoding="utf-8"), Loader=yaml.FullLoader)["visualize_root"]
+
     # used to transfer the coordinates to lidar's
-    calibration = Calibration(calibpath)
+    calibration = Calibration(cfg["calibpath"])
 
     # load data
-    points = io.load_points(objectpath2)
-    boxes = io.load_boxes_from_object_txt(boxpath)
+    points = io.load_points(cfg["objectpath2"])
+    boxes = io.load_boxes_from_object_txt(cfg["boxpath"])
     boxes = calibration.bbox_rect_to_lidar(boxes)  # move coordinates
 
     # visualize

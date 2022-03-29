@@ -1,5 +1,5 @@
 import os
-
+import yaml
 import numpy as np
 from visual_modul import open3d_vis_utils as V, io_utils as io
 from visual_modul.calibration import Calibration
@@ -60,7 +60,7 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
                 points = io.load_points(pointspath)
 
                 # extract and save points; save label in a txt for every TID
-                extracted_points, _ = V.extract_object(points, box)
+                extracted_points, _, _ = V.extract_object(points, box)
                 outputpath = os.path.join(outputroot, sceneid, "{}#{}".format(category, trajectoryid))
                 name = "{:06d}".format(int(frameid))
                 io.save_object_points(extracted_points, os.path.join(outputpath, "points"), name + ".npy")
@@ -73,8 +73,5 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
 
 
 if __name__ == "__main__":
-    labelroot = "/home/zrh/Data/kitti/data_tracking_label_2/training/label_02/"
-    calibroot = "/home/zrh/Data/kitti/data_tracking_calib/training/calib/"
-    pointroot = "/home/zrh/Data/kitti/data_tracking_velodyne/"
-    outputroot = "/home/zrh/Data/kitti/tracking/extracted_points"
-    extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, inference=False)
+    cfg = yaml.load(open("config.yaml", encoding="utf-8"), Loader=yaml.FullLoader)["extract_root"]
+    extract_tracking_scene(cfg["labelroot"], cfg["calibroot"], cfg["pointroot"], cfg["outputroot"], inference=False)

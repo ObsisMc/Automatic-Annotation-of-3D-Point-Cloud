@@ -146,12 +146,13 @@ def extract_object(points: np.ndarray, box: np.array):
     pcld_crop.points = open3d.utility.Vector3dVector(points_canonical)
 
     # get a canonical box
-    linebox = extract_box(box, True)
-    line_set = open3d.geometry.LineSet.create_from_oriented_bounding_box(linebox)
-    lines = np.asarray(line_set.lines)
-    lines = np.concatenate([lines, np.array([[1, 4], [7, 6]])], axis=0)
-    line_set.lines = open3d.utility.Vector2iVector(lines)
-    line_set.paint_uniform_color((0, 0, 1))
+    # linebox = extract_box(box, True)
+    # line_set = open3d.geometry.LineSet.create_from_oriented_bounding_box(linebox)
+    # lines = np.asarray(line_set.lines)
+    # lines = np.concatenate([lines, np.array([[1, 4], [7, 6]])], axis=0)
+    # line_set.lines = open3d.utility.Vector2iVector(lines)
+    # line_set.paint_uniform_color((1, 0, 0))
+    line_set = None
 
     return points_canonical, pcld_crop, line_set
 
@@ -174,7 +175,7 @@ def draw_object(points: np.ndarray, box=None, points2=None):
         pcld_crop.points = open3d.utility.Vector3dVector(points)
 
     # visualize
-    pcld_crop.paint_uniform_color([0, 1, 0])  # [1,0,0] is red
+    # pcld_crop.paint_uniform_color([0, 1, 0])  # [1,0,0] is red
     vis.add_geometry(pcld_crop)
 
     axis_pcd = open3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=[0, 0, 0])
