@@ -98,8 +98,8 @@ def translate_boxes_to_open3d_instance(gt_boxes):
     return line_set, box3d
 
 
-def extract_box(gt_boxes):
-    center = gt_boxes[0:3]
+def extract_box(gt_boxes, canonical=False):
+    center = gt_boxes[0:3] if not canonical else [0, 0, 0]
     lwh = gt_boxes[3:6]
     axis_angles = np.array([0, 0, gt_boxes[6] + 1e-10])
     rot = open3d.geometry.get_rotation_matrix_from_axis_angle(axis_angles)
@@ -144,35 +144,42 @@ def extract_object(points: np.ndarray, box: np.array):
     # translate coordinates and rotate the points to be orthogonal
     points_canonical = canonicalize(np.asarray(pcld_crop.points), box)[0]
     pcld_crop.points = open3d.utility.Vector3dVector(points_canonical)
-    return points_canonical, pcld_crop
+
+    # get a canonical box
+    linebox = extract_box(box, True)
+    line_set = open3d.geometry.LineSet.create_from_oriented_bounding_box(linebox)
+    lines = np.asarray(line_set.lines)
+    lines = np.concatenate([lines, np.array([[1, 4], [7, 6]])], axis=0)
+    line_set.lines = open3d.utility.Vector2iVector(lines)
+    line_set.paint_uniform_color((0, 0, 1))
+
+    return points_canonical, pcld_crop, line_set
 
 
-# for test
-def guassianArgu(points: np.ndarray):
-    x_error = np.random.normal(loc=0, scale=1, size=None)
-    y_error = np.random.normal(loc=0, scale=1, size=None)
-    # z_error = np.random.normal(loc=0, scale=1, size=None)
-    z_error = 0
-    angle = np.random.normal(loc=0, scale=0.3, size=None)
-    confidence = 1.0
-    points = rotate_points_along_z(points + np.array([x_error, y_error, z_error]), angle)
-    return points, np.array([-x_error, -y_error, -z_error, -angle, confidence])
+def draw_object(points: np.ndarray, box=None, points2=None):
+    vis = open3d.visualization.Visualizer()
+    vis.create_window()
 
-
-def draw_object(points: np.ndarray, box=None):
     if box is not None:
-        _, pcld_crop = extract_object(points, box)
+        _, pcld_crop, line_set = extract_object(points, box)
+        vis.add_geometry(line_set)
     else:
+        if points2 is not None:
+            pcd2 = open3d.geometry.PointCloud()
+            pcd2.points = open3d.utility.Vector3dVector(points2)
+            pcd2.paint_uniform_color([0, 1, 0])  # green
+            vis.add_geometry(pcd2)
         # points, _ = guassianArgu(points)
         pcld_crop = open3d.geometry.PointCloud()
         pcld_crop.points = open3d.utility.Vector3dVector(points)
 
     # visualize
-    vis = open3d.visualization.Visualizer()
-    vis.create_window()
+    pcld_crop.paint_uniform_color([0, 1, 0])  # [1,0,0] is red
+    vis.add_geometry(pcld_crop)
+
     axis_pcd = open3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=[0, 0, 0])
     vis.add_geometry(axis_pcd)
-    vis.add_geometry(pcld_crop)
+
     vis.run()
     vis.destroy_window()
 
