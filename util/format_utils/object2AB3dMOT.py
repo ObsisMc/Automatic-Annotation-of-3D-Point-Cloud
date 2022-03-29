@@ -31,7 +31,7 @@ def splitPosition():
         return splitp
 
 
-def main():
+def main(threshold=0.6):
     splitp = splitPosition()
     if not splitp:
         return
@@ -55,6 +55,9 @@ def main():
                         if label == '':
                             continue
                         label = label.split(" ")
+                        # filter low confidence
+                        if float(label[-1]) < threshold:
+                            continue
                         framelabel = "{} {} {} {} {} {}".format(frame - baseframe, parserType(label[0]),
                                                                 " ".join(label[4:8]), label[-1],
                                                                 " ".join(label[8:15]), label[3])

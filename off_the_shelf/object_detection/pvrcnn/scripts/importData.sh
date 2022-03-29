@@ -10,6 +10,7 @@ test_data_image=/public_dataset/kitti/object/data_object_image_2/testing/image_2
 train_data_calib=/public_dataset/kitti/object/data_object_calib/training/calib
 train_data_velodyne=/public_dataset/kitti/object/data_object_velodyne/training/velodyne
 train_data_image=/public_dataset/kitti/object/data_object_image_2/training/image_2
+train_data_label=/public_dataset/kitti/object/data_object_label_2/training/label_2
 echo "Begin import data into OpenPcdet..."
 # testing
 echo "Import testing calib to $testing:"
@@ -41,3 +42,8 @@ echo "Import training image to ${training}:"
 echo "cp ${train_data_image}"
 cp -r ${train_data_image} ${training}
 echo "Finish training image!"
+
+echo "Import training label to ${training}:"
+echo "cp ${train_data_label}"
+cp -r ${train_data_label} ${training}
+echo "Finish training label!"

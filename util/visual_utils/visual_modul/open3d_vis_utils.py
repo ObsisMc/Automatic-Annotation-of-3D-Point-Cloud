@@ -147,15 +147,37 @@ def extract_object(points: np.ndarray, box: np.array):
     return points_canonical, pcld_crop
 
 
-def draw_object(points: np.ndarray, box: np.array):
-    if box:
+# for test
+def guassianArgu(points: np.ndarray):
+    x_error = np.random.normal(loc=0, scale=1, size=None)
+    y_error = np.random.normal(loc=0, scale=1, size=None)
+    # z_error = np.random.normal(loc=0, scale=1, size=None)
+    z_error = 0
+    angle = np.random.normal(loc=0, scale=0.3, size=None)
+    confidence = 1.0
+    points = rotate_points_along_z(points + np.array([x_error, y_error, z_error]), angle)
+    return points, np.array([-x_error, -y_error, -z_error, -angle, confidence])
+
+
+def draw_object(points: np.ndarray, box=None):
+    if box is not None:
         _, pcld_crop = extract_object(points, box)
     else:
+        # points, _ = guassianArgu(points)
         pcld_crop = open3d.geometry.PointCloud()
         pcld_crop.points = open3d.utility.Vector3dVector(points)
 
-    # visualize TODO: If there is axis, it will be better
-    open3d.visualization.draw_geometries([pcld_crop])
+    # visualize
+    vis = open3d.visualization.Visualizer()
+    vis.create_window()
+    axis_pcd = open3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=[0, 0, 0])
+    vis.add_geometry(axis_pcd)
+    vis.add_geometry(pcld_crop)
+    vis.run()
+    vis.destroy_window()
+
+    # another way
+    # open3d.visualization.draw_geometries([pcld_crop])
 
 
 def canonicalize(points: np.ndarray, boxes: np.array):
