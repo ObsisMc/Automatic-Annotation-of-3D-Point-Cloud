@@ -1,6 +1,6 @@
 import numpy as np
 from torch.utils.data import Dataset
-from dataset_utils import DatasetCreator as datacreator, Argumentor as argumentor
+from dataset_utils import DatasetCreator as datacreator, Augmentor as augmentor
 from dataset_utils.utils import Sampler
 import numpy
 
@@ -27,7 +27,7 @@ class NewDataSet(Dataset):
         data_root = self.data_list[item]
         source, raw_target = self.sampler.fps(np.load(data_root[0])), self.sampler.fps(
             np.load(data_root[1]))
-        target, label = argumentor.guassianArgu(raw_target)  # label: dx, dy, dz, angle, confidence
+        target, label = augmentor.guassianArgu(raw_target)  # label: dx, dy, dz, angle, confidence
         return [source, target], label
 
     def __len__(self):
