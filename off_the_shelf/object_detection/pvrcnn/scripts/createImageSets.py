@@ -6,7 +6,7 @@ testing = "data/kitti/testing"
 training = "data/kitti/training"
 reference = "velodyne"
 referencesuffix = ".bin"
-valratio = 1
+valratio = 0.3
 
 
 def getdatalist(filepath, suffix=referencesuffix):
