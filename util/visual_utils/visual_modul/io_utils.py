@@ -4,8 +4,14 @@ import os
 
 
 def load_points(pointspath):
-    points = np.fromfile(pointspath, dtype=np.float32).reshape(-1, 4)
-    return points[:, :3]
+    if pointspath.endswith(".bin"):
+        points = np.fromfile(pointspath, dtype=np.float32).reshape(-1, 4)[:, :3]
+    elif pointspath.endswith(".npy"):
+        points = np.load(pointspath)
+        if points.shape[1] == 4:
+            points = points.reshape(-1, 4)
+        points = points[:, :3]
+    return points
 
 
 def load_boxes_from_object_txt(boxpath):
@@ -25,9 +31,18 @@ def load_boxes_from_object_txt(boxpath):
     return np.array(boxes, dtype=np.float32)
 
 
-
-def save_object(points: np.ndarray, outputroot, name):
+def save_object_points(points: np.ndarray, outputroot, name):
     if not os.path.exists(outputroot):
         os.makedirs(outputroot)
     np.save(os.path.join(outputroot, name), points)
 
+
+def save_object_label(label, outputroot, name):
+    """
+    label: [l,h,w,angle] float  without ""\n
+    """
+    if not os.path.exists(outputroot):
+        os.makedirs(outputroot)
+    with open(os.path.join(outputroot, name), "w") as f:
+        f.write("{} {} {} {}".format(*label))
+        f.write("\n")
