@@ -48,7 +48,7 @@ def main(threshold=0.6):
                         # filter low confidence
                         if float(label[-1]) < threshold:
                             continue
-                        framelabel = "{} {} {}".format(frame - baseframe, label[0], label[1:])
+                        framelabel = "{} {} {}".format(frame - baseframe, label[0], " ".join(label[1:]))
                         f.write(framelabel + '\n')
                 p += 1
         baseframe = endframe
