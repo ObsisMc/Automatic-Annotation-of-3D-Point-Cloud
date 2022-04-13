@@ -2,6 +2,7 @@ from models import SiameseNet
 from dataset.NewDataSet import NewDataSet
 from visualization.tensorboard import TensorBoardVis
 from models.NetPractice1 import PointNetPred
+from utils import io_utils
 
 import torch
 import torch.utils.data
@@ -66,6 +67,9 @@ def main(epochs=200, batch=1, shuffle=False, wokers=4, cudan=0):
                 pass
         vis.add_scalar("total_loss", loss, epoch)
         scheduler.step()
+
+        if epoch % 10 == 0:
+            io_utils.saveCheckPoint(net, epoch, loss)
 
 
 if __name__ == "__main__":

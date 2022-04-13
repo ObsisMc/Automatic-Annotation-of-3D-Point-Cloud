@@ -39,3 +39,10 @@ However, remember that if you extract points without correction, you should visu
 2. Generate bbox 
 
 > tracking点云的0001文件夹176后面缺了几帧
+
+
+## Related work
+#### Point Cloud Registration
+1. PCRNet
+2. Deep Closest Point
+3. PointNetLK
