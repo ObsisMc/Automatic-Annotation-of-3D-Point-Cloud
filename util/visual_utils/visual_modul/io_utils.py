@@ -1,6 +1,7 @@
 import numpy as np
 import open3d as o3d
 import os
+import logging
 
 
 def load_points(pointspath):
@@ -46,3 +47,10 @@ def save_object_label(label, outputroot, name):
     with open(os.path.join(outputroot, name), "w") as f:
         f.write("{} {} {} {}".format(*label))
         f.write("\n")
+
+
+def logFileNotFound(path):
+    logging.basicConfig(level=logging.DEBUG)
+    LOG_FORMAT = "%(asctime)s - %(message)s"
+    logging.basicConfig(filename='log.txt', level=logging.DEBUG, format=LOG_FORMAT)
+    logging.debug("FileNotFoundError: no %s" % path)
