@@ -1,7 +1,10 @@
 visualize_root:
   pointspath: "/home/zrh/Data/kitti/data_tracking_velodyne/0000/000000.bin"
-  objectpath: "/home/zrh/Data/kitti/tracking/extracted_points/0000/Van#0/points/000000.npy"
-  objectpath2: "/home/zrh/Data/kitti/tracking/extracted_points/0000/Van#0/points/000001.npy"
+  objectpath: "/home/zrh/Data/kitti/tracking/extracted_points/0000/Van#0/points/000025.npy"
+  multi_points:
+    - "/home/zrh/Data/kitti/tracking/extracted_points/0000/Van#0/points/000001.npy"
+    - "/home/zrh/Data/kitti/tracking/extracted_points/0000/Van#0/points/000002.npy"
+    - "/home/zrh/Data/kitti/tracking/extracted_points/0000/Van#0/points/000003.npy"
   boxpath: "/home/zrh/Data/kitti/data_tracking_label_2/training/label_2/0000.txt"  # label's path (in object format)
   calibpath: "/home/zrh/Data/kitti/data_tracking_calib/training/calib/0000.txt"
 
@@ -9,4 +12,5 @@ extract_root:
   labelroot: "/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/tracking_label/pv_rcnn_epoch_30"
   calibroot: "/public_dataset/kitti/tracking/data_tracking_calib/training/calib"
   pointroot: "/public_dataset/kitti/tracking/data_tracking_velodyne/training/velodyne"
-  outputroot: "/home2/lie/InnovativePractice2/data/kitti/tracking/extracted_points"
+  begin: 1
+  end: 2

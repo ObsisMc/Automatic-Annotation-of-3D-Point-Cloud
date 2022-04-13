@@ -144,7 +144,7 @@ def tmpmethod():
 
 
 if __name__ == '__main__':
-    n = 10
+    n = 21
     data = {"testing": {"image_2": imfolder_test, "velodyne": vefolder_test, "calib": cafolder_test},
             "training": {"image_2": imfolder_train, "velodyne": vefolder_train, "calib": cafolder_train,
                          "label_2": lafolder}}

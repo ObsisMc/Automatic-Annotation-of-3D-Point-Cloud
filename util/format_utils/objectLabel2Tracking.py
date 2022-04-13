@@ -3,17 +3,7 @@ import os
 
 object_result = "/home2/lie/InnovativePractice2/OpenPCDet/output/cfgs/kitti_models/pv_rcnn/default/eval/epoch_30/val/default/final_result/data"
 splitpos = "/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/training/splitpos.txt"
-output = "/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/training/tracking_label"
-
-
-def parserType(tp):
-    if tp == 'Car':
-        return 2
-    elif tp == 'Pedestrian':
-        return 1
-    elif tp == 'Cyclist':
-        return 3
-    return 2  # consider other types car
+output = "/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/tracking_label/kitti/"
 
 
 def parserLable():
@@ -58,9 +48,7 @@ def main(threshold=0.6):
                         # filter low confidence
                         if float(label[-1]) < threshold:
                             continue
-                        framelabel = "{} {} {} {} {} {}".format(frame - baseframe, parserType(label[0]),
-                                                                " ".join(label[4:8]), label[-1],
-                                                                " ".join(label[8:15]), label[3])
+                        framelabel = "{} {} {}".format(frame - baseframe, label[0], label[1:])
                         f.write(framelabel + '\n')
                 p += 1
         baseframe = endframe
