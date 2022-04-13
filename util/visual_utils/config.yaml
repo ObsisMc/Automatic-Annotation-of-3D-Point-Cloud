@@ -6,7 +6,7 @@ visualize_root:
   calibpath: "/home/zrh/Data/kitti/data_tracking_calib/training/calib/0000.txt"
 
 extract_root:
-  labelroot: "/home/zrh/Data/kitti/data_tracking_label_2/training/label_02/"
-  calibroot: "/home/zrh/Data/kitti/data_tracking_calib/training/calib/"
-  pointroot: "/home/zrh/Data/kitti/data_tracking_velodyne/"
-  outputroot: "/home/zrh/Data/kitti/tracking/extracted_points"
+  labelroot: "/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/tracking_label/pv_rcnn_epoch_30"
+  calibroot: "/public_dataset/kitti/tracking/data_tracking_calib/training/calib"
+  pointroot: "/public_dataset/kitti/tracking/data_tracking_velodyne/training/velodyne"
+  outputroot: "/home2/lie/InnovativePractice2/data/kitti/tracking/extracted_points"
