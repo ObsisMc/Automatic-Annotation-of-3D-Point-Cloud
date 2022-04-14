@@ -6,7 +6,7 @@ from visual_modul.calibration import Calibration
 
 
 def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1.3, begin=0, end=1, datatype=0,
-                           threshold=0.7,
+                           threshold=0.85,
                            inference=True):
     """
     All directory structure is the same as kitti-tracking data.
@@ -89,4 +89,5 @@ if __name__ == "__main__":
     cfg = yaml.load(open("config.yaml", encoding="utf-8"), Loader=yaml.FullLoader)["extract_root"]
     extract_tracking_scene(cfg["labelroot"], cfg["calibroot"], cfg["pointroot"], cfg["outputroot"],
                            begin=cfg["begin"], end=cfg["end"],
-                           inference=False)
+                           inference=bool(cfg["inference"]),
+                           threshold=float(cfg["threshold"]))
