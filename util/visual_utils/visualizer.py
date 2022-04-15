@@ -17,23 +17,28 @@ def visualize_scene(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_
 def visualize_object(points: np.ndarray, ref_boxes=None, points2=None):
     V.draw_object(points, ref_boxes, points2)
 
-
-if __name__ == '__main__':
+def main():
     cfg = yaml.load(open("config.yaml", encoding="utf-8"), Loader=yaml.FullLoader)["visualize_root"]
 
     # used to transfer the coordinates to lidar's
     calibration = Calibration(cfg["calibpath"])
 
     # load data
-    points = io.load_points(cfg["objectpath2"])
+    points = io.load_points(cfg["pointspath"])
     boxes = io.load_boxes_from_object_txt(cfg["boxpath"])
     boxes = calibration.bbox_rect_to_lidar(boxes)  # move coordinates
 
     # visualize
-    # visualize_scene(points=points, ref_boxes=boxes)
+    visualize_scene(points=points, ref_boxes=boxes)
     # visualize_object(points=points, ref_boxes=boxes[0])
-    visualize_object(points=points)
+    # visualize_object(points=points)
 
     # show 2 points in a window
-    # points2 = io.load_points(objectpath2)
-    # visualize_object(points=points, points2=points2)
+    # multi_point = []
+    # for i in range(len(cfg["multi_points"])):
+    #     multi_point.append(io.load_points(cfg["multi_points"][i]))
+    # visualize_object(points=points, points2=multi_point)
+    
+    
+if __name__ == '__main__':
+    main()
