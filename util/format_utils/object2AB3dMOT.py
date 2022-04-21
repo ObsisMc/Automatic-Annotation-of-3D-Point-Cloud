@@ -3,7 +3,7 @@ import os
 
 object_result = "/home2/lie/InnovativePractice2/OpenPCDet/output/cfgs/kitti_models/pv_rcnn/default/eval/epoch_30/val/default/final_result/data"
 splitpos = "/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/training/splitpos.txt"
-output = "/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/training/tracking_label"
+output = "/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/tracking_label/pv_rcnn_epoch_30"
 
 
 def parserType(tp):
