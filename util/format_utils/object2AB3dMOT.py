@@ -16,8 +16,14 @@ def parserType(tp):
     return 2  # consider other types car
 
 
-def parserLable():
-    pass
+def parserThreshold(tp):
+    if tp == 'Car':
+        return 0.85
+    elif tp == 'Pedestrian':
+        return 0.7
+    elif tp == 'Cyclist':
+        return 0.7
+    return 0.8  # consider other types car
 
 
 def splitPosition():
@@ -31,7 +37,7 @@ def splitPosition():
         return splitp
 
 
-def main(threshold=0.6):
+def main():
     splitp = splitPosition()
     if not splitp:
         return
@@ -56,7 +62,7 @@ def main(threshold=0.6):
                             continue
                         label = label.split(" ")
                         # filter low confidence
-                        if float(label[-1]) < threshold:
+                        if float(label[-1]) < parserThreshold(label[0]):
                             continue
                         framelabel = "{} {} {} {} {} {}".format(frame - baseframe, parserType(label[0]),
                                                                 " ".join(label[4:8]), label[-1],
