@@ -1,5 +1,5 @@
 import numpy as np
-import yaml
+import util.cfg as Config
 from visual_modul import open3d_vis_utils as V, io_utils as io
 from visual_modul.calibration import Calibration
 
@@ -18,7 +18,7 @@ def visualize_object(points: np.ndarray, ref_boxes=None, points2=None):
     V.draw_object(points, ref_boxes, points2)
 
 def main():
-    cfg = yaml.load(open("config.yaml", encoding="utf-8"), Loader=yaml.FullLoader)["visualize_root"]
+    cfg = Config.load_visual("visualize_root")
 
     # used to transfer the coordinates to lidar's
     calibration = Calibration(cfg["calibpath"])

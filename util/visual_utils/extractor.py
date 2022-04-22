@@ -1,5 +1,5 @@
 import os
-import yaml
+import util.cfg as Config
 import numpy as np
 from visual_modul import open3d_vis_utils as V, io_utils as io
 from visual_modul.calibration import Calibration
@@ -86,7 +86,7 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
 
 
 if __name__ == "__main__":
-    cfg = yaml.load(open("config.yaml", encoding="utf-8"), Loader=yaml.FullLoader)["extract_root"]
+    cfg = Config.load_visual("extract_root")
     extract_tracking_scene(cfg["labelroot"], cfg["calibroot"], cfg["pointroot"], cfg["outputroot"],
                            begin=cfg["begin"], end=cfg["end"],
                            inference=bool(cfg["inference"]),
