@@ -1,7 +1,7 @@
 from models import SiameseNet
 from dataset.NewDataSet import NewDataSet
 from visualization.tensorboard import TensorBoardVis
-from models.NetPractice1 import PointNetPred
+from models.detector.NetPractice1 import PointNetPred
 from utils import io_utils
 
 import torch
