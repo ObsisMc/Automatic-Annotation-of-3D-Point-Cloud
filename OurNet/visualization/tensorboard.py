@@ -1,6 +1,6 @@
 import os
 import torch
-import yaml
+import util.cfg as Config
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -8,8 +8,7 @@ class TensorBoardVis():
 
     def __init__(self, path=None):
         if path is None:
-            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.yaml"), encoding="utf-8") as f:
-                path = yaml.load(f, Loader=yaml.FullLoader)["runs_root"]
+            path = Config.load_model_visual()
         self.writer = SummaryWriter(path)
 
     def add_scalar(self, title, value, epoch=None):
