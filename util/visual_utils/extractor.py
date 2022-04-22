@@ -90,4 +90,5 @@ if __name__ == "__main__":
     extract_tracking_scene(cfg["labelroot"], cfg["calibroot"], cfg["pointroot"], cfg["outputroot"],
                            begin=cfg["begin"], end=cfg["end"],
                            inference=bool(cfg["inference"]),
-                           threshold=float(cfg["threshold"]))
+                           threshold=float(cfg["threshold"]),
+                           extend=float(cfg["extend"]))

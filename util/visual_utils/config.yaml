@@ -18,3 +18,4 @@ extract_root:
   end: 1
   threshold: 0.85
   inference: True
+  extend: 1.3
