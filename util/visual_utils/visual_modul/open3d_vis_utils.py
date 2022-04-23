@@ -135,7 +135,7 @@ def extract_object(points: np.ndarray, box: np.array):
     """
     # init points
     pcld = open3d.geometry.PointCloud()
-    pcld.points = open3d.utility.Vector3dVector(points)
+    pcld.points = open3d.utility.Vector3dVector(points[:, :3])
 
     # extract points in box
     bound = extract_box(box)
@@ -157,7 +157,7 @@ def extract_object(points: np.ndarray, box: np.array):
     return points_canonical, pcld_crop, line_set
 
 
-def draw_object(points: np.ndarray, box=None, points2=None):
+def draw_object(points: np.ndarray, box=None, multi_points=None):
     vis = open3d.visualization.Visualizer()
     vis.create_window()
 
@@ -165,17 +165,18 @@ def draw_object(points: np.ndarray, box=None, points2=None):
         _, pcld_crop, line_set = extract_object(points, box)
         vis.add_geometry(line_set)
     else:
-        if points2 is not None:
-            pcd2 = open3d.geometry.PointCloud()
-            pcd2.points = open3d.utility.Vector3dVector(points2)
-            pcd2.paint_uniform_color([0, 1, 0])  # green
-            vis.add_geometry(pcd2)
+        if multi_points is not None:
+            for idx, pts in enumerate(multi_points):
+                pcd_tmp = open3d.geometry.PointCloud()
+                pcd_tmp.points = open3d.utility.Vector3dVector(pts)
+                pcd_tmp.paint_uniform_color([1, 0, 0])  # idx should less than 3
+                vis.add_geometry(pcd_tmp)
         # points, _ = guassianArgu(points)
         pcld_crop = open3d.geometry.PointCloud()
         pcld_crop.points = open3d.utility.Vector3dVector(points)
 
     # visualize
-    # pcld_crop.paint_uniform_color([0, 1, 0])  # [1,0,0] is red
+    pcld_crop.paint_uniform_color([1, 0, 0])  # [1,0,0] is red
     vis.add_geometry(pcld_crop)
 
     axis_pcd = open3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=[0, 0, 0])

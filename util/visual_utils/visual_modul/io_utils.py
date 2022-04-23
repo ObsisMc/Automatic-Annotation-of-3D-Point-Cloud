@@ -6,13 +6,13 @@ import logging
 
 def load_points(pointspath):
     if pointspath.endswith(".bin"):
-        points = np.fromfile(pointspath, dtype=np.float32).reshape(-1, 4)[:, :3]
+        return np.fromfile(pointspath, dtype=np.float32).reshape(-1, 4)
     elif pointspath.endswith(".npy"):
         points = np.load(pointspath)
         if points.shape[1] == 4:
             points = points.reshape(-1, 4)
-        points = points[:, :3]
-    return points
+        return points
+    return None
 
 
 def load_boxes_from_object_txt(boxpath):
