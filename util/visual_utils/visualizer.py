@@ -1,5 +1,5 @@
 import numpy as np
-import util.cfg as Config
+import util.cfgs as Config
 from visual_modul import open3d_vis_utils as V, io_utils as io
 from visual_modul.calibration import Calibration
 
@@ -35,8 +35,8 @@ def main():
 
     # show 2 points in a window
     # multi_point = []
-    # for i in range(len(cfg["multi_points"])):
-    #     multi_point.append(io.load_points(cfg["multi_points"][i]))
+    # for i in range(len(cfgs["multi_points"])):
+    #     multi_point.append(io.load_points(cfgs["multi_points"][i]))
     # visualize_object(points=points, points2=multi_point)
     
     

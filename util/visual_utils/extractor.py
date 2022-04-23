@@ -1,5 +1,5 @@
 import os
-import util.cfg as Config
+import util.cfgs as Config
 import numpy as np
 from visual_modul import open3d_vis_utils as V, io_utils as io
 from visual_modul.calibration import Calibration
