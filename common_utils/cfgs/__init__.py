@@ -25,3 +25,8 @@ def load_pillar_vfe():
     vrange = data_dict["point_cloud_range"] = np.array(data_dict["point_cloud_range"])
     data_dict["image_shape"] = (vrange[3:6] - vrange[0:3]) / size
     return data_dict
+
+
+def load_train_common():
+    path = os.path.join(root, "models/training_cfg.yaml")
+    return yaml.load(open(path, encoding="utf-8"), Loader=yaml.FullLoader)["training_common"]

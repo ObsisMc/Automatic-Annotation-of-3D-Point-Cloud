@@ -1,8 +1,7 @@
 from models.detector.SiameseNet import Siamese2c
 from dataset.NewDataSet import NewDataSet
 from visualization.tensorboard import TensorBoardVis
-from models.detector.NetPractice1 import PointNetPred
-from model_utils import io_utils
+from OurNet.models.model_utils import io_utils
 
 import torch
 import torch.utils.data
@@ -11,13 +10,11 @@ import torch.nn.functional as F
 
 blue = lambda x: '\033[94m' + x + '\033[0m'
 
-root = "/home/zrh/Data/kitti/tracking/extracted_points"
-
 
 def main(epochs=200, batch=1, shuffle=False, wokers=4, cudan=0):
     device = "cuda:%d" % cudan if torch.cuda.is_available() else "cpu"
 
-    dataset = NewDataSet(root)
+    dataset = NewDataSet(io_utils.getDataSetPath())
     train_dataset, valid_dataset = torch.utils.data.random_split(dataset, [int(0.8 * len(dataset)) - 1,
                                                                            len(dataset) - int(0.8 * len(dataset)) + 1])
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch, shuffle=shuffle, num_workers=wokers)
@@ -68,7 +65,7 @@ def main(epochs=200, batch=1, shuffle=False, wokers=4, cudan=0):
         vis.add_scalar("total_loss", loss, epoch)
         scheduler.step()
 
-        if epoch % 10 == 0:
+        if epoch % 10 == 0 and epoch > 0:
             io_utils.saveCheckPoint(net, epoch, loss)
 
 

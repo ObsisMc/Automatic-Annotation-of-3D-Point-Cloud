@@ -1,0 +1,3 @@
+training_common:
+  dataset_path: /home/zrh/Data/kitti/tracking/extracted_points
+  ckpt_out_path: /home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints
