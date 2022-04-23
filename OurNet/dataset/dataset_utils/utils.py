@@ -51,6 +51,7 @@ class Sampler():
         Return:
             centroids: sampled pointcloud index, [B, npoint]
         """
+        points = points[:, :3]
         centroids = self.before_sample(points, npoint)
         if centroids is not None:
             return centroids
