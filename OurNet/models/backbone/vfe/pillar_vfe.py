@@ -102,7 +102,7 @@ class PillarVFE(nn.Module):
         bev = torch.zeros((c, h, w))
         for index in range(len(batch_dict["voxel_coords"])):
             coo = batch_dict["voxel_coords"][index].type(torch.int)
-            bev[:, coo[0], coo[1]] = batch_dict["pillar_features"][index]
+            bev[:, coo[2], coo[3]] = batch_dict["pillar_features"][index]
         batch_dict["bev"] = bev
         return batch_dict
 
