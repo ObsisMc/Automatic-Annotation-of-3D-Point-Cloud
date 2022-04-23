@@ -1,4 +1,4 @@
-# this util is used to transfer format of tracking data into format of object data.
+# this common_utils is used to transfer format of tracking data into format of object data.
 import numpy as np
 import os
 import shutil
