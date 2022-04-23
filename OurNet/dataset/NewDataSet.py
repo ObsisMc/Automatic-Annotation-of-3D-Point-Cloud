@@ -1,8 +1,6 @@
 import numpy as np
 from torch.utils.data import Dataset
-from dataset_utils import DatasetCreator as datacreator, Augmentor as augmentor
-from dataset_utils.utils import Sampler
-import numpy
+from dataset_utils import DatasetCreator as datacreator, Augmentor as augmentor, Sampler
 
 
 class NewDataSet(Dataset):
@@ -18,7 +16,7 @@ class NewDataSet(Dataset):
 
     def __init__(self, datapath):
         self.data_list = self.create_data(datapath)
-        self.sampler = Sampler()
+        self.sampler = Sampler.Sampler()
 
     def __getitem__(self, item):
         """
