@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from PointNet import PointNetfeat
-
 
 class SimplePointNet(nn.Module):
     def __init__(self, k=3):

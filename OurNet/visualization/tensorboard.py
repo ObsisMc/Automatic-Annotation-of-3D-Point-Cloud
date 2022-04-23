@@ -1,6 +1,6 @@
 import os
 import torch
-import util.cfgs as Config
+import common_utils.cfgs as Config
 from torch.utils.tensorboard import SummaryWriter
 
 

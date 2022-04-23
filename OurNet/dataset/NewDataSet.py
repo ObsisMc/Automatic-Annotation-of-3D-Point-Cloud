@@ -1,9 +1,8 @@
 import numpy as np
-from torch.utils.data import Dataset
-from dataset_utils import DatasetCreator as datacreator, Augmentor as augmentor, Sampler
+from DataSetTemplate import DataSetTemplate
 
 
-class NewDataSet(Dataset):
+class NewDataSet(DataSetTemplate):
     """
     data_root
       |-> 0000 // scene
@@ -15,8 +14,8 @@ class NewDataSet(Dataset):
     """
 
     def __init__(self, datapath):
-        self.data_list = self.create_data(datapath)
-        self.sampler = Sampler.Sampler()
+        super().__init__(datapath)
+        self.data_list = self.datasetcreator.gapTwoInTradj()
 
     def __getitem__(self, item):
         """
@@ -25,11 +24,8 @@ class NewDataSet(Dataset):
         data_root = self.data_list[item]
         source, raw_target = self.sampler.fps(np.load(data_root[0])), self.sampler.fps(
             np.load(data_root[1]))
-        target, label = augmentor.guassianArgu(raw_target)  # label: dx, dy, dz, angle, confidence
+        target, label = self.augmentor.guassianArgu(raw_target)  # label: dx, dy, dz, angle, confidence
         return [source, target], label
 
     def __len__(self):
         return len(self.data_list)
-
-    def create_data(self, datapath):
-        return datacreator.gapTwoInTradj(datapath=datapath)

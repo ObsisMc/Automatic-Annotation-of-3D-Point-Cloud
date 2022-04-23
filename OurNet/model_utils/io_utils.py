@@ -8,7 +8,7 @@ def checkCheckpointFile():
 
 
 def saveCheckPoint(net, epoch, loss):
-    model = net.__name__
+    model = net.__class__.__name__
 
     filefolder = os.path.join("checkpoints", model)
     if not os.path.exists(filefolder):

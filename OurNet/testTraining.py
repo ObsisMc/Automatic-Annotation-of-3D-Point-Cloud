@@ -1,8 +1,8 @@
-from models import SiameseNet
+from models.detector.SiameseNet import Siamese2c
 from dataset.NewDataSet import NewDataSet
 from visualization.tensorboard import TensorBoardVis
 from models.detector.NetPractice1 import PointNetPred
-from utils import io_utils
+from model_utils import io_utils
 
 import torch
 import torch.utils.data
@@ -26,7 +26,7 @@ def main(epochs=200, batch=1, shuffle=False, wokers=4, cudan=0):
     print(blue('# of training samples: %d' % len(train_dataset)))
     print(blue('# of validation samples: %d' % len(valid_dataset)))
 
-    net = SiameseNet.Siamese2c()
+    net = Siamese2c()
     # net = PointNetPred(5)
     net.to(device)
 
