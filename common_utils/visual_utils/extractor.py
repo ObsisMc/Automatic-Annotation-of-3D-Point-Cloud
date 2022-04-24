@@ -51,7 +51,8 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
                     frameid, trajectoryid, category = labellist[0], labellist[1], labellist[2]
                     if category == "DontCare":
                         continue
-                    box = labellist[13:16] + [labellist[12], labellist[10], labellist[11]] + [labellist[16]]
+                    box = labellist[13:16] + [labellist[12], labellist[10], labellist[11]] + \
+                          [labellist[16]]  # location,l, h, w,angle
                     extend_mtx = np.array([1, 1, 1, extend, extend, extend, 1]).reshape(1, -1)
                 box = calibration.bbox_rect_to_lidar(np.array(box, dtype=np.float32).reshape(-1, len(box)) * extend_mtx) \
                     .reshape(len(box), )
@@ -78,8 +79,8 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
                 outputpath = os.path.join(outputroot, sceneid, "{}#{}".format(category, trajectoryid))
                 name = "{:06d}".format(int(frameid))
                 io.save_object_points(extracted_points, os.path.join(outputpath, "points"), name + ".npy")
-                io.save_object_label(box[[0, 1, 2, 6]], os.path.join(outputpath, "labels"),
-                                     name + ".txt")  # save location and angle
+                io.save_object_label(box, os.path.join(outputpath, "labels"),
+                                     name + ".txt")  # save [location,l,h,w,angle]
                 label = f.readline().rstrip("\n")
 
         print("Scene{} finished!".format(sceneid))

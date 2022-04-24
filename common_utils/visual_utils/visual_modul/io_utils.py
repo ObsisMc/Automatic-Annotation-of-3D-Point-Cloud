@@ -40,7 +40,7 @@ def save_object_points(points: np.ndarray, outputroot, name):
 
 def save_object_label(label, outputroot, name):
     """
-    label: [l,h,w,angle] float  without ""\n
+    label: [location,l,h,w,angle] float  without ""\n
     """
     if not os.path.exists(outputroot):
         os.makedirs(outputroot)
