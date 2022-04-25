@@ -3,6 +3,9 @@ from __future__ import print_function
 import argparse
 import os
 import random
+"""
+Going to be obsolete
+"""
 
 import numpy as np
 import torch.nn.functional as F
@@ -11,7 +14,7 @@ import torch.utils.data
 
 from OurNet.dataset.MyDataSet import MyDataSet
 from MyModel import PointNetCls, PointNetPred
-from Visualize import Visualizer
+from OurNet.visualization.Visualize import Visualizer
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
