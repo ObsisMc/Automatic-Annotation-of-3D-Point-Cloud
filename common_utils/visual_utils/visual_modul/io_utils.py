@@ -45,7 +45,7 @@ def save_object_label(label, outputroot, name):
     if not os.path.exists(outputroot):
         os.makedirs(outputroot)
     with open(os.path.join(outputroot, name), "w") as f:
-        f.write("{} {} {} {}".format(*label))
+        f.write(" ".join([str(v) for v in label]))
         f.write("\n")
 
 
