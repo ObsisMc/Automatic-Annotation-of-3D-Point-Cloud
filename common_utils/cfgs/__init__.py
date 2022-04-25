@@ -1,3 +1,4 @@
+import copy
 import os
 import sys
 import yaml
@@ -18,15 +19,30 @@ def load_model_visual():
 
 def load_pillar_vfe():
     path = os.path.join(root, "dataset/pillar_cfg.yaml")
-    data_dict = yaml.load(open(path, encoding="utf-8"), Loader=yaml.FullLoader)["data_dict"]
+    with open(path, encoding="utf-8") as f:
+        pillar_cfg = yaml.load(f, Loader=yaml.FullLoader)["pillar_config"]
 
-    # pre-process
-    size = data_dict["voxel_size"] = np.array(data_dict["voxel_size"])
-    vrange = data_dict["point_cloud_range"] = np.array(data_dict["point_cloud_range"])
-    data_dict["image_shape"] = (vrange[3:6] - vrange[0:3]) / size
-    return data_dict
+        # pre-process
+        size = pillar_cfg["VOXEL_SIZE"] = np.array(pillar_cfg["VOXEL_SIZE"])
+        vrange = pillar_cfg["POINT_CLOUD_RANGE"] = np.array(pillar_cfg["POINT_CLOUD_RANGE"])
+
+        pillar_cfg["VOXEL_SIZE"][2] = pillar_cfg["POINT_CLOUD_RANGE"][5] - pillar_cfg["POINT_CLOUD_RANGE"][2]
+        pillar_cfg["IMAGE_SIZE"] = (vrange[3:6] - vrange[0:3]) / size
+    return pillar_cfg
+
+
+def load_pillar_data_template(num=1) -> list:
+    path = os.path.join(root, "dataset/pillar_cfg.yaml")
+    with open(path, encoding="utf-8") as f:
+        data_dict = yaml.load(f, Loader=yaml.FullLoader)["data_dict"]
+        data_dicts = [copy.deepcopy(data_dict) for _ in range(num)]
+    return data_dicts
 
 
 def load_train_common():
     path = os.path.join(root, "models/training_cfg.yaml")
     return yaml.load(open(path, encoding="utf-8"), Loader=yaml.FullLoader)["training_common"]
+
+
+if __name__ == "__main__":
+    load_pillar_data_template(2)

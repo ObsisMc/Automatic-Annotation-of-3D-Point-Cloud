@@ -59,33 +59,24 @@ class VoxelGeneratorWrapper():
 
 
 class DataProcessor(object):
-    def __init__(self, point_cloud_range, training, num_point_features):
-        self.point_cloud_range = point_cloud_range
-        self.training = training
-        self.num_point_features = num_point_features
-        self.mode = 'train' if training else 'test'
-        self.grid_size = self.voxel_size = None
-        self.data_processor_queue = []
+    def __init__(self, pillar_config):
+        self.point_cloud_range = pillar_config["POINT_CLOUD_RANGE"]
+        self.num_point_features = pillar_config["NUM_POINT_FEATURES"]
+        self.mode = pillar_config["TRAIN"]
+        self.grid_size = self.voxel_size = pillar_config["VOXEL_SIZE"]
+        self.max_points_per_voxel = pillar_config["MAX_POINTS_PER_VOXEL"]
+        self.max_number_of_voxels = pillar_config["MAX_NUMBER_OF_VOXELS"]
 
         self.voxel_generator = None
 
-    def transform_points_to_voxels(self, data_dict=None, config=None):
-        # config
-        if data_dict is None:
-            grid_size = (self.point_cloud_range[3:6] - self.point_cloud_range[0:3]) / np.array(config.VOXEL_SIZE)
-            self.grid_size = np.round(grid_size).astype(np.int64)
-            self.voxel_size = config.VOXEL_SIZE
-            # just bind the config, we will create the VoxelGeneratorWrapper later,
-            # to avoid pickling issues in multiprocess spawn
-            return partial(self.transform_points_to_voxels, config=config)
-
+    def transform_points_to_voxels(self, data_dict):
         if self.voxel_generator is None:
             self.voxel_generator = VoxelGeneratorWrapper(
-                vsize_xyz=config.VOXEL_SIZE,
+                vsize_xyz=self.voxel_size,
                 coors_range_xyz=self.point_cloud_range,
                 num_point_features=self.num_point_features,
-                max_num_points_per_voxel=config.MAX_POINTS_PER_VOXEL,
-                max_num_voxels=config.MAX_NUMBER_OF_VOXELS[self.mode],
+                max_num_points_per_voxel=self.max_points_per_voxel,
+                max_num_voxels=self.max_number_of_voxels[self.mode],
             )
 
         points = data_dict['points']
@@ -96,35 +87,3 @@ class DataProcessor(object):
         data_dict['voxel_coords'] = coordinates
         data_dict['voxel_num_points'] = num_points
         return data_dict
-
-
-class Config():
-    def __init__(self):
-        self.VOXEL_SIZE = [0.16, 0.16, 4.0]
-        self.MAX_POINTS_PER_VOXEL = 32
-        self.MAX_NUMBER_OF_VOXELS = {"test": 10000, "train": 160000}
-
-
-def init_data_dict():
-    plst = [[0.8, 0.08, 1, 1]]
-    # plst = [[0.0, 0.0, 0.0, 1]]
-    points = np.array(plst)
-    return {"points": np.array(points)}  # need np.darray
-
-
-def getDataDict():
-    data_dict = init_data_dict()
-    config = Config()
-    range = np.array([0.0, 0.0, 0.0, 8, 1.6, 4.0])
-
-    data_dict["image_shape"] = (range[3:6] - range[0:3]) / np.array(config.VOXEL_SIZE)
-    dataprocesspr = DataProcessor(range, 1, 4)
-    # dataprocesspr = DataProcessor(np.array([0, 0, 0, 0.16, 0.16, 4]), 1, 4)
-    data_dict = dataprocesspr.transform_points_to_voxels(data_dict=data_dict, config=config)
-    return data_dict, range
-
-
-if __name__ == "__main__":
-    # it may be used before dataloader
-    data_dict = getDataDict()
-    print(data_dict)
