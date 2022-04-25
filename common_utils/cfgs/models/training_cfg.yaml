@@ -1,3 +1,17 @@
 training_common:
   dataset_path: /home/zrh/Data/kitti/tracking/extracted_points
   ckpt_out_path: /home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints
+  training_parameters:
+    epochs: 100
+    batch_size: 1
+    shuffle: False
+    workers: 4
+    cudaidx: 0
+    train_ratio: 0.8
+
+pillar_cfg:
+  USE_NORM: True # whether batchNormalization
+  WITH_DISTANCE: False # default false
+  USE_ABSLOTE_XYZ: True # default true
+  NUM_FILTERS: # channel output of every CNN
+    - 64

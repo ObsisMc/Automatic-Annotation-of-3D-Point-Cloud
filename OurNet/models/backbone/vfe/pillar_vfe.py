@@ -104,9 +104,9 @@ class PillarVFE(nn.Module):
             coo = batch_dict["voxel_coords"][index].type(torch.int)
             bev[:, coo[2], coo[3]] = batch_dict["pillar_features"][index]
         batch_dict["bev"] = bev
-        return batch_dict
+        return bev
 
-    def forward(self, batch_dict, **kwargs):
+    def forward(self, batch_dict):
         """
                 batch_dict:  why batch_index is needed? how to handle batch? how to train the network?
                     points:(N,5) --> (batch_index,x,y,z,r) batch_index代表了该点云数据在当前batch中的index
