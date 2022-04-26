@@ -10,12 +10,13 @@ def visualize_scene(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_
     it only supports single frame
     """
     V.draw_scenes(
-        points=points, ref_boxes=ref_boxes
+        points=points, ref_boxes=ref_boxes, ref_labels=ref_labels, ref_scores=ref_scores, point_colors=point_colors
     )
 
 
 def visualize_object(points: np.ndarray, ref_boxes=None, points2=None):
     V.draw_object(points, ref_boxes, points2)
+
 
 def main():
     cfg = Config.load_visual("visualize_root")
@@ -25,11 +26,11 @@ def main():
 
     # load data
     points = io.load_points(cfg["pointspath"])
-    boxes = io.load_boxes_from_object_txt(cfg["boxpath"])
+    boxes, label = io.load_boxes_from_object_txt(cfg["boxpath"])
     boxes = calibration.bbox_rect_to_lidar(boxes)  # move coordinates
 
     # visualize
-    visualize_scene(points=points, ref_boxes=boxes)
+    visualize_scene(points=points, ref_boxes=boxes, ref_labels=label)
     # visualize_object(points=points, ref_boxes=boxes[0])
     # visualize_object(points=points)
 
@@ -38,7 +39,7 @@ def main():
     # for i in range(len(cfgs["multi_points"])):
     #     multi_point.append(io.load_points(cfgs["multi_points"][i]))
     # visualize_object(points=points, points2=multi_point)
-    
-    
+
+
 if __name__ == '__main__':
     main()

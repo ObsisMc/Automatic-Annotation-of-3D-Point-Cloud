@@ -19,8 +19,24 @@ def load_boxes_from_object_txt(boxpath):
     """
     1. the boxes should be calibrated
     2. box should be [location + l + h + w + angle]
+    3. label is in kitti object format
     """
+
+    def parseLabel(category):
+        if category == "Car":
+            return 1  # green
+        elif category == "Pedestrian":
+            return 2  # blue
+        elif category == "Cyclist":
+            return 3  # yellow
+        elif category == "Van":
+            return 4
+        elif category == "Truck":
+            return 5
+        return 0
+
     boxes = []
+    labels = []
     with open(boxpath, 'r') as f:
         lines = f.readlines()
         for line in lines:
@@ -29,7 +45,8 @@ def load_boxes_from_object_txt(boxpath):
                 continue
             box = line[11:14] + [line[10], line[8], line[9]] + [line[14]]
             boxes.append(box)
-    return np.array(boxes, dtype=np.float32)
+            labels.append(parseLabel(line[0]))
+    return np.array(boxes, dtype=np.float32), np.array(labels, dtype=np.int)
 
 
 def save_object_points(points: np.ndarray, outputroot, name):
