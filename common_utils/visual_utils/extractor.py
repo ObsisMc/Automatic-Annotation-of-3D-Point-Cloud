@@ -76,6 +76,10 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
 
                 # extract and save points; save label in a txt for every TID
                 extracted_points, _, _ = V.extract_object(points, box)
+                if extracted_points.shape[0] == 0:
+                    print("%s (id:%d) in scene %d has no points (no extraction)" %
+                          (category, int(trajectoryid), int(sceneid)))
+                    continue
                 outputpath = os.path.join(outputroot, sceneid, "{}#{}".format(category, trajectoryid))
                 name = "{:06d}".format(int(frameid))
                 io.save_object_points(extracted_points, os.path.join(outputpath, "points"), name + ".npy")
