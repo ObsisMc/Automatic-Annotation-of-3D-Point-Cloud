@@ -12,12 +12,16 @@ class SmPillarNet(nn.Module):
         super().__init__()
         pillar_cfg = Config.load_train_pillar_cfg()
         pillar_vfe = Config.load_pillar_vfe()
-        self.pfe = PillarVFE(pillar_cfg, pillar_vfe, device).to(device)  # incise pillars with feature extracted
+        self.pfe = PillarVFE(pillar_cfg, pillar_vfe, device).to(device)  # extract pillar's features
         self.psct = PointPillarScatter(pillar_cfg["NUM_FILTERS"][-1], pillar_vfe["GRID_SIZE"])  # map pillar to bev
         pass
 
     def forward(self, source_dict, target_dict):
-        source_dict = self.pfe(source_dict)
-        source_dict = self.psct(source_dict)
-        bev = source_dict["spatial_features"]  # (B,C,H,W)
-        return bev
+        # get features
+        source_dict, target_dict = self.pfe(source_dict), self.pfe(target_dict)
+        # map to bev
+        source_dict, target_dict = self.psct(source_dict), self.psct(target_dict)
+        sbev, tbev = source_dict["spatial_features"], target_dict["spatial_features"]  # (B,C,H,W)
+
+
+        return sbev

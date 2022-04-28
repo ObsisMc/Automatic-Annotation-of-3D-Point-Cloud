@@ -6,7 +6,7 @@ class DataSetCreator:
     def __init__(self, datapath):
         self.datapath = datapath
 
-    def gapTwoInTradj(self, gap=1, scenen=1, starts=0, type=("Car", "Van")):
+    def gapTwoInTradj(self, gap=1, scenen=1, starts=0, type=("Car")) -> list:
         """
         data_root
           |-> 0000 // scene
@@ -15,6 +15,8 @@ class DataSetCreator:
                         |-> 000000.npy // points cloud in frameId
                       |-> labels
                         |-> 000000.txt
+        @return
+            [[source_path, target_path],[],...]
         """
         dataset = []
 
