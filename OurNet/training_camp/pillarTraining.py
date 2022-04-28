@@ -29,7 +29,7 @@ def main():
                                                    num_workers=workers)
 
     # net
-    net = SmPillarNet().to(device)
+    net = SmPillarNet(device).to(device)
     net.train()
 
     # train
@@ -37,7 +37,9 @@ def main():
         for i, data in enumerate(train_dataloader):
             source_dict, target_dict = data
             print(source_dict["points"].shape)
-            print("hi")
+            source_bev = net(source_dict, target_dict)
+            print(torch.max(source_bev, dim=1)[0])
+            print("stop")
     pass
 
 
