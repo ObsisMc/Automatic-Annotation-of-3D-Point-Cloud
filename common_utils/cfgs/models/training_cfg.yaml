@@ -13,5 +13,5 @@ pillar_cfg:
   USE_NORM: True # whether batchNormalization
   WITH_DISTANCE: False # default false
   USE_ABSLOTE_XYZ: True # default true
-  NUM_FILTERS: # channel output of every CNN
+  NUM_FILTERS: # channel output of every CNN, (bev's feature)
     - 64

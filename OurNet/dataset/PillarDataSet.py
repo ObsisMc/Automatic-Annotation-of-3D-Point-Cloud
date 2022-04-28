@@ -26,10 +26,17 @@ class SmPillarDataSet(DataSetTemplate.DataSetTemplate):
         self.target_dict["points"] = np.load(target_root)
         self.data_processor.transform_points_to_voxels(self.source_dict)
         self.data_processor.transform_points_to_voxels(self.target_dict)
+
+        assert self.source_dict["voxel_num_points"].shape[0] > 0 and self.target_dict["voxel_num_points"].shape[0] > 0
+
         return self.source_dict, self.target_dict
 
 
-if __name__ == "__main__":
+def test1():
     spd = SmPillarDataSet(Config.load_train_common()["dataset_path"])
     source, target = spd[0]
-    # print(source)
+    print(source)
+
+
+if __name__ == "__main__":
+    test1()

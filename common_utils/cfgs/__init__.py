@@ -26,8 +26,8 @@ def load_pillar_vfe():
         size = pillar_cfg["VOXEL_SIZE"] = np.array(pillar_cfg["VOXEL_SIZE"])
         vrange = pillar_cfg["POINT_CLOUD_RANGE"] = np.array(pillar_cfg["POINT_CLOUD_RANGE"])
 
-        pillar_cfg["VOXEL_SIZE"][2] = pillar_cfg["POINT_CLOUD_RANGE"][5] - pillar_cfg["POINT_CLOUD_RANGE"][2]
-        pillar_cfg["IMAGE_SIZE"] = (vrange[3:6] - vrange[0:3]) / size
+        pillar_cfg["VOXEL_SIZE"][2] = pillar_cfg["POINT_CLOUD_RANGE"][5] - pillar_cfg["POINT_CLOUD_RANGE"][2]  # calc z
+        pillar_cfg["GRID_SIZE"] = (vrange[3:6] - vrange[0:3]) / size
     return pillar_cfg
 
 
@@ -42,6 +42,11 @@ def load_pillar_data_template(num=1) -> list:
 def load_train_common():
     path = os.path.join(root, "models/training_cfg.yaml")
     return yaml.load(open(path, encoding="utf-8"), Loader=yaml.FullLoader)["training_common"]
+
+
+def load_train_pillar_cfg():
+    path = os.path.join(root, "models/training_cfg.yaml")
+    return yaml.load(open(path, encoding="utf-8"), Loader=yaml.FullLoader)["pillar_cfg"]
 
 
 if __name__ == "__main__":
