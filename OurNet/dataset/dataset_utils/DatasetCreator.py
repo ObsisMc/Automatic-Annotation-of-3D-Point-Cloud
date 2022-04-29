@@ -1,3 +1,4 @@
+import copy
 import os
 import numpy as np
 
@@ -44,6 +45,34 @@ class DataSetCreator:
                               os.path.join(object_points_dir, points_list[i])]  # source, target
                     # label = labels_list[i]  # target label
                     dataset.append(points)
+        return dataset
+
+    def getTrajectaryBoxes(self, starts=0, scene_n=1, type=("Car"), max_traj_n=5, cache=False):
+        """
+        get series boxes of a object's trajectory
+        Pay attention: some trajectory isn't cont
+        """
+        dataset = []
+
+        scene_list = sorted(os.listdir(self.datapath), key=lambda x: int(x))[starts:starts + scene_n]
+        for scene in scene_list:
+            tid_dir = os.path.join(self.datapath, scene)
+            tid_list = os.listdir(tid_dir)
+            for tid in tid_list:
+                if tid.split("#")[0] not in type:
+                    continue
+                object_labels_dir = os.path.join(tid_dir, tid, "labels")
+                labels_list = sorted(os.listdir(object_labels_dir), key=lambda x: int(x.rstrip(".txt")))
+
+                window = []
+                for i in range(len(labels_list)):
+                    if len(window) < max_traj_n:
+                        window.append(os.path.join(object_labels_dir, labels_list[i]))
+                    elif len(window) == max_traj_n:
+                        dataset.append(copy.deepcopy(window))
+                        window.pop(0)
+                if len(window) > 0:
+                    dataset.append(window)
         return dataset
 
     def severalFrameInTraj(self, length=5, scenen=21, starts=0, type=("Car", "Pedestrian", "Cyclist")):
