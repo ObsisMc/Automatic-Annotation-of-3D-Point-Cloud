@@ -181,7 +181,7 @@ def draw_object(points: np.ndarray, box=None, multi_points=None):
     pcld_crop.paint_uniform_color([1, 0, 0])  # [1,0,0] is red
     vis.add_geometry(pcld_crop)
 
-    axis_pcd = open3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=[0, 0, 0])
+    axis_pcd = open3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=[0, 0, 0])  # red is x, green is y
     vis.add_geometry(axis_pcd)
 
     vis.run()
