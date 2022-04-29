@@ -1,5 +1,12 @@
 import os
-import numpy
+import numpy as np
+
+
+def getLW(label_path):
+    with open(label_path) as f:
+        label = f.readline()
+    label = label.split(' ')
+    return np.array([float(label[3]), float(label[5])])
 
 
 class DataSetCreator:
@@ -38,3 +45,38 @@ class DataSetCreator:
                     # label = labels_list[i]  # target label
                     dataset.append(points)
         return dataset
+
+    def severalFrameInTraj(self, length=5, scenen=21, starts=0, type=("Car", "Pedestrian", "Cyclist")):
+        pointSet = []
+        labelSet = []
+        scene_list = sorted(os.listdir(self.datapath), key=lambda x: int(x))[starts:starts + scenen]
+        for scene in scene_list:
+            tid_dir = os.path.join(self.datapath, scene)
+            tid_list = os.listdir(tid_dir)
+            for tid in tid_list:
+                if tid.split("#")[0] not in type:
+                    continue
+                object_points_dir = os.path.join(tid_dir, tid, "points")
+                object_labels_dir = os.path.join(tid_dir, tid, "labels")
+                points_list = sorted(os.listdir(os.path.join(object_points_dir)), key=lambda x: int(x.rstrip(".npy")))
+                labels_list = sorted(os.listdir(os.path.join(object_labels_dir)), key=lambda x: int(x.rstrip(".txt")))
+                num_frame = len(points_list)
+                if num_frame <= length:
+                    # points is all the trajectory
+                    points = [os.path.join(object_points_dir, points_list[i]) for i in range(num_frame)]
+                    label = getLW(os.path.join(object_labels_dir, labels_list[0]))
+                    pointSet.append(points)
+                    labelSet.append(label)
+                else:
+                    for i in range(num_frame - length + 1):
+                        points = [os.path.join(object_points_dir, points_list[i + j]) for j in range(length)]
+                        label = getLW(os.path.join(object_labels_dir, labels_list[0]))
+                        pointSet.append(points)
+                        labelSet.append(label)
+                    # generate a piece of data by all frame
+                    points = [os.path.join(object_points_dir, points_list[i]) for i in range(num_frame)]
+                    label = getLW(os.path.join(object_labels_dir, labels_list[0]))
+                    pointSet.append(points)
+                    labelSet.append(label)
+        return pointSet, labelSet
+
