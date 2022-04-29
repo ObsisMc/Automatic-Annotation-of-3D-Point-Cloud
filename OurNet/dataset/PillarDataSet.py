@@ -37,7 +37,7 @@ class SmPillarSizeDataSet(DataSetTemplate.DataSetTemplate):
         super().__init__(dataPath)
         self.point_list, self.label_list = self.datasetcreator.severalFrameInTraj()
         self.data_processor = DataProcessor(Config.load_pillar_vfe())
-        self.source_dict = Config.load_pillar_data_template(1)
+        self.source_dict = Config.load_pillar_data_template(1)[0]
 
     def __len__(self):
         return len(self.point_list)
@@ -50,7 +50,7 @@ class SmPillarSizeDataSet(DataSetTemplate.DataSetTemplate):
             points = np.concatenate((points, np.load(root)))
         self.source_dict["points"] = points
         self.data_processor.transform_points_to_voxels(self.source_dict)
-        assert self.source_dict["voxel_num_points"].shape[0] > 0
+        # assert self.source_dict["voxel_num_points"].shape[0] > 0
         return self.source_dict, self.label_list[index]
 
 
