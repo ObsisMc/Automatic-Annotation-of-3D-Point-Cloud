@@ -7,7 +7,8 @@ from visual_modul.calibration import Calibration
 
 def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1.3, begin=0, end=1, datatype=0,
                            threshold=0.85,
-                           inference=True):
+                           inference=True,
+                           keep_world_coord=False):
     """
     All directory structure is the same as kitti-tracking data.
     it contains frameId and trajectoryId which must return.
@@ -75,7 +76,7 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
                         continue
 
                 # extract and save points; save label in a txt for every TID
-                extracted_points, _, _ = V.extract_object(points, box)
+                extracted_points, _, _ = V.extract_object(points, box, keep_world_coord)
                 if extracted_points.shape[0] == 0:
                     print("%s (id:%d) in scene %d has no points (no extraction)" %
                           (category, int(trajectoryid), int(sceneid)))
@@ -92,8 +93,10 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
 
 if __name__ == "__main__":
     cfg = Config.load_visual("extract_root")
-    extract_tracking_scene(cfg["labelroot"], cfg["calibroot"], cfg["pointroot"], cfg["outputroot"],
+    extract_tracking_scene(cfg["labelroot"], cfg["calibroot"], cfg["pointroot"],
+                           cfg["outputroot"][bool(cfg["keep_world_coord"])],
                            begin=cfg["begin"], end=cfg["end"],
                            inference=bool(cfg["inference"]),
                            threshold=float(cfg["threshold"]),
-                           extend=float(cfg["extend"]))
+                           extend=float(cfg["extend"]),
+                           keep_world_coord=bool(cfg["keep_world_coord"]))

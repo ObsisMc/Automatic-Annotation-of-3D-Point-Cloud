@@ -127,10 +127,11 @@ def draw_box(vis, gt_boxes, color=(0, 1, 0), ref_labels=None, score=None):
 
 # extract a single object
 
-def extract_object(points: np.ndarray, box: np.array):
+def extract_object(points: np.ndarray, box: np.array, keep_world_coord=False):
     """
     input:
     1. box: should be [location, l, h, w, angle]
+    2. points: (N, 3) open3d.utility.Vector3dVector cannot handle refraction
     output:
     1. points_canonical: np.ndarray
     2. pcld_crop: open3d.geometry.PointCloud
@@ -144,8 +145,10 @@ def extract_object(points: np.ndarray, box: np.array):
     pcld_crop = pcld.crop(bound)
 
     # translate coordinates and rotate the points to be orthogonal
-    points_canonical = canonicalize(np.asarray(pcld_crop.points), box)[0]
-    pcld_crop.points = open3d.utility.Vector3dVector(points_canonical)
+    points_canonical = np.asarray(pcld_crop.points)
+    if not keep_world_coord:
+        points_canonical = canonicalize(points_canonical, box)[0]
+        pcld_crop.points = open3d.utility.Vector3dVector(points_canonical)
 
     # get a canonical box
     # linebox = extract_box(box, True)
@@ -159,13 +162,12 @@ def extract_object(points: np.ndarray, box: np.array):
     return points_canonical, pcld_crop, line_set
 
 
-def draw_object(points: np.ndarray, box=None, multi_points=None):
+def draw_object(points: np.ndarray, box=None, multi_points=None, keep_world_coord=False):
     vis = open3d.visualization.Visualizer()
     vis.create_window()
 
     if box is not None:
-        _, pcld_crop, line_set = extract_object(points, box)
-        vis.add_geometry(line_set)
+        _, pcld_crop, line_set = extract_object(points, box, keep_world_coord)
     else:
         if multi_points is not None:
             for idx, pts in enumerate(multi_points):
