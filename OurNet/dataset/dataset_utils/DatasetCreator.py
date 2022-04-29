@@ -73,5 +73,10 @@ class DataSetCreator:
                         label = getLW(os.path.join(object_labels_dir, labels_list[0]))
                         pointSet.append(points)
                         labelSet.append(label)
+                    # generate a piece of data by all frame
+                    points = [os.path.join(object_points_dir, points_list[i]) for i in range(num_frame)]
+                    label = getLW(os.path.join(object_labels_dir, labels_list[0]))
+                    pointSet.append(points)
+                    labelSet.append(label)
         return pointSet, labelSet
 

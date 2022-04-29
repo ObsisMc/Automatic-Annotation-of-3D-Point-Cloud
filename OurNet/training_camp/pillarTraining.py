@@ -15,6 +15,8 @@ def main():
     train_par = cfgs["training_parameters"]
     batch, shuffle, workers = train_par["batch_size"], train_par["shuffle"], train_par["workers"]
     epochs = train_par["epochs"]
+    early_stop = train_par["early_stop"]
+    lr = train_par["learning_rate"]
 
     # cuda or cpu
     device = "cuda:%d" % train_par["cudaidx"] if torch.cuda.is_available() else "cpu"

@@ -27,7 +27,7 @@ class SmPillarNet(nn.Module):
 
 
 class SmPillarSizeNet(nn.Module):
-    def __init__(self, device):
+    def __init__(self):
         super().__init__()
         pillar_cfg = Config.load_train_pillar_cfg()
         pillar_vfe = Config.load_pillar_vfe()
