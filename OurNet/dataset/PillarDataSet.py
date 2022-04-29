@@ -32,6 +32,28 @@ class SmPillarDataSet(DataSetTemplate.DataSetTemplate):
         return self.source_dict, self.target_dict
 
 
+class SmPillarSizeDataSet(DataSetTemplate.DataSetTemplate):
+    def __init__(self, dataPath):
+        super().__init__(dataPath)
+        self.point_list, self.label_list = self.datasetcreator.severalFrameInTraj()
+        self.data_processor = DataProcessor(Config.load_pillar_vfe())
+        self.source_dict = Config.load_pillar_data_template(1)
+
+    def __len__(self):
+        return len(self.point_list)
+
+    def __getitem__(self, index):
+        point_root = self.point_list[index]
+        # merge all frames into ndarray points
+        points = np.zeros((0, 3))
+        for root in point_root:
+            points = np.concatenate((points, np.load(root)))
+        self.source_dict["points"] = points
+        self.data_processor.transform_points_to_voxels(self.source_dict)
+        assert self.source_dict["voxel_num_points"].shape[0] > 0
+        return self.source_dict, self.label_list[index]
+
+
 def test1():
     spd = SmPillarDataSet(Config.load_train_common()["dataset_path"])
     source, target = spd[0]

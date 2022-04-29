@@ -22,6 +22,4 @@ class SmPillarNet(nn.Module):
         # map to bev
         source_dict, target_dict = self.psct(source_dict), self.psct(target_dict)
         sbev, tbev = source_dict["spatial_features"], target_dict["spatial_features"]  # (B,C,H,W)
-
-
         return sbev
