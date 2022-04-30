@@ -52,3 +52,8 @@ class Sampler():
             # 从更新后的distances矩阵中找出距离最远的点，作为最远点用于下一轮迭代
             farthest = np.argmax(distance)
         return points[centroids.astype(np.int)]
+
+    def paddingTrajBoxs(self, pose: list, max_traj_n=10):
+        for i in range(max_traj_n - len(pose)):
+            pose.append(np.array([0, 0, 0]))
+        return pose

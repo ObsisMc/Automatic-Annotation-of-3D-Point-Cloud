@@ -47,10 +47,10 @@ class DataSetCreator:
                     dataset.append(points)
         return dataset
 
-    def getTrajectaryBoxes(self, starts=0, scene_n=1, type=("Car"), max_traj_n=5, cache=False):
+    def getWorldTrajectary(self, starts=0, scene_n=10, type=("Car"), max_traj_n=10, cache=False):
         """
-        get series boxes of a object's trajectory
-        Pay attention: some trajectory isn't cont
+        get series boxes and points of a object's trajectory
+        Pay attention: some trajectory isn't continuous
         """
         dataset = []
 
@@ -62,16 +62,20 @@ class DataSetCreator:
                 if tid.split("#")[0] not in type:
                     continue
                 object_labels_dir = os.path.join(tid_dir, tid, "labels")
+                object_points_dir = os.path.join(tid_dir, tid, "points")
                 labels_list = sorted(os.listdir(object_labels_dir), key=lambda x: int(x.rstrip(".txt")))
+                points_list = sorted(os.listdir(object_points_dir), key=lambda x: int(x.rstrip(".npy")))
 
-                window = []
+                window = [[], []]  # [[points], [labels]]
                 for i in range(len(labels_list)):
-                    if len(window) < max_traj_n:
-                        window.append(os.path.join(object_labels_dir, labels_list[i]))
-                    elif len(window) == max_traj_n:
+                    if len(window[0]) < max_traj_n:
+                        window[0].append(os.path.join(object_points_dir, points_list[i]))
+                        window[1].append(os.path.join(object_labels_dir, labels_list[i]))
+                    elif len(window[0]) == max_traj_n:
                         dataset.append(copy.deepcopy(window))
-                        window.pop(0)
-                if len(window) > 0:
+                        window[0].pop(0)
+                        window[1].pop(0)
+                if len(window[0]) > 0:
                     dataset.append(window)
         return dataset
 
@@ -108,4 +112,3 @@ class DataSetCreator:
                     pointSet.append(points)
                     labelSet.append(label)
         return pointSet, labelSet
-
