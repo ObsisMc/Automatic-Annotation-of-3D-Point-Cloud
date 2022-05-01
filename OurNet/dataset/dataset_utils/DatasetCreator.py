@@ -14,7 +14,7 @@ class DataSetCreator:
     def __init__(self, datapath):
         self.datapath = datapath
 
-    def gapTwoInTradj(self, gap=1, scenen=10, starts=0, type=("Car")) -> list:
+    def gapTwoInTradj(self, gap=1, scenen=10, starts=0, type=("Car", "Van")) -> list:
         """
         data_root
           |-> 0000 // scene

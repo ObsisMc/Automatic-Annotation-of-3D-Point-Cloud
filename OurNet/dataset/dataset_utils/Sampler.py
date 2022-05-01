@@ -11,7 +11,7 @@ class Sampler():
         """
         points: (N,3)
         """
-        if points.shape[0] <= n:
+        if points.shape[0] < n:
             padding = [(0, 0, 0)] * (n - points.shape[0])
             return np.r_[points, np.array(padding)]
         return None

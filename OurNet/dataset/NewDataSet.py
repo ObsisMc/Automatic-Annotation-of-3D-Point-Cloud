@@ -29,3 +29,13 @@ class NewDataSet(DataSetTemplate):
 
     def __len__(self):
         return len(self.data_list)
+
+
+if __name__ == "__main__":
+    dataset = NewDataSet("/home/zrh/Data/kitti/tracking/extracted_points_keep")
+    print(len(dataset))
+    for i in range(len(dataset)):
+        points, label = dataset[i]
+        if i % 500 == 0:
+            print("pass %d" % (i))
+    print("finish")

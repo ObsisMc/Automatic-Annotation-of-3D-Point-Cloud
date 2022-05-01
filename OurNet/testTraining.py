@@ -11,7 +11,7 @@ import torch.nn.functional as F
 blue = lambda x: '\033[94m' + x + '\033[0m'
 
 
-def main(epochs=200, batch=1, shuffle=False, wokers=4, cudan=0):
+def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
     device = "cuda:%d" % cudan if torch.cuda.is_available() else "cpu"
 
     dataset = NewDataSet(io_utils.getDataSetPath())
