@@ -63,13 +63,13 @@ class Sampler():
         def paddingPoses(poses):
             if max_traj_n > acutal_size:
                 padding = np.zeros((max_traj_n - acutal_size, 3))
-                poses = np.r_[poses, padding]
+                poses[acutal_size:] = padding
             return poses
 
         def paddingPoints(points_dicts):
             if max_traj_n - acutal_size > 0:
                 for i in range(acutal_size, max_traj_n):
-                    points_dicts[i]["points"] = np.array([[0, 0, 0]])  # 3d
+                    points_dicts[i]["points"] = points_dicts[acutal_size - 1]["points"]  # 3d
             return points_dicts
 
         return paddingPoses(poses), paddingPoints(points_dicts)
