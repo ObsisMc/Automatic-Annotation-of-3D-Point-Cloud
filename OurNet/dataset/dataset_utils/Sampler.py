@@ -1,4 +1,5 @@
 import numpy as np
+import common_utils.cfgs as Config
 import utils
 
 
@@ -53,7 +54,22 @@ class Sampler():
             farthest = np.argmax(distance)
         return points[centroids.astype(np.int)]
 
-    def paddingTrajBoxs(self, pose: list, max_traj_n=10):
-        for i in range(max_traj_n - len(pose)):
-            pose.append(np.array([0, 0, 0]))
-        return pose
+    def paddingTraj(self, poses: np.ndarray, points_dicts, acutal_size=10, max_traj_n=10):
+        """
+        @params:
+        points_dict a list of dict
+        """
+
+        def paddingPoses(poses):
+            if max_traj_n > acutal_size:
+                padding = np.zeros((max_traj_n - acutal_size, 3))
+                poses = np.r_[poses, padding]
+            return poses
+
+        def paddingPoints(points_dicts):
+            if max_traj_n - acutal_size > 0:
+                for i in range(acutal_size, max_traj_n):
+                    points_dicts[i]["points"] = np.array([[0, 0, 0]])  # 3d
+            return points_dicts
+
+        return paddingPoses(poses), paddingPoints(points_dicts)
