@@ -53,7 +53,7 @@ class PFNLayer(nn.Module):
 
 
 class PillarVFE(nn.Module):
-    def __init__(self, model_cfg, pillar_cfg, device):
+    def __init__(self, model_cfg, num_point_features, voxel_size, device):
         super().__init__()
 
         self.use_norm = model_cfg["USE_NORM"]
@@ -61,9 +61,8 @@ class PillarVFE(nn.Module):
         self.use_absolute_xyz = model_cfg["USE_ABSLOTE_XYZ"]
         self.num_filters = model_cfg["NUM_FILTERS"]
 
-        self.num_point_features = pillar_cfg["NUM_POINT_FEATURES"] + 6 if self.use_absolute_xyz else 3
-        self.voxel_size = pillar_cfg["VOXEL_SIZE"]
-        self.point_cloud_range = pillar_cfg["POINT_CLOUD_RANGE"]
+        self.num_point_features = num_point_features + 6 if self.use_absolute_xyz else 3
+        self.voxel_size = voxel_size
 
         self.device = device
         assert len(self.num_filters) > 0
@@ -83,10 +82,7 @@ class PillarVFE(nn.Module):
 
         self.voxel_x = self.voxel_size[0]
         self.voxel_y = self.voxel_size[1]
-        self.voxel_z = self.voxel_size[2]
-        self.x_offset = self.voxel_x / 2 + self.point_cloud_range[0]
-        self.y_offset = self.voxel_y / 2 + self.point_cloud_range[1]
-        self.z_offset = self.voxel_z / 2 + self.point_cloud_range[2]
+        # z should calc dynamic
 
     def get_output_feature_dim(self):
         return self.num_filters[-1]
@@ -102,7 +98,7 @@ class PillarVFE(nn.Module):
         paddings_indicator = actual_num.int() > max_num
         return paddings_indicator
 
-    def forward(self, batch_dict):
+    def forward(self, batch_dict, point_cloud_range):
         """
                 ( our net doesn't use refraction so dimension corresponding to it doesn't exist )
                 batch_dict:  why batch_index is needed? how to handle batch? how to train the network?
@@ -120,31 +116,42 @@ class PillarVFE(nn.Module):
         """
          our voxel_coords: (M, 3) -> (z, y, x)
         """
+
+        def augFeature(v_features, v_num_points, crds, pt_cld_rge):
+            voxel_z = pt_cld_rge[5] - pt_cld_rge[2]
+
+            x_offset = self.voxel_x / 2 + pt_cld_rge[0]
+            y_offset = self.voxel_y / 2 + pt_cld_rge[1]
+            z_offset = voxel_z / 2 + pt_cld_rge[2]
+
+            points_mean = v_features[:, :, :, :3].sum(dim=2, keepdim=True) / v_num_points.type_as(
+                v_features).view(
+                -1, v_num_points.shape[1], 1, 1)
+            f_cluster = v_features[:, :, :, :3] - points_mean
+
+            f_center = torch.zeros_like(v_features[:, :, :, :3])
+            f_center[:, :, :, 0] = v_features[:, :, :, 0] - (
+                    crds[:, :, 2].to(v_features.dtype).unsqueeze(2) * self.voxel_x + x_offset)
+            f_center[:, :, :, 1] = v_features[:, :, :, 1] - (
+                    crds[:, :, 1].to(v_features.dtype).unsqueeze(2) * self.voxel_y + y_offset)
+            f_center[:, :, :, 2] = v_features[:, :, :, 2] - (
+                    crds[:, :, 0].to(v_features.dtype).unsqueeze(2) * self.voxel_z + z_offset)
+
+            if self.use_absolute_xyz:
+                features = [v_features, f_cluster, f_center]
+            else:
+                features = [v_features[..., 3:], f_cluster, f_center]
+
+            if self.with_distance:
+                points_dist = torch.norm(v_features[:, :, :3], 2, 2, keepdim=True)
+                features.append(points_dist)
+            features = torch.cat(features, dim=-1)  # what happened
+            return features
+
         # voxel_coords should add a dimension
         voxel_features, voxel_num_points, coords = batch_dict['voxels'], batch_dict['voxel_num_points'], batch_dict[
             'voxel_coords']
-        points_mean = voxel_features[:, :, :, :3].sum(dim=2, keepdim=True) / voxel_num_points.type_as(
-            voxel_features).view(
-            -1, voxel_num_points.shape[1], 1, 1)
-        f_cluster = voxel_features[:, :, :, :3] - points_mean
-
-        f_center = torch.zeros_like(voxel_features[:, :, :, :3])
-        f_center[:, :, :, 0] = voxel_features[:, :, :, 0] - (
-                coords[:, :, 2].to(voxel_features.dtype).unsqueeze(2) * self.voxel_x + self.x_offset)
-        f_center[:, :, :, 1] = voxel_features[:, :, :, 1] - (
-                coords[:, :, 1].to(voxel_features.dtype).unsqueeze(2) * self.voxel_y + self.y_offset)
-        f_center[:, :, :, 2] = voxel_features[:, :, :, 2] - (
-                coords[:, :, 0].to(voxel_features.dtype).unsqueeze(2) * self.voxel_z + self.z_offset)
-
-        if self.use_absolute_xyz:
-            features = [voxel_features, f_cluster, f_center]
-        else:
-            features = [voxel_features[..., 3:], f_cluster, f_center]
-
-        if self.with_distance:
-            points_dist = torch.norm(voxel_features[:, :, :3], 2, 2, keepdim=True)
-            features.append(points_dist)
-        features = torch.cat(features, dim=-1)  # what happened
+        features = augFeature(voxel_features, voxel_num_points, coords, point_cloud_range)
         # ignore invalid points
         point_count = features.shape[2]
         mask = self.get_paddings_indicator(voxel_num_points, point_count)
