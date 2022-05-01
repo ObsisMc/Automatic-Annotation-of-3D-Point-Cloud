@@ -69,11 +69,11 @@ class DataProcessor(object):
 
         self.voxel_generator = None
 
-    def transform_points_to_voxels(self, data_dict):
+    def transform_points_to_voxels(self, data_dict, vsize_xyz=None, coors_range_xyz=None):
         if self.voxel_generator is None:
             self.voxel_generator = VoxelGeneratorWrapper(
-                vsize_xyz=self.voxel_size,
-                coors_range_xyz=self.point_cloud_range,
+                vsize_xyz=vsize_xyz if vsize_xyz is not None else self.voxel_size,
+                coors_range_xyz=coors_range_xyz if coors_range_xyz is not None else self.point_cloud_range,
                 num_point_features=self.num_point_features,
                 max_num_points_per_voxel=self.max_points_per_voxel,
                 max_num_voxels=self.max_number_of_voxels[self.mode],
