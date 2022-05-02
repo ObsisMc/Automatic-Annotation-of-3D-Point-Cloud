@@ -6,7 +6,8 @@ from dataset_utils.processor.data_processor import DataProcessor
 
 class SmPillarDataSet(DataSetTemplate.DataSetTemplate):
     """
-
+    1. need to use data in its own coordinate.
+    2. data should be always with points (if the data has no point, we will raise an exception)
     """
 
     def __init__(self, datapath):
@@ -19,6 +20,7 @@ class SmPillarDataSet(DataSetTemplate.DataSetTemplate):
         return len(self.data_list)
 
     def __getitem__(self, index):
+        index = 3429
         source_root, target_root = self.data_list[index]
 
         # no need to sample, since transform will do it
@@ -27,7 +29,8 @@ class SmPillarDataSet(DataSetTemplate.DataSetTemplate):
         self.data_processor.transform_points_to_voxels(self.source_dict)
         self.data_processor.transform_points_to_voxels(self.target_dict)
 
-        assert self.source_dict["voxel_num_points"].shape[0] > 0 and self.target_dict["voxel_num_points"].shape[0] > 0
+        if  self.source_dict["voxel_num_points"].shape[0] == 0 or self.target_dict["voxel_num_points"].shape[0] == 0:
+            raise AssertionError("no voxels in index %d" % (index))
 
         return self.source_dict, self.target_dict
 

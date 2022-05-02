@@ -22,9 +22,8 @@ class SmPillarNet(nn.Module):
 
     def forward(self, source_dict, target_dict):
         # get features
-        source_dict, target_dict = self.pfe(source_dict, self.pillar_vfe["POINT_CLOUD_RANGE"]), self.pfe(target_dict,
-                                                                                                         self.pillar_vfe[
-                                                                                                             "POINT_CLOUD_RANGE"])
+        source_dict, target_dict = self.pfe(source_dict, self.pillar_vfe["POINT_CLOUD_RANGE"]), \
+                                   self.pfe(target_dict, self.pillar_vfe["POINT_CLOUD_RANGE"])
         # map to bev
         source_dict, target_dict = self.psct(source_dict), self.psct(target_dict)
         sbev, tbev = source_dict["spatial_features"], target_dict["spatial_features"]  # (B,C,H,W)

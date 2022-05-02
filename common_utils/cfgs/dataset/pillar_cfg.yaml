@@ -3,25 +3,26 @@ data_dict:
   voxels: # voxels containing raw points (M,32,3)
   voxel_coords: # coordinates of corresponding voxels
   voxel_num_points: # number of valid points in corresponding voxels
+#  point_cloud_range: # some net needs it
 
 pillar_config:
   TRAIN: 1 # 1 for training, 0 for testing
   NUM_POINT_FEATURES: 3 # if 4, refraction is considered
   VOXEL_SIZE: # voxel's size is [x, y, z]
-    - 0.05
-    - 0.05
+    - 0.1
+    - 0.1
     - # decided in runtime
   MAX_POINTS_PER_VOXEL: 32 # how many points in a voxel
   MAX_NUMBER_OF_VOXELS: # how many voxels in a scene
     - 16000 # test
     - 16000 # train
   POINT_CLOUD_RANGE: # range to crop a point cloud [lower_x, ly, lz, upper_x, uy, uz]
-    - -3.0
-    - -3.0
-    - -3.0
-    - 3.0
-    - 3.0
-    - 3.0
+    - -3.5
+    - -3.5
+    - -3.5
+    - 3.5
+    - 3.5
+    - 3.5
   GRID_SIZE: #  [X,Y,Z] calculated when running
 
 

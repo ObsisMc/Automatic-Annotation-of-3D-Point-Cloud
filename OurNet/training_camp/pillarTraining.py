@@ -15,8 +15,6 @@ def main():
     train_par = cfgs["training_parameters"]
     batch, shuffle, workers = train_par["batch_size"], train_par["shuffle"], train_par["workers"]
     epochs = train_par["epochs"]
-    early_stop = train_par["early_stop"]
-    lr = train_par["learning_rate"]
 
     # cuda or cpu
     device = "cuda:%d" % train_par["cudaidx"] if torch.cuda.is_available() else "cpu"
@@ -41,6 +39,7 @@ def main():
             print(source_dict["points"].shape)
             source_bev = net(source_dict, target_dict)
             print(torch.max(source_bev, dim=1)[0])
+            print(source_bev.shape)
             print("stop")
     pass
 

@@ -159,6 +159,10 @@ class PillarVFE(nn.Module):
         # (B, num_voxels, num_points, xyz), (B, num_voxels), (B,num_voxels,xyz)
         voxel_features, voxel_num_points, coords = batch_dict['voxels'], batch_dict['voxel_num_points'], batch_dict[
             'voxel_coords']
+        if type(point_cloud_range) is not torch.tensor:
+            point_cloud_range = torch.tensor(point_cloud_range)
+            if point_cloud_range.ndim == 1:
+                point_cloud_range = point_cloud_range.view(1, -1).repeat(voxel_features.shape[0], 1)
         features = augFeature(voxel_features, voxel_num_points, coords, point_cloud_range)
         # ignore invalid points
         point_count = features.shape[2]
