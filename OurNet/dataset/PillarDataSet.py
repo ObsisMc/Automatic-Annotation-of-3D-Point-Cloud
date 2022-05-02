@@ -20,7 +20,6 @@ class SmPillarDataSet(DataSetTemplate.DataSetTemplate):
         return len(self.data_list)
 
     def __getitem__(self, index):
-        index = 3429
         source_root, target_root = self.data_list[index]
 
         # no need to sample, since transform will do it

@@ -123,7 +123,7 @@ class PillarVFE(nn.Module):
 
             x_offset = (self.voxel_x / 2 + pt_cld_rge[:, 0]).view(-1, 1)  # (B,1)
             y_offset = (self.voxel_y / 2 + pt_cld_rge[:, 1]).view(-1, 1)  # (B,1)
-            z_offset = (voxel_z / 2 + pt_cld_rge[:, 2]).view(-1, 1)  # (B,1)
+            z_offset = (voxel_z / 2 + pt_cld_rge[:, 2].view(-1, 1)).view(-1, 1)  # (B,1)
 
             points_mean = v_features[:, :, :, :3].sum(dim=2, keepdim=True) / v_num_points.type_as(
                 v_features).view(
