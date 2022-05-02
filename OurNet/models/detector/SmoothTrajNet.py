@@ -2,13 +2,40 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import numpy as np
+
+import common_utils.cfgs as Config
+from OurNet.models.backbone3D.vfe.pillar_vfe import PillarVFE
+from OurNet.models.backbone2D.pointpillar_scatter import PointPillarScatter
+
 
 class SmoothTrajNet(nn.Module):
-    def __init__(self):
+    def __init__(self, device):
         super().__init__()
+        self.pillar_cfg = Config.load_train_pillar_cfg()
+        self.pillar_vfe = Config.load_pillar_vfe()
+        self.grid_size = self.pillar_vfe["GRID_SIZE"].astype(np.float)
+        self.voxel_size = self.pillar_vfe["VOXEL_SIZE"]
+        self.pfe = PillarVFE(self.pillar_cfg, self.pillar_vfe["NUM_POINT_FEATURES"], self.voxel_size,
+                             device).to(device)
+        self.psct = PointPillarScatter(self.pillar_cfg["NUM_FILTERS"][-1], self.grid_size)
+        self.unet1d = Unet1D()
 
-    def forward(self):
-        pass
+    def forward(self, point_dicts, poses):
+        """
+        points_dicts: [{key:(B,C,) ,...},...]
+        """
+        batch = point_dicts[0]["voxels"].shape[0]
+        for point_dict in point_dicts:
+            assert point_dict.get("point_cloud_range") is not None
+            # vrange = point_dict["point_cloud_range"]
+            # grid_size = (vrange[:, 3:6] - vrange[:, 0:3]) / self.voxel_size.astype(np.float)
+            # assert torch.all(grid_size.type(torch.int) == torch.tensor(self.grid_size))
+
+            self.psct(self.pfe(point_dict, point_dict["point_cloud_range"]))
+
+        print("bev:", point_dicts[0]["spatial_features"].shape)
+        return point_dicts
 
 
 class Unet1D(nn.Module):

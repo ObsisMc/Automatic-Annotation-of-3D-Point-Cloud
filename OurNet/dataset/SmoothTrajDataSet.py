@@ -8,6 +8,7 @@ class SmoothTrajDataSet(DataSetTemplate):
     def __init__(self, datapath, max_traj_n=10):
         super().__init__(datapath)
         self.max_traj_n = max_traj_n
+        self.xyz_offset = Config.load_pillar_vfe()["POINT_CLOUD_RANGE"].reshape(2, -1)
         self.points_dict = Config.load_pillar_data_template(max_traj_n)
         self.traj_list = self.datasetcreator.getWorldTrajectary(max_traj_n=self.max_traj_n)  # [[points], [labels]]
 
@@ -48,16 +49,20 @@ class SmoothTrajDataSet(DataSetTemplate):
                                                                          max_size=self.max_traj_n, actual_size=size)
 
         # get pillar
-        lwh = np.array([-3.2, -3.2, -3.2, 3.2, 3.2, 3.2]).reshape(2, -1)
         for i in range(self.max_traj_n):
             point_dict = self.points_dict[i]
-            vrange = (lwh + centers[i].reshape(1, -1)).reshape(-1, )
-            point_dict["POINT_CLOUD_RANGE"] = vrange
+            vrange = (self.xyz_offset + centers[i].reshape(1, -1)).reshape(-1, )
+
+            assert point_dict.get("point_cloud_range") is None
+            point_dict["point_cloud_range"] = vrange
             self.dataprocessor.transform_points_to_voxels(point_dict, coors_range_xyz=vrange)
-        return self.points_dict, poses, labels
+            if point_dict.get("voxels").shape[0] == 0:
+                print(index, i)
+                assert False
+        return self.points_dict, poses, labels  # list, np.ndarray, np.ndarray
 
     def __len__(self):
-        return len(self.traj_label_list)
+        return len(self.traj_list)
 
 
 if __name__ == "__main__":

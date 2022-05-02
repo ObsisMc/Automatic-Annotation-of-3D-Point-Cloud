@@ -1,9 +1,13 @@
 visualize_root:
   pointspath: "/home/zrh/Data/kitti/data_tracking_velodyne/0000/000000.bin"
-  objectpath: "/home/zrh/Data/kitti/tracking/extracted_points_keep/0000/Van#0/points/000000.npy"
+  objectpath: "/home/zrh/Data/kitti/tracking/extracted_points_keep/0009/Car#30/points/000114.npy"
   multi_points:
+    - "/home/zrh/Data/kitti/tracking/extracted_points_keep/0004/Van#8/points/000031.npy"
+    - "/home/zrh/Data/kitti/tracking/extracted_points_keep/0000/Van#0/points/000002.npy"
+    - "/home/zrh/Data/kitti/tracking/extracted_points_keep/0000/Van#0/points/000003.npy"
+    - "/home/zrh/Data/kitti/tracking/extracted_points_keep/0000/Van#0/points/000004.npy"
+    - "/home/zrh/Data/kitti/tracking/extracted_points_keep/0000/Van#0/points/000005.npy"
     - "/home/zrh/Data/kitti/tracking/extracted_points_keep/0000/Van#0/points/000006.npy"
-    - "/home/zrh/Data/kitti/tracking/extracted_points_keep/0000/Van#0/points/000012.npy"
     - "/home/zrh/Data/kitti/tracking/extracted_points_keep/0000/Van#0/points/000018.npy"
   boxpath: "/home/zrh/Data/kitti/data_tracking_label_2/training/label_2/000000.txt"  # label's path (in object format)
   calibpath: "/home/zrh/Data/kitti/data_tracking_calib/training/calib/0000.txt"
@@ -17,7 +21,7 @@ extract_root:
     - "/home/zrh/Data/kitti/tracking/extracted_points"
     - "/home/zrh/Data/kitti/tracking/extracted_points_keep"
   begin: 0
-  end: 1
+  end: 10
   threshold: 0.85
   inference: False
   extend: 1.3
