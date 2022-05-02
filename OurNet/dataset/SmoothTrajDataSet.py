@@ -5,11 +5,15 @@ import numpy as np
 
 
 class SmoothTrajDataSet(DataSetTemplate):
+    """
+    1. batch can only be 1
+    2. only support image (70,70)
+    """
     def __init__(self, datapath, max_traj_n=10):
         super().__init__(datapath)
         self.max_traj_n = max_traj_n
         self.xyz_offset = Config.load_pillar_vfe()["POINT_CLOUD_RANGE"].reshape(2, -1)
-        self.points_dict = Config.load_pillar_data_template(max_traj_n)
+        # self.points_dict = Config.load_pillar_data_template(max_traj_n)
         self.traj_list = self.datasetcreator.getWorldTrajectary(max_traj_n=self.max_traj_n)  # [[points], [labels]]
 
         self.dataprocessor = DataProcessor(Config.load_pillar_vfe())
@@ -18,6 +22,7 @@ class SmoothTrajDataSet(DataSetTemplate):
         """
         @return [[dx,dy,d\theta], [], ...], points_dict with pillars
         """
+        # index = 1076
         size = len(self.traj_list[index][0])
         # get pose diff
         traj_label_list = self.traj_list[index][1]
@@ -38,28 +43,31 @@ class SmoothTrajDataSet(DataSetTemplate):
             centers[i] = centers[size - 1]
 
         # get points
+        points_dicts = Config.load_pillar_data_template(self.max_traj_n)
         traj_points_list = self.traj_list[index][0]
         for i in range(size):
-            self.points_dict[i]["points"] = np.load(traj_points_list[i])
+            points_dicts[i]["points"] = np.load(traj_points_list[i])
 
         # sample, augment and label
         # if there is no frame, pose is [0,0,0], center and point is the same as the last one
-        poses, self.points_dict = self.sampler.paddingTraj(poses, self.points_dict, size, self.max_traj_n)
-        poses, self.points_dict, labels = self.augmentor.guassianTrajAug(poses, self.points_dict,
+        poses, points_dicts= self.sampler.paddingTraj(poses, points_dicts, size, self.max_traj_n)
+        poses, points_dicts, labels = self.augmentor.guassianTrajAug(poses, points_dicts,
                                                                          max_size=self.max_traj_n, actual_size=size)
 
         # get pillar
         for i in range(self.max_traj_n):
-            point_dict = self.points_dict[i]
+            point_dict = points_dicts[i]
             vrange = (self.xyz_offset + centers[i].reshape(1, -1)).reshape(-1, )
+            # if point_dict.get("point_cloud_range") is not None:
+            #     raise AssertionError("Point_cloud_range is not None at index %d-%d" % (index, i))
 
-            assert point_dict.get("point_cloud_range") is None
             point_dict["point_cloud_range"] = vrange
             self.dataprocessor.transform_points_to_voxels(point_dict, coors_range_xyz=vrange)
+            # print(point_dict["voxels"].shape)
             if point_dict.get("voxels").shape[0] == 0:
                 print(index, i)
                 assert False
-        return self.points_dict, poses, labels  # list, np.ndarray, np.ndarray
+        return points_dicts, poses, labels  # list, np.ndarray, np.ndarray
 
     def __len__(self):
         return len(self.traj_list)

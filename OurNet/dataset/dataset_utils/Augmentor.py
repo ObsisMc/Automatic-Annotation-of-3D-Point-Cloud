@@ -19,14 +19,13 @@ class Augmentor():
         IMPORTANT!!!! error shouldn't be too large
         """
 
-        # abandoned
-        # mask = np.array([1 if i < actual_size else 0 for i in range(max_size)])
-        # x_error = (np.random.normal(loc=0, scale=1, size=max_size) * mask).reshape(-1, 1)
-        # y_error = (np.random.normal(loc=0, scale=1, size=max_size) * mask).reshape(-1, 1)
-        # angle = (np.random.normal(loc=0, scale=0.4, size=max_size) * mask).reshape(-1, 1)
-        x_error = np.random.normal(loc=0, scale=0.15, size=max_size).reshape(-1, 1)
-        y_error = np.random.normal(loc=0, scale=0.15, size=max_size).reshape(-1, 1)
-        angle = np.random.normal(loc=0, scale=0.2, size=max_size).reshape(-1, 1)
+        x_error = np.random.normal(loc=0, scale=0.1, size=max_size).reshape(-1, 1)
+        y_error = np.random.normal(loc=0, scale=0.1, size=max_size).reshape(-1, 1)
+        angle = np.random.normal(loc=0, scale=0.01, size=max_size).reshape(-1, 1)
+        # x_error = np.random.normal(loc=0, scale=0.1, size=max_size).reshape(-1, 1)
+        # y_error = np.random.normal(loc=0, scale=0.1, size=max_size).reshape(-1, 1)
+        # angle = np.array([0.03 for _ in range(max_size)]).reshape(-1, 1)
+
         error = np.c_[x_error, y_error, angle]
 
         def augPoses(poses):
@@ -36,9 +35,9 @@ class Augmentor():
 
         def augPoints(points_dicts):
             for i in range(actual_size):
-                point = points_dicts[i]["points"]
-                points_dicts[i]["points"] = point + np.array([x_error[i, 0], y_error[i, 0], 0]).reshape(1, -1)
-                points_dicts[i]["points"] = utils.rotate_points_along_z(point, angle[i, 0])
+                points = points_dicts[i]["points"]
+                points = points + np.array([x_error[i, 0], y_error[i, 0], 0]).reshape(1, -1)
+                points_dicts[i]["points"] = utils.rotate_points_along_z(points, angle[i, 0])
             for i in range(actual_size, max_size):
                 points_dicts[i]["points"] = points_dicts[actual_size - 1]["points"]
             return points_dicts
