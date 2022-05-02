@@ -16,7 +16,7 @@ class Augmentor():
     def guassianTrajAug(self, poses, points_dicts, max_size: int, actual_size: int):
         """
         used by SmoothTrajDataSet
-        ???? is augPoses is reasonable?
+        IMPORTANT!!!! error shouldn't be too large
         """
 
         # abandoned
@@ -24,9 +24,9 @@ class Augmentor():
         # x_error = (np.random.normal(loc=0, scale=1, size=max_size) * mask).reshape(-1, 1)
         # y_error = (np.random.normal(loc=0, scale=1, size=max_size) * mask).reshape(-1, 1)
         # angle = (np.random.normal(loc=0, scale=0.4, size=max_size) * mask).reshape(-1, 1)
-        x_error = np.random.normal(loc=0, scale=1, size=max_size).reshape(-1,1)
-        y_error = np.random.normal(loc=0, scale=1, size=max_size).reshape(-1,1)
-        angle = np.random.normal(loc=0, scale=0.4, size=max_size).reshape(-1,1)
+        x_error = np.random.normal(loc=0, scale=0, size=max_size).reshape(-1, 1)
+        y_error = np.random.normal(loc=0, scale=0, size=max_size).reshape(-1, 1)
+        angle = np.random.normal(loc=0, scale=0, size=max_size).reshape(-1, 1)
         error = np.c_[x_error, y_error, angle]
 
         def augPoses(poses):

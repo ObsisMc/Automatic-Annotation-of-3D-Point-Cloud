@@ -70,7 +70,8 @@ class DataProcessor(object):
         self.voxel_generator = None
 
     def transform_points_to_voxels(self, data_dict, vsize_xyz=None, coors_range_xyz=None):
-        if self.voxel_generator is None:
+        variable = coors_range_xyz is not None or vsize_xyz is not None
+        if self.voxel_generator is None or variable:
             self.voxel_generator = VoxelGeneratorWrapper(
                 vsize_xyz=vsize_xyz if vsize_xyz is not None else self.voxel_size,
                 coors_range_xyz=coors_range_xyz if coors_range_xyz is not None else self.point_cloud_range,
