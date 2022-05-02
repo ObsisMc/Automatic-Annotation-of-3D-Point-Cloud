@@ -118,11 +118,12 @@ class PillarVFE(nn.Module):
         """
 
         def augFeature(v_features, v_num_points, crds, pt_cld_rge):
-            voxel_z = pt_cld_rge[5] - pt_cld_rge[2]
+            # (B, num_voxels, num_points, xyz), (B, num_voxels), (B,num_voxels,zyx), (B, [lx,ly,lz,ux,uy,uz])
+            voxel_z = (pt_cld_rge[:, 5] - pt_cld_rge[:, 2]).view(-1, 1)  # (B,1)
 
-            x_offset = self.voxel_x / 2 + pt_cld_rge[0]
-            y_offset = self.voxel_y / 2 + pt_cld_rge[1]
-            z_offset = voxel_z / 2 + pt_cld_rge[2]
+            x_offset = (self.voxel_x / 2 + pt_cld_rge[:, 0]).view(-1, 1)  # (B,1)
+            y_offset = (self.voxel_y / 2 + pt_cld_rge[:, 1]).view(-1, 1)  # (B,1)
+            z_offset = (voxel_z / 2 + pt_cld_rge[:, 2]).view(-1, 1)  # (B,1)
 
             points_mean = v_features[:, :, :, :3].sum(dim=2, keepdim=True) / v_num_points.type_as(
                 v_features).view(
@@ -130,12 +131,18 @@ class PillarVFE(nn.Module):
             f_cluster = v_features[:, :, :, :3] - points_mean
 
             f_center = torch.zeros_like(v_features[:, :, :, :3])
+            # f_center[:, :, :, 0] = v_features[:, :, :, 0] - (
+            #         crds[:, :, 2].to(v_features.dtype).unsqueeze(2) * self.voxel_x + x_offset)
+            # f_center[:, :, :, 1] = v_features[:, :, :, 1] - (
+            #         crds[:, :, 1].to(v_features.dtype).unsqueeze(2) * self.voxel_y + y_offset)
+            # f_center[:, :, :, 2] = v_features[:, :, :, 2] - (
+            #         crds[:, :, 0].to(v_features.dtype).unsqueeze(2) * voxel_z + z_offset)
             f_center[:, :, :, 0] = v_features[:, :, :, 0] - (
-                    crds[:, :, 2].to(v_features.dtype).unsqueeze(2) * self.voxel_x + x_offset)
+                    crds[:, :, 2].to(v_features.dtype) * self.voxel_x + x_offset).unsqueeze(2)
             f_center[:, :, :, 1] = v_features[:, :, :, 1] - (
-                    crds[:, :, 1].to(v_features.dtype).unsqueeze(2) * self.voxel_y + y_offset)
+                    crds[:, :, 1].to(v_features.dtype) * self.voxel_y + y_offset).unsqueeze(2)
             f_center[:, :, :, 2] = v_features[:, :, :, 2] - (
-                    crds[:, :, 0].to(v_features.dtype).unsqueeze(2) * self.voxel_z + z_offset)
+                    crds[:, :, 0].to(v_features.dtype) * voxel_z + z_offset).unsqueeze(2)
 
             if self.use_absolute_xyz:
                 features = [v_features, f_cluster, f_center]
@@ -149,6 +156,7 @@ class PillarVFE(nn.Module):
             return features
 
         # voxel_coords should add a dimension
+        # (B, num_voxels, num_points, xyz), (B, num_voxels), (B,num_voxels,xyz)
         voxel_features, voxel_num_points, coords = batch_dict['voxels'], batch_dict['voxel_num_points'], batch_dict[
             'voxel_coords']
         features = augFeature(voxel_features, voxel_num_points, coords, point_cloud_range)
