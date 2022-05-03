@@ -32,7 +32,8 @@ def main(train=True):
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
 
-    print(blue('# of training samples: %d' % len(train_data)))
+    train_len = len(train_data)
+    print(blue('# of training samples: %d' % train_len))
     print(blue('# of validation samples: %d' % len(valid_data)))
 
     if train:
@@ -65,7 +66,8 @@ def main(train=True):
                 vis.add_scalar("loss_total", loss, n)
                 n += 1
                 if n % 100 == 0:
-                    print("Loss %f. x:%f, y:%f, angle:%f" % (loss, float(loss_dx), float(loss_dy), float(loss_angle)))
+                    print("Process %d/%d (Epoch %d) --> Loss: %f x:%f, y:%f, angle:%f" % (
+                        i, train_len, epoch, loss, float(loss_dx), float(loss_dy), float(loss_angle)))
             scheduler.step()
             valid_loss = 0
             for i, data in enumerate(vaild_dataloader):
@@ -84,7 +86,7 @@ def main(train=True):
 
                 valid_loss = 2 * loss_dy + 2 * loss_dx + 2 * loss_angle
                 vis.add_scalar("loss_total_valid", valid_loss, epoch)
-            if epoch % 20 == 0:
+            if epoch % 10 == 0:
                 io_utils.saveCheckPoint(net, epoch, valid_loss)
     else:
         ckpt = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/SmoothTrajNet/ckpt_epc0_0.004273.pth"

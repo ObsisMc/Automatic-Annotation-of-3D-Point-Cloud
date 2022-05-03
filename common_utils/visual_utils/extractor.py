@@ -5,6 +5,7 @@ from visual_modul import open3d_vis_utils as V, io_utils as io
 from visual_modul.calibration import Calibration
 
 
+# labels extracted are processed and their location (to world coordinate), size (extended) and angle is different from original labels
 def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1.3, begin=0, end=1, datatype=0,
                            threshold=0.85,
                            inference=True,
@@ -85,7 +86,7 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
                 name = "{:06d}".format(int(frameid))
                 io.save_object_points(extracted_points, os.path.join(outputpath, "points"), name + ".npy")
                 io.save_object_label(box, os.path.join(outputpath, "labels"),
-                                     name + ".txt")  # save [location,l,h,w,angle]
+                                     name + ".txt")  # save [location,l,h,w,angle], size is extended
                 label = f.readline().rstrip("\n")
 
         print("Scene{} finished!".format(sceneid))
