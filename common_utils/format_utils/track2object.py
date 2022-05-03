@@ -14,9 +14,9 @@ vefolder_train = '/public_dataset/kitti/tracking/data_tracking_velodyne/training
 cafolder_train = '/public_dataset/kitti/tracking/data_tracking_calib/training/calib'
 lafolder = '/public_dataset/kitti/tracking/data_tracking_label_2/training/label_02'
 
-output = '/home2/lie/InnovativePractice2/OpenPCDet/data/kitti'
+output = '/home2/lie/zhangsh/InnovativePractice1_SUSTech/labels/kitti_track2object'
 # output = '../test/object'
-splittext = 'splitpos.txt'
+splittext = '/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/training/splitpos.txt'
 
 
 def getfmt(generic):
@@ -145,9 +145,10 @@ def tmpmethod():
 
 if __name__ == '__main__':
     n = 21
-    data = {"testing": {"image_2": imfolder_test, "velodyne": vefolder_test, "calib": cafolder_test},
-            "training": {"image_2": imfolder_train, "velodyne": vefolder_train, "calib": cafolder_train,
-                         "label_2": lafolder}}
+    # data = {"testing": {"image_2": imfolder_test, "velodyne": vefolder_test, "calib": cafolder_test},
+    #         "training": {"image_2": imfolder_train, "velodyne": vefolder_train, "calib": cafolder_train,
+    #                      "label_2": lafolder}}
+    data = {"training": {"label_2": lafolder}}
     for type in data:
         for generic in data[type]:
             if generic == "label_2":

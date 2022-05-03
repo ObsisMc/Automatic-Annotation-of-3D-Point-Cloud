@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -56,7 +57,7 @@ class SmPillarSizeNet(nn.Module):
         # map to bev
         source_dict = self.psct(source_dict)
         sbev = source_dict["spatial_features"]  # (B,C,H,W)
-        # 0 mean and 1 std
+        # 0 mean and 1 std in each dimension
         sbev = (sbev - sbev.mean()) / sbev.std()
         out = self.cnn(sbev)
         return out
