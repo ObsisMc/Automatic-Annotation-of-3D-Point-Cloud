@@ -48,8 +48,13 @@ class SmPillarSizeDataSet(DataSetTemplate.DataSetTemplate):
         point_root = self.point_list[index]
         # merge all frames into ndarray points
         points = np.zeros((0, 3))
+        # i = 0
         for root in point_root:
-            points = np.concatenate((points, np.load(root)))
+            # i += 1
+            read_point = np.load(root)
+            # add a column of i to the right of read_point
+            # read_point = np.concatenate((read_point, np.full((read_point.shape[0], 1), i)), axis=1)
+            points = np.concatenate((points, read_point))
         self.source_dict["points"] = points
         self.data_processor.transform_points_to_voxels(self.source_dict)
         # assert self.source_dict["voxel_num_points"].shape[0] > 0

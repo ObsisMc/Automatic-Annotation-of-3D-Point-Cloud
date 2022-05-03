@@ -39,11 +39,11 @@ class SmPillarSizeNet(nn.Module):
                              self.pillar_vfe["VOXEL_SIZE"], device).to(device)  # extract pillar's features
         self.psct = PointPillarScatter(pillar_cfg["NUM_FILTERS"][-1], pillar_vfe["GRID_SIZE"])  # map pillar to bev
         self.cnn = torchvision.models.resnet152(pretrained=True)
-        # self.cnn.conv1 = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.cnn.conv1 = nn.Conv2d(64, 64, kernel_size=7, stride=2, padding=3, bias=False)
         num_ftrs = self.cnn.fc.in_features
         self.cnn.fc = nn.Sequential(
             nn.Linear(num_ftrs, 256),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(256, 2)
         )

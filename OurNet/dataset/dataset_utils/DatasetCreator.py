@@ -79,7 +79,7 @@ class DataSetCreator:
                     dataset.append(window)
         return dataset
 
-    def severalFrameInTraj(self, length=5, scenen=21, starts=0, type=("Car", "Pedestrian", "Cyclist")):
+    def severalFrameInTraj(self, length=20, scenen=21, starts=0, type=("Car", "Pedestrian", "Cyclist")):
         pointSet = []
         labelSet = []
         scene_list = sorted(os.listdir(self.datapath), key=lambda x: int(x))[starts:starts + scenen]
