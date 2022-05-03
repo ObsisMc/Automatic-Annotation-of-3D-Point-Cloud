@@ -173,7 +173,7 @@ def draw_object(points: np.ndarray, box=None, multi_points=None, keep_world_coor
             for idx, pts in enumerate(multi_points):
                 pcd_tmp = open3d.geometry.PointCloud()
                 pcd_tmp.points = open3d.utility.Vector3dVector(pts)
-                pcd_tmp.paint_uniform_color([1, 0, 0])  # idx should less than 3
+                pcd_tmp.paint_uniform_color(box_colormap[idx+1])  # idx should less than 3
                 vis.add_geometry(pcd_tmp)
         # points, _ = guassianArgu(points)
         pcld_crop = open3d.geometry.PointCloud()
