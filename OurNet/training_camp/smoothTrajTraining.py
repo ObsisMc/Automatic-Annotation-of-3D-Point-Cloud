@@ -6,7 +6,7 @@ import common_utils.cfgs as Config
 from OurNet.visualization.tensorboard import TensorBoardVis
 from OurNet.models.model_utils import io_utils
 
-from OurNet.dataset.SmoothTrajDataSet import SmoothTrajDataSet
+from OurNet.dataset.SmoothTrajDataSet import SmoothTrajDataSet, SmoothTrajTestDataSet
 from OurNet.models.detector.SmoothTrajNet import SmoothTrajNet
 
 blue = lambda x: '\033[94m' + x + '\033[0m'
@@ -89,24 +89,26 @@ def main(train=True):
             if epoch % 10 == 0:
                 io_utils.saveCheckPoint(net, epoch, valid_loss)
     else:
-        ckpt = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/SmoothTrajNet/ckpt_epc0_0.004273.pth"
-        test(net, ckpt, train_dataloader, device, batchs)
+        ckpt = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/SmoothTrajNet/ckpt_epc10_0.069525.pth"
+        dataset = SmoothTrajTestDataSet(train_cfg["dataset_path"], max_traj_n=max_traj_n)
+        test_dataloader = torch.utils.data.DataLoader(dataset, num_workers=workers, batch_size=1,
+                                                       shuffle=shuffle)
+        test(net, ckpt, test_dataloader, device, 1)
 
 
 def test(net: torch.nn.Module, ckpt_path, dataloader, device, batchs):
     net.load_state_dict(torch.load(ckpt_path))
     for i, data in enumerate(dataloader):
         net.eval()
-        point_dicts, poses, labels = data
+        point_dicts, poses, labels, info = data
         poses = poses.to(device)
         pred = net(point_dicts, poses)
 
         pred = pred.view(batchs, -1, 3).to(device)
         labels = labels.to(device)
 
-        print(labels - pred)
-        break
-
+        pred = pred.squeeze()
+        io_utils.saveNewLabel(pred, info)
 
 if __name__ == "__main__":
-    main()
+    main(train=False)

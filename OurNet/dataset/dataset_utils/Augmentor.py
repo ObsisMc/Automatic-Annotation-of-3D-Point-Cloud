@@ -19,9 +19,9 @@ class Augmentor():
         IMPORTANT!!!! error shouldn't be too large
         """
 
-        x_error = np.random.normal(loc=0, scale=0.15, size=max_size).reshape(-1, 1)
-        y_error = np.random.normal(loc=0, scale=0.15, size=max_size).reshape(-1, 1)
-        angle = np.random.normal(loc=0, scale=0.15, size=max_size).reshape(-1, 1)
+        x_error = np.random.normal(loc=0, scale=0.1, size=max_size).reshape(-1, 1)
+        y_error = np.random.normal(loc=0, scale=0.1, size=max_size).reshape(-1, 1)
+        angle = np.random.normal(loc=0, scale=0.1, size=max_size).reshape(-1, 1)
 
         error = np.c_[x_error, y_error, angle]
 

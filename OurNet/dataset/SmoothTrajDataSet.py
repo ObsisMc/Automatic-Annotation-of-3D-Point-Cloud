@@ -52,7 +52,7 @@ class SmoothTrajDataSet(DataSetTemplate):
         # sample, augment and label
         # if there is no frame, pose is [0,0,0], center and point is the same as the last one
         poses, points_dicts = self.sampler.paddingTraj(poses, points_dicts, size, self.max_traj_n)
-        poses, points_dicts, labels = self.augmentor.guassianTrajAug(poses, points_dicts,centers,
+        poses, points_dicts, labels = self.augmentor.guassianTrajAug(poses, points_dicts, centers,
                                                                      max_size=self.max_traj_n, actual_size=size)
         # get pillar
         for i in range(self.max_traj_n):
@@ -71,6 +71,30 @@ class SmoothTrajDataSet(DataSetTemplate):
 
     def __len__(self):
         return len(self.traj_list)
+
+
+class SmoothTrajTestDataSet(SmoothTrajDataSet):
+    def __init__(self, datapath, max_traj_n=10):
+        super().__init__(datapath, max_traj_n)
+
+    def __getitem__(self, item):
+        points_dicts, poses, labels = super().__getitem__(item)
+
+        traj_label_list = self.traj_list[item][1]
+        info = {"scene": None, "tid": None, "frame": []}
+        for path in traj_label_list:
+            path_list = path.split("/")
+            scene, tid, frame = path_list[-4], path_list[-3], path_list[-1].rstrip(".txt")
+            if info["scene"] is None:
+                info["scene"] = scene
+            if info["tid"] is None:
+                info["tid"] = tid
+            info["frame"].append(frame)
+
+        return points_dicts, poses, labels, info
+
+    def __len__(self):
+        return super().__len__()
 
 
 if __name__ == "__main__":
