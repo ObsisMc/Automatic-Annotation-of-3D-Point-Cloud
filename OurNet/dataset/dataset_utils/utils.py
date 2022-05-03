@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def rotate_points_along_z(points, angle):
     """
     Args:
@@ -18,5 +19,3 @@ def rotate_points_along_z(points, angle):
     )
     points_rot = points @ rot_matrix
     return points_rot
-
-

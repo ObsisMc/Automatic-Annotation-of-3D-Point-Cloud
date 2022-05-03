@@ -29,6 +29,7 @@ def main(train=True):
 
     net = SmoothTrajNet(device, N=max_traj_n).to(device)
     optimizer = optim.Adam(net.parameters(), lr=0.001)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
 
     print(blue('# of training samples: %d' % len(train_data)))
@@ -48,11 +49,11 @@ def main(train=True):
                 labels = labels.to(device)
 
                 # angle_diff = torch.sin(pred[:, :, 2] - labels[:, :, 2])
-                loss_dx = F.smooth_l1_loss(100 * pred[:, :, 0], 100 * labels[:, :, 0])
-                loss_dy = F.smooth_l1_loss(100 * pred[:, :, 1], 100 * labels[:, :, 1])
+                loss_dx = F.smooth_l1_loss(pred[:, :, 0], labels[:, :, 0])
+                loss_dy = F.smooth_l1_loss(pred[:, :, 1], labels[:, :, 1])
                 loss_angle = F.smooth_l1_loss(pred[:, :, 2], labels[:, :, 2])
 
-                loss = loss_dy + loss_dx + 100 * loss_angle
+                loss = 2 * (loss_dy + loss_dx + loss_angle)
 
                 optimizer.zero_grad()
                 loss.backward()
@@ -65,6 +66,7 @@ def main(train=True):
                 n += 1
                 if n % 100 == 0:
                     print("Loss %f. x:%f, y:%f, angle:%f" % (loss, float(loss_dx), float(loss_dy), float(loss_angle)))
+            scheduler.step()
             valid_loss = 0
             for i, data in enumerate(vaild_dataloader):
                 net = net.eval()
