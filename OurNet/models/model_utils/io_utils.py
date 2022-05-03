@@ -34,9 +34,12 @@ def saveNewLabel(pred, info):
     cfg = Config.load_visual("extract_root")
     extractpath = cfg["outputroot"][cfg["keep_world_coord"]]
     change_root = os.path.join(extractpath, info["scene"][0], info["tid"][0], "labels")
-    for i in range(pred.shape[0]):
+    outroot = os.path.join(extractpath, info["scene"][0], info["tid"][0], "labels_test")
+    if not os.path.exists(outroot):
+        os.makedirs(outroot)
+    for i in range(len(info["frame"])):
         label = os.path.join(change_root, info["frame"][i][0] + ".txt")
-        new_label = os.path.join(change_root, info["frame"][i][0] + "_test" + ".txt")
+        new_label = os.path.join(outroot, info["frame"][i][0] + ".txt")
         with open(label, "r") as f:
             label_list = f.readline().split(" ")  # [x, y, z, l, h, w, angle]
             label_list[0] = str(float(pred[i][0]) + float(label_list[0]))
