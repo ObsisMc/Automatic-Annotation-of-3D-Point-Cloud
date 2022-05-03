@@ -68,13 +68,12 @@ class DataSetCreator:
 
                 window = [[], []]  # [[points], [labels]]
                 for i in range(len(labels_list)):
-                    if len(window[0]) < max_traj_n:
-                        window[0].append(os.path.join(object_points_dir, points_list[i]))
-                        window[1].append(os.path.join(object_labels_dir, labels_list[i]))
-                    elif len(window[0]) == max_traj_n:
+                    if len(window[0]) == max_traj_n:
                         dataset.append(copy.deepcopy(window))
                         window[0].pop(0)
                         window[1].pop(0)
+                    window[0].append(os.path.join(object_points_dir, points_list[i]))
+                    window[1].append(os.path.join(object_labels_dir, labels_list[i]))
                 if len(window[0]) > 0:
                     dataset.append(window)
         return dataset
