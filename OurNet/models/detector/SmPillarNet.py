@@ -33,11 +33,13 @@ class SmPillarNet(nn.Module):
 class SmPillarSizeNet(nn.Module):
     def __init__(self, device):
         super().__init__()
-        pillar_cfg = Config.load_train_pillar_cfg()
-        pillar_vfe = Config.load_pillar_vfe()
-        self.pfe = PillarVFE(pillar_cfg, self.pillar_vfe["NUM_POINT_FEATURES"],
+        self.pillar_cfg = Config.load_train_pillar_cfg()
+        self.pillar_vfe = Config.load_pillar_vfe()
+        self.pfe = PillarVFE(self.pillar_cfg, self.pillar_vfe["NUM_POINT_FEATURES"],
                              self.pillar_vfe["VOXEL_SIZE"], device).to(device)  # extract pillar's features
-        self.psct = PointPillarScatter(pillar_cfg["NUM_FILTERS"][-1], pillar_vfe["GRID_SIZE"])  # map pillar to bev
+        # map pillar to bev. IMPORTANT: grid_size need to be consistent with point_cloud_range
+        self.psct = PointPillarScatter(self.pillar_cfg["NUM_FILTERS"][-1],
+                                       self.pillar_vfe["GRID_SIZE"])
         self.cnn = torchvision.models.resnet152(pretrained=True)
         self.cnn.conv1 = nn.Conv2d(64, 64, kernel_size=7, stride=2, padding=3, bias=False)
         num_ftrs = self.cnn.fc.in_features
@@ -54,5 +56,7 @@ class SmPillarSizeNet(nn.Module):
         # map to bev
         source_dict = self.psct(source_dict)
         sbev = source_dict["spatial_features"]  # (B,C,H,W)
+        # 0 mean and 1 std
+        sbev = (sbev - sbev.mean()) / sbev.std()
         out = self.cnn(sbev)
         return out
