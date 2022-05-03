@@ -1,14 +1,19 @@
 import torch
 import torch.utils.data
 import torch.optim as optim
+import torch.nn.functional as F
 import common_utils.cfgs as Config
-from OurNet.visualization.tensorboard import TensorBoardVis as vis
+from OurNet.visualization.tensorboard import TensorBoardVis
+from OurNet.models.model_utils import io_utils
 
 from OurNet.dataset.SmoothTrajDataSet import SmoothTrajDataSet
 from OurNet.models.detector.SmoothTrajNet import SmoothTrajNet
 
 blue = lambda x: '\033[94m' + x + '\033[0m'
-def main():
+
+
+def main(train=True):
+    vis = TensorBoardVis()
     train_cfg = Config.load_train_common()
     train_para = train_cfg["training_parameters"]
     batchs, workers, shuffle = train_para["batch_size"], train_para["workers"], train_para["shuffle"]
@@ -23,20 +28,79 @@ def main():
     vaild_dataloader = torch.utils.data.DataLoader(train_data, num_workers=workers, batch_size=batchs, shuffle=shuffle)
 
     net = SmoothTrajNet(device, N=max_traj_n).to(device)
+    optimizer = optim.Adam(net.parameters(), lr=0.001)
+    # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
 
     print(blue('# of training samples: %d' % len(train_data)))
     print(blue('# of validation samples: %d' % len(valid_data)))
 
-    n =0
-    for epoch in range(epochs):
-        for i, data in enumerate(train_dataloader):
-            point_dicts, poses, labels = data
-            poses = poses.to(device)
-            pred = net(point_dicts, poses)
-            # print(labels)
-            n+=1
-            if n%100 == 0:
-                print(n)
+    if train:
+        n = 0
+        base = 5
+        for epoch in range(epochs):
+            for i, data in enumerate(train_dataloader):
+                net = net.train()
+                point_dicts, poses, labels = data
+                poses = poses.to(device)
+                pred = net(point_dicts, poses)
+
+                pred = pred.view(batchs, -1, 3).to(device)
+                labels = labels.to(device)
+
+                # angle_diff = torch.sin(pred[:, :, 2] - labels[:, :, 2])
+                loss_dx = F.smooth_l1_loss(100 * pred[:, :, 0], 100 * labels[:, :, 0])
+                loss_dy = F.smooth_l1_loss(100 * pred[:, :, 1], 100 * labels[:, :, 1])
+                loss_angle = F.smooth_l1_loss(pred[:, :, 2], labels[:, :, 2])
+
+                loss = loss_dy + loss_dx + 100 * loss_angle
+
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                vis.add_scalar("loss_x", loss_dx, n)
+                vis.add_scalar("loss_y", loss_dy, n)
+                vis.add_scalar("loss_angle", loss_angle, n)
+                vis.add_scalar("loss_total", loss, n)
+                n += 1
+                if n % 100 == 0:
+                    print("Loss %f. x:%f, y:%f, angle:%f" % (loss, float(loss_dx), float(loss_dy), float(loss_angle)))
+            valid_loss = 0
+            for i, data in enumerate(vaild_dataloader):
+                net = net.eval()
+                point_dicts, poses, labels = data
+                poses = poses.to(device)
+                pred = net(point_dicts, poses)
+
+                pred = pred.view(batchs, -1, 3).to(device)
+                labels = labels.to(device)
+
+                # angle_diff = torch.sin(pred[:, :, 2] - labels[:, :, 2])
+                loss_dx = F.smooth_l1_loss(pred[:, :, 0], labels[:, :, 0])
+                loss_dy = F.smooth_l1_loss(pred[:, :, 1], labels[:, :, 1])
+                loss_angle = F.smooth_l1_loss(pred[:, :, 2], labels[:, :, 2])
+
+                valid_loss = 2 * loss_dy + 2 * loss_dx + 2 * loss_angle
+                vis.add_scalar("loss_total_valid", valid_loss, epoch)
+            if epoch % 20 == 0:
+                io_utils.saveCheckPoint(net, epoch, valid_loss)
+    else:
+        ckpt = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/SmoothTrajNet/ckpt_epc0_0.004273.pth"
+        test(net, ckpt, train_dataloader, device, batchs)
+
+
+def test(net: torch.nn.Module, ckpt_path, dataloader, device, batchs):
+    net.load_state_dict(torch.load(ckpt_path))
+    for i, data in enumerate(dataloader):
+        net.eval()
+        point_dicts, poses, labels = data
+        poses = poses.to(device)
+        pred = net(point_dicts, poses)
+
+        pred = pred.view(batchs, -1, 3).to(device)
+        labels = labels.to(device)
+
+        print(labels - pred)
         break
 
 

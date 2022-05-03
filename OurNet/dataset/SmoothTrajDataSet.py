@@ -9,6 +9,7 @@ class SmoothTrajDataSet(DataSetTemplate):
     1. batch can only be 1
     2. only support image (70,70)
     """
+
     def __init__(self, datapath, max_traj_n=10):
         super().__init__(datapath)
         self.max_traj_n = max_traj_n
@@ -50,10 +51,9 @@ class SmoothTrajDataSet(DataSetTemplate):
 
         # sample, augment and label
         # if there is no frame, pose is [0,0,0], center and point is the same as the last one
-        poses, points_dicts= self.sampler.paddingTraj(poses, points_dicts, size, self.max_traj_n)
-        poses, points_dicts, labels = self.augmentor.guassianTrajAug(poses, points_dicts,
-                                                                         max_size=self.max_traj_n, actual_size=size)
-
+        poses, points_dicts = self.sampler.paddingTraj(poses, points_dicts, size, self.max_traj_n)
+        poses, points_dicts, labels = self.augmentor.guassianTrajAug(poses, points_dicts,centers,
+                                                                     max_size=self.max_traj_n, actual_size=size)
         # get pillar
         for i in range(self.max_traj_n):
             point_dict = points_dicts[i]
