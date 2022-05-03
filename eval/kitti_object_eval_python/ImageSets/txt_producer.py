@@ -2,7 +2,7 @@ import os
 
 
 # read all txt file name
-result_txt_path = '/home2/lie/InnovativePractice2/OpenPCDet/output/cfgs/kitti_models/pv_rcnn/default/eval/epoch_8369/val/default/final_result/data'
+result_txt_path = '/home2/lie/zhangsh/InnovativePractice1_SUSTech/labels/kitti_track2object/training/label_2/'
 file_name = 'tracking_all.txt'
 txt_list = os.listdir(result_txt_path)
 txt_list.sort()

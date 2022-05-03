@@ -12,9 +12,9 @@ cafolder_test = '/public_dataset/kitti/tracking/data_tracking_calib/testing/cali
 imfolder_train = '/public_dataset/kitti/tracking/data_tracking_image_2/training/image_02'
 vefolder_train = '/public_dataset/kitti/tracking/data_tracking_velodyne/training/velodyne'
 cafolder_train = '/public_dataset/kitti/tracking/data_tracking_calib/training/calib'
-lafolder = '/public_dataset/kitti/tracking/data_tracking_label_2/training/label_02'
+lafolder = '/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/data'
 
-output = '/home2/lie/zhangsh/InnovativePractice1_SUSTech/labels/kitti_track2object'
+output = '/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/object_format'
 # output = '../test/object'
 splittext = '/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/training/splitpos.txt'
 

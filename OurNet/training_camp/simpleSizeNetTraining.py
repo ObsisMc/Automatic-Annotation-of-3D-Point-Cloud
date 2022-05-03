@@ -27,7 +27,7 @@ def main():
                                                num_workers=workers)
     valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=batch, shuffle=shuffle,
                                                num_workers=workers)
-    model = torchvision.models.resnet152(pretrained=True)
+    model = torchvision.models.resnet101(pretrained=True)
     model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
     num_ftrs = model.fc.in_features
     model.fc = nn.Sequential(
