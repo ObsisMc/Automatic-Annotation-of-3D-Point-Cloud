@@ -35,18 +35,19 @@ def main():
     # model
     model = SmPillarSizeNet(device).to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    criterion = nn.MSELoss()
+    criterion = nn.SmoothL1Loss()
     min_loss = 10000
     count = 0
     print("start training")
     for epoch in range(epochs):
         running_loss = 0.0
         for i, data in enumerate(train_loader):
+            # print("epoch:", epoch, "batch:", i)
             inputs, labels = data
             # convert to float tensor
             # inputs = inputs.float()
-            # labels = labels.float()
-            inputs, labels = inputs["points"].to(device), labels.to(device)
+            labels = labels.float()
+            inputs, labels = inputs, labels.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
@@ -62,8 +63,8 @@ def main():
                 for i, data in enumerate(valid_loader):
                     inputs, labels = data
                     # inputs = inputs.float()
-                    # labels = labels.float()
-                    inputs, labels = inputs["points"].to(device), labels.to(device)
+                    labels = labels.float()
+                    inputs, labels = inputs, labels.to(device)
                     outputs = model(inputs)
                     loss = criterion(outputs, labels)
                     val_loss += loss.item()
