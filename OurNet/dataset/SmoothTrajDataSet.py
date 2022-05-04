@@ -3,7 +3,7 @@ import common_utils.cfgs as Config
 from dataset_utils.processor.data_processor import DataProcessor
 import numpy as np
 
-
+# FIXME: data has problem!!!! the world coordinate may wrong!!! use visualization to check!
 class SmoothTrajDataSet(DataSetTemplate):
     """
     1. batch can only be 1
