@@ -14,8 +14,8 @@ def visualize_scene(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_
     )
 
 
-def visualize_object(points: np.ndarray, ref_boxes=None, points2=None):
-    V.draw_object(points, ref_boxes, points2)
+def visualize_object(points: np.ndarray, ref_boxes=None, points2=None, colorful=True):
+    V.draw_object(points, ref_boxes, points2, colorful=colorful)
 
 
 def main():
@@ -32,13 +32,13 @@ def main():
     # visualize
     # visualize_scene(points=points, ref_boxes=boxes, ref_labels=label)
     # visualize_object(points=points, ref_boxes=boxes[0], keep_world_coord=cfg["keep_world_coord"])
-    visualize_object(points=points)
+    # visualize_object(points=points)
 
     # show 2 points in a window
-    # multi_point = []
-    # for i in range(len(cfg["multi_points"])):
-    #     multi_point.append(io.load_points(cfg["multi_points"][i]))
-    # visualize_object(points=points, points2=multi_point)
+    multi_point = []
+    for i in range(len(cfg["multi_points"])):
+        multi_point.append(io.load_points(cfg["multi_points"][i]))
+    visualize_object(points=points, points2=multi_point, colorful=False)
 
 
 if __name__ == '__main__':
