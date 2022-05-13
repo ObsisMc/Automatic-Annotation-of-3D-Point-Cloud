@@ -1,9 +1,11 @@
 import shutil
 import os
+import subprocess
 
 from DataTransporterTemplate import DataTransporterTemplate
 
 
+# TODO: speed up
 class OpenPcdetTransporter(DataTransporterTemplate):
     def __init__(self):
         super().__init__()
@@ -24,6 +26,11 @@ class OpenPcdetTransporter(DataTransporterTemplate):
         return 0
 
     def process(self):
+        print("Generate data info of OpenPcdet at data/kitti...")
+        command = ["cd %s" % self.openpcdet_cfg["base"],
+                   self.openpcdet_cfg["command"]["generate_data_info"]]
+        p = subprocess.Popen(";".join(command), shell=True)
+        p.wait()
         return
 
     def check(self):
