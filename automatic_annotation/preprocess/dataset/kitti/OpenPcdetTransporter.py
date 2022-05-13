@@ -12,9 +12,12 @@ class OpenPcdetTransporter(DataTransporterTemplate):
                          "test": os.path.join(self.openpcdet_cfg["base"], self.openpcdet_cfg["test"])}
 
     def transport(self):
+        print("Check directories...")
         self.check()
+        print("Check successfully")
         for i, key in enumerate(self.kitti_cfg):
             for path in self.kitti_cfg[key]:
+                print("Copy %s" % key)
                 shutil.copytree(path, self.dst_path[key])
         self.process()
         return 0
