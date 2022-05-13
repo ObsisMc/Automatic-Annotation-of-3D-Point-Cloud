@@ -1,0 +1,8 @@
+base_path: NULL
+command:
+  test: 'python test.py --cfg_file ${CONFIG_FILE} --batch_size ${BATCH_SIZE} --ckpt ${CKPT}  --save_to_file'
+arguments:
+  test:
+    config_file: NULL
+    batch_size: NULL
+    ckpt: NULL

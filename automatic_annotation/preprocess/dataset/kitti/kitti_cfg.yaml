@@ -16,4 +16,4 @@ OpenPcdet:
   test: /data/kitti/testing
   train: /data/kitti/training
   command:
-    generate_data_info: python -m pcdet.datasets.kitti.kitti_dataset create_kitti_infos tools/cfgs/dataset_configs/kitti_dataset.yaml
+    generate_data_info: 'python -m pcdet.datasets.kitti.kitti_dataset create_kitti_infos tools/cfgs/dataset_configs/kitti_dataset.yaml'
