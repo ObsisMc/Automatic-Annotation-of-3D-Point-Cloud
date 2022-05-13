@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import common_utils.cfgs as Config
 from visual_modul import open3d_vis_utils as V, io_utils as io
 from visual_modul.calibration import Calibration
@@ -29,16 +30,38 @@ def main():
     boxes, label = io.load_boxes_from_object_txt(cfg["boxpath"])
     boxes = calibration.bbox_rect_to_lidar(boxes)  # move coordinates
 
-    # visualize
+    # visualize scene and its label
     # visualize_scene(points=points, ref_boxes=boxes, ref_labels=label)
-    # visualize_object(points=points, ref_boxes=boxes[0], keep_world_coord=cfg["keep_world_coord"])
-    # visualize_object(points=points)
 
-    # show 2 points in a window
+    # visualize a object in a scene
+    # visualize_object(points=points, ref_boxes=boxes[0], keep_world_coord=cfg["keep_world_coord"])
+
+    # visualize a extracted object
+    # visualize_object(points=points[:, :3])
+
+    # show many objects in a window
+    # multi_point = []
+    # for i in range(len(cfg["multi_points"])):
+    #     multi_point.append(io.load_points(cfg["multi_points"][i]))
+    # visualize_object(points=points, points2=multi_point, colorful=False)
+
+    # show continuous objects in a window
+    root = cfg["multi_points"][0].rsplit("/", 1)[0]
+    begin = int(cfg["multi_points"][0].rsplit("/", 1)[1].rstrip(".npy"))
+    end = int(cfg["multi_points"][-1].rsplit("/", 1)[1].rstrip(".npy"))
     multi_point = []
-    for i in range(len(cfg["multi_points"])):
-        multi_point.append(io.load_points(cfg["multi_points"][i]))
+    for i in range(begin, end+1):
+        path = os.path.join(root, "{:06d}.npy".format(i))
+        if os.path.exists(path):
+            multi_point.append(io.load_points(path))
     visualize_object(points=points, points2=multi_point, colorful=False)
+
+
+    # show many scenes in a window
+    # multi_point = []
+    # for i in range(len(cfg["multi_scenes"])):
+    #     multi_point.append(io.load_points(cfg["multi_scenes"][i])[:,:3])
+    # visualize_object(points=points[:,:3], points2=multi_point, colorful=False)
 
 
 if __name__ == '__main__':

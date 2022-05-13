@@ -1,12 +1,12 @@
 training_common:
-  dataset_path: /home2/lie/InnovativePractice2/data/kitti/tracking/extracted_points_official_label_1
-  ckpt_out_path: /home2/lie/zhangsh/InnovativePractice1_SUSTech/OurNet/checkpoints/sizeNet/
+  dataset_path: /home/zrh/Data/kitti/tracking/extracted_points_keep
+  ckpt_out_path: /home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints
   training_parameters:
-    epochs: 10000
-    batch_size: 32
-    shuffle: True
+    epochs: 20
+    batch_size: 1
+    shuffle: False
     workers: 4
-    cudaidx: 3
+    cudaidx: 0
     train_ratio: 0.8
     early_stop: True
     learning_rate: 0.001

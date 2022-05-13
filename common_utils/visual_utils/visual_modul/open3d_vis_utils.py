@@ -166,7 +166,7 @@ def draw_object(points: np.ndarray, box=None, multi_points=None, keep_world_coor
     vis = open3d.visualization.Visualizer()
     vis.create_window()
 
-    if box is not None:
+    if box is not None and points is not None:
         _, pcld_crop, line_set = extract_object(points, box, keep_world_coord)
     else:
         if multi_points is not None:
