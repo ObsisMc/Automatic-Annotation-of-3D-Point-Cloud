@@ -40,6 +40,25 @@ However, remember that if you extract points without correction, you should visu
 
 > tracking点云的0001文件夹176后面缺了几帧
 
+#### automatic workflow
+1. data preparation
+   1. transport (need transport code from dataset to models)
+   2. generate data info for pvrcnn ( need preprocess code for every model)
+2. off_the_shelf result
+   1. pvrcnn detection ( entry for testing for every detection model)
+   2. transport to ab3dmot tracking 
+      1. intermediate process between detection and tracking data (include abandoning low confidence)
+   3. AB3DMOT get result (entry for testing for tracking model)
+3. our net
+   1. data preperation (from model format to our net dataset)
+   2. predict proposed box ()
+   3. generate our dataset 
+   4. use net to adjust box (entry to test)
+   5. check overlap, consolidate trajectory
+   6. loop
+4. post preprocess
+
+5. sdf
 
 ## Related work
 #### Point Cloud Registration
