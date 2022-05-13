@@ -16,6 +16,6 @@ class DataTransporterTemplate:
         return
 
     def check(self):
-        for i, key in self.kitti_cfg:
+        for i, key in enumerate(self.kitti_cfg):
             for path in self.kitti_cfg[key]:
                 assert os.path.exists(path)

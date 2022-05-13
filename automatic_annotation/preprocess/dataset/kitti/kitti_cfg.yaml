@@ -12,6 +12,6 @@ kitti:
 
 # dir of openpcdet
 OpenPcdet:
-  base: ~/InnovativePractice2/OpenPCDet/data/kitti/
+  base: /home2/lie/zhangrh/data
   test: testing
   train: training

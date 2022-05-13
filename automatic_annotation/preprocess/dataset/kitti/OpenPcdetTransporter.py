@@ -17,8 +17,9 @@ class OpenPcdetTransporter(DataTransporterTemplate):
         print("Check successfully")
         for i, key in enumerate(self.kitti_cfg):
             for path in self.kitti_cfg[key]:
-                print("Copy %s" % key)
-                shutil.copytree(path, self.dst_path[key])
+                dir = os.path.split(path)[1]
+                print("Copy %s of %s..." % (dir, key))
+                shutil.copytree(path, os.path.join(self.dst_path[key], dir))
         self.process()
         return 0
 
@@ -27,16 +28,13 @@ class OpenPcdetTransporter(DataTransporterTemplate):
 
     def check(self):
         super().check()
-        for i, key in self.dst_path:
+        for i, key in enumerate(self.dst_path):
             assert os.path.exists(self.dst_path[key])
-
-
 
 
 def test():
     trans = OpenPcdetTransporter()
     trans.transport()
-
 
 
 if __name__ == "__main__":
