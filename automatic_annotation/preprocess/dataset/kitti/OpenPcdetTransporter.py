@@ -35,6 +35,7 @@ class OpenPcdetTransporter(DataTransporterTemplate):
 
 def test():
     trans = OpenPcdetTransporter()
+    trans.transport()
 
 
 

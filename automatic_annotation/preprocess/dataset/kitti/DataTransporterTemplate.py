@@ -4,7 +4,8 @@ import os
 
 class DataTransporterTemplate:
     def __init__(self):
-        self.config = yaml.load("kitti_cfg.yaml", Loader=yaml.FullLoader)
+        with open("kitti_cfg.yaml") as f:
+            self.config = yaml.load(f, Loader=yaml.FullLoader)
         self.kitti_cfg = self.config["kitti"]
         self.dst_path = {"train": [], "test": []}
 
