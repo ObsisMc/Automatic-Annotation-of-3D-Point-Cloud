@@ -1,0 +1,17 @@
+# dir of data
+kitti:
+  test:
+    - /public_dataset/kitti/object/data_object_calib/testing/calib
+    - /public_dataset/kitti/object/data_object_velodyne/testing/velodyne
+    - /public_dataset/kitti/object/data_object_image_2/testing/image_2
+  train:
+    - /public_dataset/kitti/object/data_object_calib/training/calib
+    - /public_dataset/kitti/object/data_object_velodyne/training/velodyne
+    - /public_dataset/kitti/object/data_object_image_2/training/image_2
+    - /public_dataset/kitti/object/data_object_label_2/training/label_2
+
+# dir of openpcdet
+OpenPcdet:
+  base: ~/InnovativePractice2/OpenPCDet/data/kitti/
+  test: testing
+  train: training
