@@ -30,7 +30,7 @@ def main():
             for i in range(len(old_data)):
                 if old_data[i][1] == vehicle_id:
                     old_data[i][12] = str(l)
-                    old_data[i][10] = str(h)
+                    # old_data[i][10] = str(h)
                     old_data[i][11] = str(w)
         # create new label file and write data
         with open(new_label, 'w') as f:
