@@ -12,11 +12,11 @@ cafolder_test = '/public_dataset/kitti/tracking/data_tracking_calib/testing/cali
 imfolder_train = '/public_dataset/kitti/tracking/data_tracking_image_2/training/image_02'
 vefolder_train = '/public_dataset/kitti/tracking/data_tracking_velodyne/training/velodyne'
 cafolder_train = '/public_dataset/kitti/tracking/data_tracking_calib/training/calib'
-lafolder = '/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/data'
+lafolder = '/home/zrh/Data/kitti/tracking/extract2track/label_02'
 
-output = '/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/object_format'
+output = '/home/zrh/Data/kitti/tracking/extract2track2object'
 # output = '../test/object'
-splittext = '/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/training/splitpos.txt'
+splittext = '/home/zrh/Data/kitti/tracking/splitpos.txt'
 
 
 def getfmt(generic):
@@ -89,7 +89,7 @@ def trans_label(tracking_file, num):
     checksum = 0
     for i in range(num):
         # number of labels.txt should be less than or equal line number in splitpos.txt
-        labelnum = int(splitposf.readline().rstrip("\\n")) if i > 0 else 0
+        labelnum = int(splitposf.readline().rstrip("\n")) if i > 0 else 0
         ff = os.path.join(tracking_file, '{:04d}.txt'.format(i))
         with open(ff, 'r') as f:
             labels = f.readlines()
@@ -144,7 +144,7 @@ def tmpmethod():
 
 
 if __name__ == '__main__':
-    n = 21
+    n = 10
     # data = {"testing": {"image_2": imfolder_test, "velodyne": vefolder_test, "calib": cafolder_test},
     #         "training": {"image_2": imfolder_train, "velodyne": vefolder_train, "calib": cafolder_train,
     #                      "label_2": lafolder}}
