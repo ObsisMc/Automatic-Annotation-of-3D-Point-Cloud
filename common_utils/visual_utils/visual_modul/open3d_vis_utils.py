@@ -130,7 +130,7 @@ def draw_box(vis, gt_boxes, color=(0, 1, 0), ref_labels=None, score=None):
 def extract_object(points: np.ndarray, box: np.array, keep_world_coord=False):
     """
     input:
-    1. box: should be [location, l, h, w, angle]
+    1. box: should be np.array([location, l, h, w, angle]), dimension is (-1,)
     2. points: (N, 3) open3d.utility.Vector3dVector cannot handle refraction
     output:
     1. points_canonical: np.ndarray

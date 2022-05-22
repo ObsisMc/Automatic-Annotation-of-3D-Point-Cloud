@@ -15,11 +15,14 @@ def load_points(pointspath):
     return None
 
 
-def trans_track_txt_to_calib_format(box:str, extend=1):
+def trans_track_txt_to_calib_format(box: str, extend=1):
+    """
+    @return dimension is (N,3)
+    """
     box = box.rstrip('\n').rstrip(" ").split(" ")
     extend_mtx = np.array([1] * 3 + [extend] * 3 + [1]).reshape(1, -1)
     trans_box = np.array(box[13:16] + [box[12], box[10], box[11]] + [box[16]], dtype=np.float32).reshape(1, -1)
-    return (trans_box * extend_mtx).reshape(-1, )
+    return (trans_box * extend_mtx).reshape(1, -1)
 
 
 def load_boxes_from_object_txt(boxpath):
@@ -27,6 +30,8 @@ def load_boxes_from_object_txt(boxpath):
     1. the boxes should be calibrated
     2. box should be [location + l + h + w + angle]
     3. label is in kitti object format
+
+    @return dimension is (N,3)
     """
 
     def parseLabel(category):
