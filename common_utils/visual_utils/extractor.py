@@ -93,7 +93,7 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
 
 
 def extract_single_object(scene_points: np.ndarray, calib: Calibration, box: str, extend=1, keep_world_coord=False):
-    calib_box = calib.bbox_rect_to_lidar(io.trans_track_txt_to_calib_format(box, extend))
+    calib_box = calib.bbox_rect_to_lidar(io.trans_track_txt_to_calib_format(box, extend)).reshape(-1,)
     extracted_points, _, _ = V.extract_object(scene_points, calib_box, keep_world_coord)
     return extracted_points
 
