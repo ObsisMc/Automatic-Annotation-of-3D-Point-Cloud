@@ -16,7 +16,7 @@ class OxstProjector:
         return x, y
 
     def init_oxst(self, oxst_config):
-        latitude, longitude, yaw = oxst_config[0], oxst_config[1], oxst_config[5]
+        latitude, longitude, yaw = float(oxst_config[0]), float(oxst_config[1]), float(oxst_config[5])
         self.x, self.y = self.oxst_to_coord(latitude, longitude)
         self.yaw = yaw
         return [self.x, self.y, self.yaw]
