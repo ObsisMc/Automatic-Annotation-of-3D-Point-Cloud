@@ -4,6 +4,16 @@ import os
 import logging
 
 
+def load_oxst_tracking_scene(oxst_scene_path):
+    """
+    [lat, lon, alt, row, pitch, yaw]
+    """
+    oxst = []
+    with open(oxst_scene_path, "r") as f:
+        oxst.append(f.readline()[:6])
+    return oxst
+
+
 def load_points(pointspath):
     if pointspath.endswith(".bin"):
         return np.fromfile(pointspath, dtype=np.float32).reshape(-1, 4)
