@@ -10,7 +10,9 @@ def load_oxst_tracking_scene(oxst_scene_path):
     """
     oxst = []
     with open(oxst_scene_path, "r") as f:
-        oxst.append(f.readline()[:6])
+        lines = f.readlines()
+        for line in lines:
+            oxst.append(line.split(" ")[:6])
     return oxst
 
 
