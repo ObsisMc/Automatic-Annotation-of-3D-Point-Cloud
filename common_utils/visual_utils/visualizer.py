@@ -25,12 +25,18 @@ def show_continuous_objects(cfg, oxst_projector: OxstProjector, oxst: list):
     begin = int(cfg["multi_points"][0].rsplit("/", 1)[1].rstrip(".npy"))
     end = int(cfg["multi_points"][-1].rsplit("/", 1)[1].rstrip(".npy"))
     multi_point = []
+
+    base_position = None
     for i in range(begin, end + 1):
         oxst_projector.init_oxst(oxst[i])
+
+        if base_position is None:
+            base_position = np.array([oxst_projector.x, oxst_projector.y, 0])
+
         path = os.path.join(root, "{:06d}.npy".format(i))
         if os.path.exists(path):
             points = io.load_points(path)
-            multi_point.append(oxst_projector.lidar_to_pose(points))
+            multi_point.append(oxst_projector.lidar_to_pose(points, base_position))
     visualize_object(points=None, points2=multi_point, colorful=False)
 
 
@@ -44,7 +50,6 @@ def main():
     oxst_projector = OxstProjector()
     scene_frame = 0
     oxsts = io.load_oxst_tracking_scene("/home/zrh/Data/kitti/data_tracking_oxts/training/oxts/0000.txt")
-    print(oxsts)
 
     # load data
     points = io.load_points(cfg["objectpath"])

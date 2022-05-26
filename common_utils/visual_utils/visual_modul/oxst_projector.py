@@ -21,13 +21,14 @@ class OxstProjector:
         self.yaw = yaw
         return [self.x, self.y, self.yaw]
 
-    def lidar_to_pose(self, object_points):
+    def lidar_to_pose(self, object_points, base_position=np.array([0, 0, 0])):
         """
         lidar_box: [x, y, z, dx, dy, dz, heading]
+        base_position: np.ndarray, (-1,), [base_x, base_y]
         """
         assert self.yaw and self.x and self.y
         object_points = self.rotate_yaw(object_points, -self.yaw)
-        object_points += np.array([self.x, self.y, 0]).reshape(1, -1)
+        object_points += (np.array([self.x, self.y, 0]) - base_position.astype(np.float)).reshape(1, -1)
         return object_points
 
     def rotate_yaw(self, points, angle):
