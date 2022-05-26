@@ -27,7 +27,7 @@ class OxstProjector:
         base_position: np.ndarray, (-1,), [base_x, base_y]
         """
         assert self.yaw and self.x and self.y
-        object_points = self.rotate_yaw(object_points, -self.yaw)
+        object_points = self.rotate_yaw(object_points, self.yaw)  # pay attention, yaw doesn't need to be negative
         object_points += (np.array([self.x, self.y, 0]) - base_position.astype(np.float)).reshape(1, -1)
         return object_points
 
