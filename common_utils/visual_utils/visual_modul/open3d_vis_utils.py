@@ -168,6 +168,9 @@ def draw_object(points: np.ndarray, box=None, multi_points=None, keep_world_coor
 
     if box is not None and points is not None:
         _, pcld_crop, line_set = extract_object(points, box, keep_world_coord)
+        # visualize
+        pcld_crop.paint_uniform_color([1, 0, 0])  # [1,0,0] is red
+        vis.add_geometry(pcld_crop)
     else:
         if multi_points is not None:
             for idx, pts in enumerate(multi_points):
@@ -178,13 +181,6 @@ def draw_object(points: np.ndarray, box=None, multi_points=None, keep_world_coor
                 else:
                     pcd_tmp.paint_uniform_color([1, 0, 0])
                 vis.add_geometry(pcd_tmp)
-        # points, _ = guassianArgu(points)
-        pcld_crop = open3d.geometry.PointCloud()
-        pcld_crop.points = open3d.utility.Vector3dVector(points)
-
-    # visualize
-    pcld_crop.paint_uniform_color([1, 0, 0])  # [1,0,0] is red
-    vis.add_geometry(pcld_crop)
 
     axis_pcd = open3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=[0, 0, 0])  # red is x, green is y
     vis.add_geometry(axis_pcd)
