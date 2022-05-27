@@ -48,6 +48,7 @@ class OxstProjector:
         sina = np.sin(angle)
         ones = np.ones_like(angle, dtype=np.float32)
         zeros = np.zeros_like(angle, dtype=np.float32)
+        # clockwise
         rot_matrix = np.array(
             [[cosa, sina, zeros],
              [-sina, cosa, zeros],
