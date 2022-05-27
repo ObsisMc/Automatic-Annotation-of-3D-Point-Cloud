@@ -47,7 +47,9 @@ def show_continuous_objects_without_adjust(cfg):
 
         path = os.path.join(root, "{:06d}.npy".format(i))
         if os.path.exists(path):
-            multi_point.append(io.load_points(path))
+            points = io.load_points(path)
+            multi_point.append(points)
+            print(points[:3, :])
     visualize_object(points=None, points2=multi_point, colorful=False)
 
 

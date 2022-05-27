@@ -41,10 +41,8 @@ class OxstProjector:
         object_points += offset
         return object_points
 
-    def get_offset(self):
-        offset_position = (np.array([self.x, self.y, 0]) - self.base_position).reshape(1, -1)
-        offset_angel = np.array([self.yaw]).reshape(1, -1)
-        return np.c_[offset_position, offset_angel].reshape(-1, )
+    def oxst_rotation_y(self, rotation_y):
+        return rotation_y + self.yaw
 
     def rotate_yaw(self, points, angle):
         """
