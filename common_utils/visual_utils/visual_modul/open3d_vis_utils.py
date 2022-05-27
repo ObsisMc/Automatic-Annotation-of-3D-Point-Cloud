@@ -127,7 +127,7 @@ def draw_box(vis, gt_boxes, color=(0, 1, 0), ref_labels=None, score=None):
 
 # extract a single object
 
-def extract_object(points: np.ndarray, box: np.array, keep_world_coord=False):
+def extract_object(points: np.ndarray, box: np.array):
     """
     input:
     1. box: should be np.array([location, l, h, w, angle]), dimension is (-1,)
@@ -145,10 +145,7 @@ def extract_object(points: np.ndarray, box: np.array, keep_world_coord=False):
     pcld_crop = pcld.crop(bound)
 
     # translate coordinates and rotate the points to be orthogonal
-    points_canonical = np.asarray(pcld_crop.points)
-    if not keep_world_coord:
-        points_canonical = canonicalize(points_canonical, box)[0]
-        pcld_crop.points = open3d.utility.Vector3dVector(points_canonical)
+    extracted_points = np.asarray(pcld_crop.points)
 
     # get a canonical box
     # linebox = extract_box(box, True)
@@ -159,7 +156,7 @@ def extract_object(points: np.ndarray, box: np.array, keep_world_coord=False):
     # line_set.paint_uniform_color((1, 0, 0))
     line_set = None
 
-    return points_canonical, pcld_crop, line_set
+    return extracted_points, pcld_crop, line_set
 
 
 def draw_object(points: np.ndarray, box=None, multi_points=None, keep_world_coord=False, colorful=True):
