@@ -37,6 +37,19 @@ def show_continuous_objects(cfg, oxst_projector: OxstProjector, oxst: list):
     visualize_object(points=None, points2=multi_point, colorful=False)
 
 
+def show_continuous_objects_in_lidar(cfg):
+    root = cfg["multi_points"][0].rsplit("/", 1)[0]
+    begin = int(cfg["multi_points"][0].rsplit("/", 1)[1].rstrip(".npy"))
+    end = int(cfg["multi_points"][-1].rsplit("/", 1)[1].rstrip(".npy"))
+    multi_point = []
+    for i in range(begin, end + 1):
+
+        path = os.path.join(root, "{:06d}.npy".format(i))
+        if os.path.exists(path):
+            multi_point.append(io.load_points(path))
+    visualize_object(points=None, points2=multi_point, colorful=False)
+
+
 def main():
     cfg = Config.load_visual("visualize_root")
 
@@ -69,8 +82,10 @@ def main():
     # visualize_object(points=points, points2=multi_point, colorful=False)
 
     # show continuous objects in a window
-    show_continuous_objects(cfg, oxst_projector, oxsts)
+    # show_continuous_objects(cfg, oxst_projector, oxsts)
 
+    # show continuous objects in lidar coordinates
+    show_continuous_objects_in_lidar(cfg)
     # show many scenes in a window
     # multi_point = []
     # for i in range(len(cfg["multi_scenes"])):
