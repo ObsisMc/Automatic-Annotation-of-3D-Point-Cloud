@@ -107,8 +107,9 @@ class PointTransformer:
     __CANONICAL = "canonical"
     __EARTH = "earth"
 
-    def __init__(self, handle_type, oxst_projector: OxstProjector = None):
+    def __init__(self, handle_type: str, oxst_projector: OxstProjector = None):
         self.transform = None
+        handle_type = handle_type.lower()
         if handle_type == self.__DEFAULT:
             self.transform = self.default_handle
         elif handle_type == self.__CANONICAL:
