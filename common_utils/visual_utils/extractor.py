@@ -168,8 +168,12 @@ class PointTransformer:
         self.oxst_projector.init_oxst(oxst_config)
         points = self.oxst_projector.lidar_to_pose(points)
         new_box = np.copy(box)
-        new_box[0], new_box[1], new_box[2], yaw = self.oxst_projector.get_offset()
-        new_box[5] += np.pi / 2 - new_box[5] + yaw
+        offset_x, offset_y, offset_z, yaw = self.oxst_projector.get_offset()
+        new_box[0] += offset_x
+        new_box[1] += offset_y
+        new_box[2] += offset_z
+        new_box[6] += yaw
+
         return points, new_box
 
     @staticmethod
