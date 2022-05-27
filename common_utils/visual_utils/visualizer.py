@@ -30,13 +30,10 @@ def show_continuous_objects(cfg, oxst_projector: OxstProjector, oxst: list):
     for i in range(begin, end + 1):
         oxst_projector.init_oxst(oxst[i])
 
-        if base_position is None:
-            base_position = np.array([oxst_projector.x, oxst_projector.y, 0])
-
         path = os.path.join(root, "{:06d}.npy".format(i))
         if os.path.exists(path):
             points = io.load_points(path)
-            multi_point.append(oxst_projector.lidar_to_pose(points, base_position))
+            multi_point.append(oxst_projector.lidar_to_pose(points))
     visualize_object(points=None, points2=multi_point, colorful=False)
 
 
