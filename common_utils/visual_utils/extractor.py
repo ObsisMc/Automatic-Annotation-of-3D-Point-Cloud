@@ -3,6 +3,7 @@ import common_utils.cfgs as Config
 import numpy as np
 from .visual_modul import open3d_vis_utils as V, io_utils as io
 from .visual_modul.calibration import Calibration
+from .visual_modul.oxst_projector import OxstProjector
 
 
 # labels extracted are processed and their location (to world coordinate), size (extended) and angle is different from original labels
@@ -96,9 +97,65 @@ def extract_single_object(scene_points: np.ndarray, calib: Calibration, box: str
     """
     @params box, a string about a single tracking label
     """
-    calib_box = calib.bbox_rect_to_lidar(io.trans_track_txt_to_calib_format(box, extend)).reshape(-1,)
+    calib_box = calib.bbox_rect_to_lidar(io.trans_track_txt_to_calib_format(box, extend)).reshape(-1, )
     extracted_points, _, _ = V.extract_object(scene_points, calib_box, keep_world_coord)
     return extracted_points
+
+
+class PointTransformer:
+    __DEFAULT = "default"
+    __CANONICAL = "canonical"
+    __EARTH = "earth"
+
+    def __init__(self, handle_type, oxst_projector: OxstProjector = None):
+        self.transform = None
+        if handle_type == self.__DEFAULT:
+            self.transform = self.default_handle
+        elif handle_type == self.__CANONICAL:
+            self.transform = self.canonicalize
+        elif handle_type == self.__EARTH:
+            self.transform = self.to_earth_pose
+
+        self.oxst_projector = oxst_projector
+
+    @staticmethod
+    def canonicalize(points: np.ndarray, boxes: np.array):
+        # translation
+        center = boxes[0:3].reshape(1, -1)
+        points_translated = (points - center).reshape(1, -1)
+
+        # rotation
+        points_canonical = PointTransformer.rotate_points_along_z(points_translated.reshape(1, -1, 3), -boxes[-1])
+        return points_canonical
+
+    def to_earth_pose(self, points: np.ndarray, oxst_config):
+        self.oxst_projector.init_oxst(oxst_config)
+        points = self.oxst_projector.lidar_to_pose(points)
+        return points
+
+    @staticmethod
+    def default_handle(points: np.ndarray):
+        return points
+
+    @staticmethod
+    def rotate_points_along_z(points, angle):
+        """
+        Args:
+            points: (B, N, 3)
+            angle: (B), angle along z-axis, angle increases x ==> y
+        Returns:
+        """
+        cosa = np.cos(angle)
+        sina = np.sin(angle)
+        ones = np.ones_like(angle, dtype=np.float32)
+        zeros = np.zeros_like(angle, dtype=np.float32)
+        rot_matrix = np.array(
+            [[cosa, sina, zeros],
+             [-sina, cosa, zeros],
+             [zeros, zeros, ones]]
+        )
+        points_rot = points @ rot_matrix
+        return points_rot
 
 
 if __name__ == "__main__":
@@ -109,4 +166,5 @@ if __name__ == "__main__":
                            inference=bool(cfg["inference"]),
                            threshold=float(cfg["threshold"]),
                            extend=float(cfg["extend"]),
-                           keep_world_coord=bool(cfg["keep_world_coord"]))
+                           keep_world_coord=bool(cfg["keep_world_coord"])
+                           )
