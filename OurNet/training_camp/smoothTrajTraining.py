@@ -93,10 +93,10 @@ def main(train=True):
         dataset = SmoothTrajTestDataSet(train_cfg["dataset_path"], max_traj_n=max_traj_n)
         test_dataloader = torch.utils.data.DataLoader(dataset, num_workers=0, batch_size=1,
                                                       shuffle=shuffle)
-        test(net, ckpt, test_dataloader, device, 1)
+        # eval(net, ckpt, test_dataloader, device, 1)
 
 
-def test(net: torch.nn.Module, ckpt_path, dataloader, device, batchs):
+def eval(net: torch.nn.Module, ckpt_path, dataloader, device, batchs):
     net.load_state_dict(torch.load(ckpt_path))
     for i, data in enumerate(dataloader):
         net.eval()
@@ -114,4 +114,4 @@ def test(net: torch.nn.Module, ckpt_path, dataloader, device, batchs):
 
 
 if __name__ == "__main__":
-    main(train=False)
+    main(train=True)
