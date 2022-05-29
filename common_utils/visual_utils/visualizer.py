@@ -50,7 +50,7 @@ def show_continuous_objects_without_adjust(cfg):
             points = io.load_points(path)
             multi_point.append(points)
             print(points[:3, :])
-    visualize_object(points=None, points2=multi_point, colorful=False)
+    visualize_object(points=None, points2=multi_point, colorful=True)
 
 
 def main():
@@ -76,7 +76,7 @@ def main():
     # visualize_object(points=points, ref_boxes=boxes[0], keep_world_coord=cfg["keep_world_coord"])
 
     # visualize a extracted object
-    # visualize_object(points=points[:, :3])
+    visualize_object(points=points[:, :3])
 
     # show many objects in a window
     # multi_point = []
@@ -88,7 +88,7 @@ def main():
     # show_continuous_objects(cfg, oxst_projector, oxsts)
 
     # show continuous objects in lidar coordinates
-    show_continuous_objects_without_adjust(cfg)
+    # show_continuous_objects_without_adjust(cfg)
 
     # show many scenes in a window
     # multi_point = []
