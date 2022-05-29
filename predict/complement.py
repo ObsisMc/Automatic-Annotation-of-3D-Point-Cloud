@@ -2,8 +2,17 @@ import os
 import predict
 import numpy as np
 import cv2
+import shutil
+import sys
+sys.path.append("..")
+from common_utils.visual_utils.extractor import extract_single_object
+from common_utils.visual_utils.visual_modul.io_utils import load_points
+from common_utils.visual_utils.visual_modul.calibration import Calibration
+from OurNet.NewTest import test as net_predict
 
 data_dir = "/home2/lie/InnovativePractice2/data/kitti/tracking/extracted_08_1"
+velodyne_dir = "/public_dataset/kitti/tracking/data_tracking_velodyne/training/velodyne"
+calib_dir = "/public_dataset/kitti/tracking/data_tracking_calib/training/calib"
 
 
 def get_trajectory_path(data_dir):
@@ -58,11 +67,12 @@ def find_longest_continuous(trajectory_path):
     return result_begin, result_end
 
 
-def get_all_other_labels(scene, trajectory):
+def get_all_other_labels(scene, trajectory, frame):
     """
     :param scene: the path of the scene
     :param trajectory: the path of the trajectory
-    :return: the list of all other label paths of the same kind of thing within the scene.
+    :param frame: the frame number
+    :return: the list of all other label paths of the same kind of thing and same frame number within the scene.
     """
     category = os.path.basename(trajectory).split('#')[0]
     labels = []
@@ -72,8 +82,35 @@ def get_all_other_labels(scene, trajectory):
         if path != trajectory:
             label_names = os.listdir(path + "labels")
             for label_name in label_names:
-                labels.append(os.path.join(path, "labels", label_name))
+                if label_name.split(".")[0] == str(frame).zfill(6):
+                    labels.append(os.path.join(path, "labels", label_name))
     return labels
+
+
+def move_files(trajectory1, trajectory2):
+    """
+    Move all labels and points from trajectory1 to trajectory2.
+    """
+    for label in os.listdir(trajectory1 + "labels"):
+        shutil.move(os.path.join(trajectory1 + "labels", label), os.path.join(trajectory2 + "labels", label))
+    for point in os.listdir(trajectory1 + "points"):
+        shutil.move(os.path.join(trajectory1 + "points", point), os.path.join(trajectory2 + "points", point))
+
+
+def extract_points(scene, frame_num, box):
+    """
+    :param scene: the path of the scene
+    :param frame_num: the frame number
+    :param box: the information of the bbox, tracking format, a string
+    :return: the point cloud
+    """
+    scene_num = os.path.basename(scene)
+    velodyne_path = os.path.join(velodyne_dir, scene_num, str(frame_num).zfill(6) + ".bin")
+    calib_path = os.path.join(calib_dir, scene_num, ".txt")
+    scene_points = load_points(velodyne_path)[:, :3]
+    calib = Calibration(calib_path)
+    extracted_points = extract_single_object(scene_points, calib, box, 1.3)
+    return extracted_points
 
 
 if __name__ == "__main__":
@@ -118,7 +155,27 @@ if __name__ == "__main__":
                 y = y1 + (y2 - y1) / (last_frame - first_frame)
                 z = z1 + (z2 - z1) / (last_frame - first_frame)
                 theta = theta1 + (theta2 - theta1) / (last_frame - first_frame)
-                # TODO: Extract the point cloud and invoke the network, remember add the point cloud to points
+                # Extract the point cloud and invoke the network, remember add the point cloud to points
+                scene = os.path.dirname(trajectory)
+                box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(x) + " " + str(
+                    y) + " " + str(z) + " " + str(theta)
+                points = extract_points(scene, first_frame + 1, box)
+                points_name = str(first_frame).zfill(6) + ".bin"
+                points_path = os.path.join(trajectory + "points", points_name)
+                output = net_predict(np.load(points_path), points)
+                output = output.view(-1)
+                if output[0] > 0.5:
+                    x += output[1]
+                    y += output[2]
+                    z += output[3]
+                    theta += output[4]
+                # Save the points
+                box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(x) + " " + str(
+                y) + " " + str(z) + " " + str(theta)
+                points = extract_points(scene, first_frame + 1, box)
+                points_name = str(first_frame + 1).zfill(6) + ".npy"
+                points_path = os.path.join(trajectory + "points", points_name)
+                np.save(points_path, points)
                 # Write the predicted position back to the label file
                 label_name = str(first_frame + 1).zfill(6) + ".txt"
                 label_path = os.path.join(trajectory + "labels", label_name)
@@ -143,7 +200,27 @@ if __name__ == "__main__":
                 pred_y = predict.time_predict(position_list[:][1].reverse())
                 pred_z = predict.time_predict(position_list[:][2].reverse())
                 pred_theta = predict.time_predict(position_list[:][3].reverse())
-                # TODO: Extract the point cloud and invoke the network, remember add the point cloud to points
+                # Extract the point cloud and invoke the network, remember add the point cloud to points
+                scene = os.path.dirname(trajectory)
+                box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(pred_x) + " " + str(
+                    pred_y) + " " + str(pred_z) + " " + str(pred_theta)
+                points = extract_points(scene, begin - 1, box)
+                points_name = str(begin).zfill(6) + ".bin"
+                points_path = os.path.join(trajectory + "points", points_name)
+                output = net_predict(np.load(points_path), points)
+                output = output.view(-1)
+                if output[0] > 0.5:
+                    pred_x += output[1]
+                    pred_y += output[2]
+                    pred_z += output[3]
+                    pred_theta += output[4]
+                # Save the points
+                box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(pred_x) + " " + str(
+                    pred_y) + " " + str(pred_z) + " " + str(pred_theta)
+                points = extract_points(scene, begin - 1, box)
+                points_name = str(begin - 1).zfill(6) + ".npy"
+                points_path = os.path.join(trajectory + "points", points_name)
+                np.save(points_path, points)
                 # Write the predicted position back to the label file
                 label_name = str(begin - 1).zfill(6) + ".txt"
                 label_path = os.path.join(trajectory + "labels", label_name)
@@ -157,7 +234,27 @@ if __name__ == "__main__":
                 pred_y = predict.time_predict(position_list[:][1])
                 pred_z = predict.time_predict(position_list[:][2])
                 pred_theta = predict.time_predict(position_list[:][3])
-                # TODO: Extract the point cloud and invoke the network, remember add the point cloud to points
+                # Extract the point cloud and invoke the network, remember add the point cloud to points
+                scene = os.path.dirname(trajectory)
+                box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(pred_x) + " " + str(
+                    pred_y) + " " + str(pred_z) + " " + str(pred_theta)
+                points = extract_points(scene, end + 1, box)
+                points_name = str(end).zfill(6) + ".bin"
+                points_path = os.path.join(trajectory + "points", points_name)
+                output = net_predict(np.load(points_path), points)
+                output = output.view(-1)
+                if output[0] > 0.5:
+                    pred_x += output[1]
+                    pred_y += output[2]
+                    pred_z += output[3]
+                    pred_theta += output[4]
+                # Save the points
+                box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(pred_x) + " " + str(
+                    pred_y) + " " + str(pred_z) + " " + str(pred_theta)
+                points = extract_points(scene, end + 1, box)
+                points_name = str(end + 1).zfill(6) + ".npy"
+                points_path = os.path.join(trajectory + "points", points_name)
+                np.save(points_path, points)
                 # Write the predicted position back to the label file
                 label_name = str(end + 1).zfill(6) + ".txt"
                 label_path = os.path.join(trajectory + "labels", label_name)
@@ -175,6 +272,8 @@ if __name__ == "__main__":
             # Initialize l, h, w of the trajectory
             l, h, w = 0, 0, 0
             label_names = os.listdir(trajectory + "labels")
+            if len(label_names) == 0:
+                continue
             label_names.sort()
             # Get the frame range of the trajectory
             first_frame = int(label_names[0].split(".")[0])
@@ -198,25 +297,104 @@ if __name__ == "__main__":
                 pred_y = predict.time_predict(position_list[:][1].reverse())
                 pred_z = predict.time_predict(position_list[:][2].reverse())
                 pred_theta = predict.time_predict(position_list[:][3].reverse())
-                # TODO: Extract the point cloud and invoke the network, remember add the point cloud to points
-                add = False
-                if add:
+                # Extract the point cloud and invoke the network, remember add the point cloud to points
+                scene = os.path.dirname(trajectory)
+                box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(pred_x) + " " + str(
+                    pred_y) + " " + str(pred_z) + " " + str(pred_theta)
+                points = extract_points(scene, first_frame - 1, box)
+                points_name = str(first_frame).zfill(6) + ".bin"
+                points_path = os.path.join(trajectory + "points", points_name)
+                output = net_predict(np.load(points_path), points)
+                output = output.view(-1)
+                if output[0] > 0.5:
+                    pred_x += output[1]
+                    pred_y += output[2]
+                    pred_z += output[3]
+                    pred_theta += output[4]
                     # Check if the predicted trajectory is overlapping with the previous trajectory
-                    label_paths = get_all_other_labels(scene, trajectory)
+                    label_paths = get_all_other_labels(scene, trajectory, first_frame - 1)
+                    merged = False
                     for label_path in label_paths:
                         with open(label_path, "r") as f:
                             line = f.readline()
                             data = line.split(" ")
-                            # If the distance between the predicted box and the previous box is less than 0.1m and theta is less than 0.1rad, merge the two trajectories
-                            if (pred_x - float(data[0])) ** 2 + (pred_y - float(data[1])) ** 2 + (pred_z - float(data[2])) ** 2 < 0.01 and abs(
-                                    pred_theta - float(data[6])) < 0.1:
-                                # TODO: Merge the two trajectories
+                            # If the distance between the predicted box and the previous box is less than 0.3m and theta is less than 0.3rad, merge the two trajectories
+                            if (pred_x - float(data[0])) ** 2 + (pred_y - float(data[1])) ** 2 + (pred_z - float(data[2])) ** 2 < 0.09 and abs(
+                                    pred_theta - float(data[6])) < 0.3:
+                                # Get the trajectory path
+                                trajectory_path = os.path.dirname(os.path.dirname(label_path))
+                                # Move files in trajectory_path/labels and trajectory_path/points to trajectory/labels and trajectory/points
+                                move_files(trajectory_path, trajectory)
+                                merged = True
+                                break
+                    if not merged:
+                        # Write the predicted position back to the label file
+                        label_name = str(first_frame - 1).zfill(6) + ".txt"
+                        label_path = os.path.join(trajectory + "labels", label_name)
+                        with open(label_path, "w") as f:
+                            f.write(
+                                str(pred_x) + " " + str(pred_y) + " " + str(pred_z) + " " + str(l) + " " + str(
+                                    h) + " " + str(
+                                    w) + " " + str(pred_theta))
+                        # Save the points
+                        box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(
+                            pred_x) + " " + str(
+                            pred_y) + " " + str(pred_z) + " " + str(pred_theta)
+                        points = extract_points(scene, first_frame - 1, box)
+                        points_name = str(first_frame - 1).zfill(6) + ".npy"
+                        points_path = os.path.join(trajectory + "points", points_name)
+                        np.save(points_path, points)
+            # Predict the trajectory forward
+            pred_x = predict.time_predict(position_list[:][0])
+            pred_y = predict.time_predict(position_list[:][1])
+            pred_z = predict.time_predict(position_list[:][2])
+            pred_theta = predict.time_predict(position_list[:][3])
+            # TODO: Extract the point cloud and invoke the network, remember add the point cloud to points
+            scene = os.path.dirname(trajectory)
+            box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(pred_x) + " " + str(
+                pred_y) + " " + str(pred_z) + " " + str(pred_theta)
+            points = extract_points(scene, last_frame + 1, box)
+            points_name = str(last_frame).zfill(6) + ".bin"
+            points_path = os.path.join(trajectory + "points", points_name)
+            output = net_predict(np.load(points_path), points)
+            output = output.view(-1)
+            if output[0] > 0.5:
+                pred_x += output[1]
+                pred_y += output[2]
+                pred_z += output[3]
+                pred_theta += output[4]
+                # Check if the predicted trajectory is overlapping with the previous trajectory
+                label_paths = get_all_other_labels(scene, trajectory, last_frame + 1)
+                merged = False
+                for label_path in label_paths:
+                    with open(label_path, "r") as f:
+                        line = f.readline()
+                        data = line.split(" ")
+                        # If the distance between the predicted box and the previous box is less than 0.3m and theta is less than 0.3rad, merge the two trajectories
+                        if (pred_x - float(data[0])) ** 2 + (pred_y - float(data[1])) ** 2 + (
+                                pred_z - float(data[2])) ** 2 < 0.09 and abs(
+                                pred_theta - float(data[6])) < 0.3:
+                            # Get the trajectory path
+                            trajectory_path = os.path.dirname(os.path.dirname(label_path))
+                            # Move files in trajectory_path/labels and trajectory_path/points to trajectory/labels and trajectory/points
+                            move_files(trajectory_path, trajectory)
+                            merged = True
+                            break
+                if not merged:
                     # Write the predicted position back to the label file
-                    label_name = str(first_frame - 1).zfill(6) + ".txt"
+                    label_name = str(last_frame + 1).zfill(6) + ".txt"
                     label_path = os.path.join(trajectory + "labels", label_name)
                     with open(label_path, "w") as f:
                         f.write(
                             str(pred_x) + " " + str(pred_y) + " " + str(pred_z) + " " + str(l) + " " + str(
                                 h) + " " + str(
                                 w) + " " + str(pred_theta))
+                    # Save the points
+                    box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(
+                        pred_x) + " " + str(
+                        pred_y) + " " + str(pred_z) + " " + str(pred_theta)
+                    points = extract_points(scene, last_frame + 1, box)
+                    points_name = str(last_frame + 1).zfill(6) + ".npy"
+                    points_path = os.path.join(trajectory + "points", points_name)
+                    np.save(points_path, points)
 
