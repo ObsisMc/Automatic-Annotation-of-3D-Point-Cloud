@@ -349,7 +349,7 @@ if __name__ == "__main__":
             pred_y = predict.time_predict(position_list[:][1])
             pred_z = predict.time_predict(position_list[:][2])
             pred_theta = predict.time_predict(position_list[:][3])
-            # TODO: Extract the point cloud and invoke the network, remember add the point cloud to points
+            # Extract the point cloud and invoke the network, remember add the point cloud to points
             scene = os.path.dirname(trajectory)
             box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(pred_x) + " " + str(
                 pred_y) + " " + str(pred_z) + " " + str(pred_theta)

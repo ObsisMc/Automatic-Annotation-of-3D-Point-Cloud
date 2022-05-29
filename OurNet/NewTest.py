@@ -11,7 +11,7 @@ def test(points1, points2):
     dataset = NewDataSet(io_utils.getDataSetPath())
     points1, points2 = dataset.sampler.fps(points1), dataset.sampler.fps(points2)
     net = NewModel()
-    # net.load_state_dict()
+    net.load_state_dict(torch.load("/home2/lie/zhanglr/IP/OurNet/checkpoints/NewModel/ckpt_epc100_0.010029.pth"))
     net.to(device)
     output = net(points1, points2)
     return output
