@@ -15,6 +15,7 @@ box_colormap = [
     [1, 1, 0],  # yellow
     [1, 0, 0],  # red
     [1, 0, 1],  # purple
+    [0, 0, 0]
 ]
 
 
@@ -164,20 +165,24 @@ def draw_object(points: np.ndarray, box=None, multi_points=None, keep_world_coor
     vis.create_window()
 
     if box is not None and points is not None:
-        _, pcld_crop, line_set = extract_object(points, box, keep_world_coord)
+        _, pcld_crop, line_set = extract_object(points, box)
         # visualize
         pcld_crop.paint_uniform_color([1, 0, 0])  # [1,0,0] is red
         vis.add_geometry(pcld_crop)
+    elif multi_points is not None:
+        for idx, pts in enumerate(multi_points):
+            pcd_tmp = open3d.geometry.PointCloud()
+            pcd_tmp.points = open3d.utility.Vector3dVector(pts)
+            if colorful:
+                pcd_tmp.paint_uniform_color(box_colormap[idx + 1])  # idx should less than 3
+            else:
+                pcd_tmp.paint_uniform_color([1, 0, 0])
+            vis.add_geometry(pcd_tmp)
     else:
-        if multi_points is not None:
-            for idx, pts in enumerate(multi_points):
-                pcd_tmp = open3d.geometry.PointCloud()
-                pcd_tmp.points = open3d.utility.Vector3dVector(pts)
-                if colorful:
-                    pcd_tmp.paint_uniform_color(box_colormap[idx + 1])  # idx should less than 3
-                else:
-                    pcd_tmp.paint_uniform_color([1, 0, 0])
-                vis.add_geometry(pcd_tmp)
+        pcd = open3d.geometry.PointCloud()
+        pcd.points = open3d.utility.Vector3dVector(points)
+        pcd.paint_uniform_color(box_colormap[-1])
+        vis.add_geometry(pcd)
 
     axis_pcd = open3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=[0, 0, 0])  # red is x, green is y
     vis.add_geometry(axis_pcd)
