@@ -1,6 +1,6 @@
-from models.detector.SiameseNet import Siamese2c
-from dataset.NewDataSet import NewDataSet
-from visualization.tensorboard import TensorBoardVis
+from OurNet.models.detector.SiameseNet import Siamese2c
+from OurNet.dataset.NewDataSet import NewDataSet
+from OurNet.visualization.tensorboard import TensorBoardVis
 from OurNet.models.model_utils import io_utils
 
 import torch
@@ -14,7 +14,7 @@ blue = lambda x: '\033[94m' + x + '\033[0m'
 def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
     device = "cuda:%d" % cudan if torch.cuda.is_available() else "cpu"
 
-    dataset = NewDataSet(io_utils.getDataSetPath())
+    dataset = NewDataSet("/home/zrh/Data/kitti/tracking/extracted_points_entend13")
     train_dataset, valid_dataset = torch.utils.data.random_split(dataset, [int(0.8 * len(dataset)) - 1,
                                                                            len(dataset) - int(0.8 * len(dataset)) + 1])
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch, shuffle=shuffle, num_workers=wokers)

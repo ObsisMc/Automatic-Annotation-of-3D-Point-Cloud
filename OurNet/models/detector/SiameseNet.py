@@ -69,11 +69,10 @@ class SiameseMultiDecoder(nn.Module):
             self.bn2 = nn.BatchNorm1d(512)
             self.bn3 = nn.BatchNorm1d(64)
 
-            self.dropout = nn.Dropout(p=0.2)
 
         def forward(self, x):
-            x = F.leaky_relu(self.dropout(self.fc1(x)))
-            x = F.leaky_relu(self.dropout(self.fc2(x)))
+            x = F.leaky_relu(self.bn2(self.fc1(x)))
+            x = F.leaky_relu(self.bn3(self.fc2(x)))
             x = self.fc3(x)
             return x
 
@@ -81,7 +80,7 @@ class SiameseMultiDecoder(nn.Module):
         super().__init__()
         self.pointfeat = SimplePointNet()
         self.k = k
-        self.decoders = [self.Decoder() for _ in range(k)]  # x,y,z,angel,confidence
+        self.decoders = [self.Decoder().to("cuda:0") for _ in range(k)]  # x,y,z,angel,confidence
 
     def forward(self, x1, x2):
         """
@@ -90,5 +89,5 @@ class SiameseMultiDecoder(nn.Module):
         x = torch.cat((x1.unsqueeze(3), x2.unsqueeze(3)), 3).permute(0, 2, 1, 3)
         x = self.pointfeat(x)
 
-        x = [self.decoders[i](x) for i in range(self.k)]
-        return x
+        y = [self.decoders[i](x) for i in range(self.k)]
+        return y
