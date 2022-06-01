@@ -303,7 +303,7 @@ class PointNetSetAbstractionMsg(nn.Module):
         return new_xyz, new_points_concat
 
 
-def batch_fps(points: torch.Tensor, sample_n) -> np.ndarray:
+def batch_fps(points: torch.Tensor, sample_n) -> torch.Tensor:
     """
     Input:
         xyz: pointcloud data, [B, N, C]
@@ -315,10 +315,10 @@ def batch_fps(points: torch.Tensor, sample_n) -> np.ndarray:
     batch, num, channel = points.shape
     fps_n = sample_n
 
-    fps_centroids = np.zeros((batch, fps_n))
+    fps_centroids = torch.zeros((batch, fps_n))
     for b in range(batch):
-        centroids = np.zeros(fps_n)
-        distance = np.ones(fps_n) * 1e10
+        centroids = torch.zeros(fps_n).to(device)
+        distance = torch.ones(num).to(device) * 1e10
         farthest = 0
         for i in range(fps_n):
             # 更新第i个最远点
@@ -326,17 +326,17 @@ def batch_fps(points: torch.Tensor, sample_n) -> np.ndarray:
             # 取出这个最远点的xyz坐标
             centroid = points[b, farthest].reshape(-1, 3)
             # 计算点集中的所有点到这个最远点的欧式距离
-            dist = np.sum((points[b, :] - centroid) ** 2, axis=1)
+            dist = torch.sum((points[b, :] - centroid) ** 2, dim=1)
             # 更新distances，记录样本中每个点距离所有已出现的采样点的最小距离
             mask = dist < distance
             distance[mask] = dist[mask]
             # 从更新后的distances矩阵中找出距离最远的点，作为最远点用于下一轮迭代
-            farthest = np.argmax(distance)
-        fps_centroids[b, :] = centroids.astype(np.int)
+            farthest = torch.argmax(distance)
+        fps_centroids[b, :] = centroids
     return fps_centroids
 
 
-def index_points(points: torch.Tensor, idx: np.ndarray) -> torch.Tensor:
+def index_points(points: torch.Tensor, idx: torch.Tensor) -> torch.Tensor:
     """
         Input:
             points: input points data, [B, N, C]
@@ -346,6 +346,7 @@ def index_points(points: torch.Tensor, idx: np.ndarray) -> torch.Tensor:
     """
 
     device = points.device
+    idx = idx.long()
     batch = idx.shape[0]
     _, n_points, _ = points.shape
 
