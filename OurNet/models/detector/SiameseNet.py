@@ -127,9 +127,9 @@ class SiamesePlus(nn.Module):
 
         self.fps_n = [init_n // 2]
         self.radius_list = [[0.1, 0.2, 0.4]]
-        self.nsample_list = [[8, 16, 32]]
         self.in_channel_list = [0]
-        self.mlp_list = [[128, 128, 256]]
+        self.nsample_list = [[8, 16, 32]]
+        self.mlp_list = [[[128, 128, 256] for _ in range(3)]]
 
         self.set_abstracts = nn.ModuleList()
         for i in range(len(self.fps_n)):
@@ -139,7 +139,7 @@ class SiamesePlus(nn.Module):
                                                                 mlp_list=self.mlp_list[i]))
 
         # decoder
-        self.in_decoder = self.global_channel_n + sum(self.mlp_list[0])
+        self.in_decoder = self.global_channel_n + np.sum(np.array(self.mlp_list[0]))
         self.out_decoder = out_channel
         self.decoder_mlp = [2 * self.in_decoder, 512, self.out_decoder]
         self.decoder = nn.Sequential()
@@ -148,10 +148,12 @@ class SiamesePlus(nn.Module):
             self.decoder.add_module('bn%d' % i, nn.BatchNorm1d(self.decoder_mlp[i]))
             self.decoder.add_module('relu%d' % i, nn.ReLU())
 
-    def forward(self, x1, x2):
+    def forward(self, x1: torch.Tensor, x2: torch.Tensor):
+        x1 = x1.permute(0, 2, 1)
+        x2 = x2.permute(0, 2, 1)
         batch, point_n, channel_n = x1.shape
-        x1_global_feat = self.pointfeat(copy.deepcopy(x1).permute(0, 2, 1))
-        x2_global_feat = self.pointfeat(copy.deepcopy(x2).permute(0, 2, 1))
+        x1_global_feat = self.pointfeat(copy.deepcopy(x1))
+        x2_global_feat = self.pointfeat(copy.deepcopy(x2))
 
         x1_xyz_list, x1_feat_list, x1_local_feat = [], [], []
         x2_xyz_list, x2_feat_list, x2_local_feat = [], [], []
@@ -304,18 +306,17 @@ class PointNetSetAbstractionMsg(nn.Module):
 def batch_fps(points: torch.Tensor, sample_n) -> np.ndarray:
     """
     Input:
-        xyz: pointcloud data, [N, C]
+        xyz: pointcloud data, [B, N, C]
         npoint: number of samples
     Return:
         centroids: sampled pointcloud index, [B, npoint]
     """
-
     device = points.device
     batch, num, channel = points.shape
     fps_n = sample_n
 
     fps_centroids = np.zeros((batch, fps_n))
-    for b in batch:
+    for b in range(batch):
         centroids = np.zeros(fps_n)
         distance = np.ones(fps_n) * 1e10
         farthest = 0
