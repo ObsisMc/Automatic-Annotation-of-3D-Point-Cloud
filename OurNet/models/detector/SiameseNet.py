@@ -113,24 +113,66 @@ class PointNet1D(nn.Module):
 
     def forward(self, x):
         x = self.backbone(x)
-        x = torch.max(x, 2, keepdim=True)[0]
-        x = x.view(-1, 1024 * x.shape[2])
+        x = torch.max(x, dim=2, keepdim=True)[0]
+        x = x.view(-1, 1024)  # (B,C)
         return x
 
 
 class SiamesePlus(nn.Module):
-    def __init__(self, k=1):
+    def __init__(self, out_channel=1, init_n=800):
         super().__init__()
-        self.k = k
+        # encoder
         self.pointfeat = PointNet1D()
+        self.global_channel_n = 1024
+
+        self.fps_n = [init_n // 2]
+        self.radius_list = [[0.1, 0.2, 0.4]]
+        self.nsample_list = [[8, 16, 32]]
+        self.in_channel_list = [0]
+        self.mlp_list = [[128, 128, 256]]
+
+        self.set_abstracts = nn.ModuleList()
+        for i in range(len(self.fps_n)):
+            self.set_abstracts.append(PointNetSetAbstractionMsg(npoint=self.fps_n[i], radius_list=self.radius_list[i],
+                                                                nsample_list=self.nsample_list[i],
+                                                                in_channel=self.in_channel_list[i],
+                                                                mlp_list=self.mlp_list[i]))
+
+        # decoder
+        self.in_decoder = self.global_channel_n + sum(self.mlp_list[0])
+        self.out_decoder = out_channel
+        self.decoder_mlp = [2 * self.in_decoder, 512, self.out_decoder]
+        self.decoder = nn.Sequential()
+        for i in range(1, len(self.decoder_mlp)):
+            self.decoder.add_module('linear%d' % i, nn.Linear(self.decoder_mlp[i - 1], self.decoder_mlp[i]))
+            self.decoder.add_module('bn%d' % i, nn.BatchNorm1d(self.decoder_mlp[i]))
+            self.decoder.add_module('relu%d' % i, nn.ReLU())
 
     def forward(self, x1, x2):
-        x1_feat = copy.deepcopy(x1)
-        x2_feat = copy.deepcopy(x2)
-        x1_feat = self.pointfeat(x1_feat.permute(0, 2, 1))
-        x2_feat = self.pointfeat(x2_feat.permute(0, 2, 1))
+        batch, point_n, channel_n = x1.shape
+        x1_global_feat = self.pointfeat(copy.deepcopy(x1).permute(0, 2, 1))
+        x2_global_feat = self.pointfeat(copy.deepcopy(x2).permute(0, 2, 1))
 
-        return x1, x2
+        x1_xyz_list, x1_feat_list, x1_local_feat = [], [], []
+        x2_xyz_list, x2_feat_list, x2_local_feat = [], [], []
+        last_x1_xyz, last_x2_xyz = x1, x2
+        last_x1_feat = last_x2_feat = None
+        for i, set_abstract in enumerate(self.set_abstracts):
+            x1_new_xyz, x1_new_feat = set_abstract(last_x1_xyz, last_x1_feat)
+            x2_new_xyz, x2_new_feat = set_abstract(last_x2_xyz, last_x2_feat)
+            x1_xyz_list.append(x1_new_xyz)
+            x1_feat_list.append(x1_new_feat)
+            x1_local_feat.append(torch.max(x1_new_feat, dim=2)[0].view(batch, -1))
+            x2_xyz_list.append(x2_new_xyz)
+            x2_feat_list.append(x2_new_feat)
+            x2_local_feat.append(torch.max(x2_new_feat, dim=2)[0].view(batch, -1))
+
+            last_x1_xyz, last_x1_feat = x1_new_xyz, x1_new_feat
+            last_x2_xyz, last_x2_feat = x2_new_xyz, x2_new_feat
+
+        siamese_feat = torch.cat([x1_global_feat] + x1_local_feat + [x2_global_feat] + x2_local_feat, dim=1)
+        out = self.decoder(siamese_feat)
+        return out
 
 
 class PointNetSetAbstraction(nn.Module):
