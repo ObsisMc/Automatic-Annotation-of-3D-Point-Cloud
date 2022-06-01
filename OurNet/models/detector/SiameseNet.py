@@ -197,6 +197,66 @@ class PointNetSetAbstraction(nn.Module):
         return new_xyz, new_points
 
 
+class PointNetSetAbstractionMsg(nn.Module):
+    # 例如：128,[0.2,0.4,0.8],[32,64,128],320,[[64,64,128],[128,128,256],[128,128,256]]
+
+    def __init__(self, npoint, radius_list, nsample_list, in_channel, mlp_list):
+        super(PointNetSetAbstractionMsg, self).__init__()
+        self.npoint = npoint
+        self.radius_list = radius_list
+        self.nsample_list = nsample_list
+        self.conv_blocks = nn.ModuleList()
+        self.bn_blocks = nn.ModuleList()
+        for i in range(len(mlp_list)):
+            convs = nn.ModuleList()
+            bns = nn.ModuleList()
+            last_channel = in_channel + 3
+            for out_channel in mlp_list[i]:
+                convs.append(nn.Conv2d(last_channel, out_channel, 1))
+                bns.append(nn.BatchNorm2d(out_channel))
+                last_channel = out_channel
+            self.conv_blocks.append(convs)
+            self.bn_blocks.append(bns)
+
+    def forward(self, xyz, points):
+        """
+        Input:
+            xyz: input points position data, [B, C, N]
+            points: input points data, [B, D, N]
+        Return:
+            new_xyz: sampled points position data, [B, C, S]
+            new_points_concat: sample points feature data, [B, D', S]
+        """
+        xyz = xyz.permute(0, 2, 1)
+        if points is not None:
+            points = points.permute(0, 2, 1)
+
+        B, N, C = xyz.shape
+        S = self.npoint  # 最远采样点数
+        new_xyz = index_points(xyz, batch_fps(xyz, S))
+        new_points_list = []  # 将不同半径下点云特征保存在 new_points_list
+        for i, radius in enumerate(self.radius_list):
+            K = self.nsample_list[i]
+            group_idx = neighbour_ball(sample_n=K, radius=radius, all_points=xyz, centroid_points=new_xyz)
+            grouped_xyz = index_points(xyz, group_idx)
+            grouped_xyz -= new_xyz.view(B, S, 1, C)
+            if points is not None:
+                grouped_points = index_points(points, group_idx)
+                grouped_points = torch.cat([grouped_points, grouped_xyz], dim=-1)  # 拼接点云特征数据和点坐标数据
+            else:
+                grouped_points = grouped_xyz
+
+            grouped_points = grouped_points.permute(0, 3, 2, 1)  # [B, D, K, S]
+            for j in range(len(self.conv_blocks[i])):
+                conv = self.conv_blocks[i][j]
+                bn = self.bn_blocks[i][j]
+                grouped_points = F.relu(bn(conv(grouped_points)))
+            new_points = torch.max(grouped_points, 2)[0]  # [B, D', S]
+            new_points_list.append(new_points)  # 不同半径下点云特征的列表保存到new_points_list
+
+        new_xyz = new_xyz.permute(0, 2, 1)
+        new_points_concat = torch.cat(new_points_list, dim=1)  # 拼接不同半径下的点云特征的列表
+        return new_xyz, new_points_concat
 
 
 def batch_fps(points: torch.Tensor, sample_n) -> np.ndarray:
