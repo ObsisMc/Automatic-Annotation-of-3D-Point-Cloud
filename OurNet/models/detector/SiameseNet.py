@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import numpy as np
+from OurNet.models.attention_layer import CBAM
 
 
 class SimplePointNet(nn.Module):
@@ -29,6 +30,29 @@ class SimplePointNet(nn.Module):
         x = self.backbone(x)
         x = torch.max(x, 2, keepdim=False)[0]
         x = x.view(-1, 1024 * x.shape[2])
+        return x
+
+
+class AttentionPointNet(nn.Module):
+    def __init__(self, in_channel=3, in_point=800, channel_list=[64, 256, 1024]):
+        super(AttentionPointNet, self).__init__()
+        self.backbone = nn.Sequential()
+
+        last_channel = in_channel
+        for i, channel in enumerate(channel_list):
+            self.backbone.add_module("conv1_%d" % i, nn.Conv1d(last_channel, channel, (1, 1)))
+            self.backbone.add_module("bn%d" % i, nn.BatchNorm1d(channel))
+            self.backbone.add_module("relu%d" % i, nn.LeakyReLU())
+            last_channel = channel
+
+        self.attention = CBAM(in_channel=channel_list[-1], channel_scale=64, spatial_kernel=7)
+        self.weightMax = nn.Conv1d(in_point, 1, (1, 1))
+
+    def forward(self, x):
+        x = self.backbone(x)
+        batch, channel, num = x.shape
+        x = self.attention(x.view(batch, channel, num, 1))
+        x = self.weightMax(x.squeeze(-1).permute(0, 2, 1)).squeeze(1)
         return x
 
 
