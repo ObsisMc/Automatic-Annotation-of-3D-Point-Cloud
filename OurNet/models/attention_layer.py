@@ -93,11 +93,11 @@ class CBAM(nn.Module):
 
         self.backbone = nn.Sequential()
         if mode == 0:
-            self.attentionFeat.add_module("channel", self.channelFeat)
-            self.attentionFeat.add_module("spatial", self.spatialFeat)
+            self.backbone.add_module("channel", self.channelFeat)
+            self.backbone.add_module("spatial", self.spatialFeat)
         elif mode == 1:
-            self.attentionFeat.add_module("spatial", self.spatialFeat)
-            self.attentionFeat.add_module("channel", self.channelFeat)
+            self.backbone.add_module("spatial", self.spatialFeat)
+            self.backbone.add_module("channel", self.channelFeat)
 
     def forward(self, x):
         """
