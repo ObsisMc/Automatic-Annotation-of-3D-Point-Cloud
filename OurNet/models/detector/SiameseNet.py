@@ -97,13 +97,15 @@ class SiameseMultiDecoder(nn.Module):
 
 
 class PointNet1D(nn.Module):
-    def __init__(self, k=3):
+    def __init__(self, in_channel=3, out_channel=1024):
         super().__init__()
-        self.backbone = self.getBackone(k=k)
+        self.out_channel = out_channel
+        self.backbone = self.getBackone(in_channel=in_channel, out_channel=self.out_channel)
 
-    def getBackone(self, k=3, mlp=[64, 128, 512, 1024]):
+    def getBackone(self, in_channel=3, out_channel=1024, mlp=[64, 128, 512]):
         seq = nn.Sequential()
-        input_d = k
+        input_d = in_channel
+        mlp = mlp + [out_channel]
         for i, output_d in enumerate(mlp):
             seq.add_module("conv%d" % (i + 1), nn.Conv1d(input_d, output_d, 1))
             seq.add_module("bn%d" % (i + 1), nn.BatchNorm1d(output_d))
@@ -114,7 +116,7 @@ class PointNet1D(nn.Module):
     def forward(self, x):
         x = self.backbone(x)
         x = torch.max(x, dim=2, keepdim=True)[0]
-        x = x.view(-1, 1024)  # (B,C)
+        x = x.view(-1, self.out_channel)  # (B,C)
         return x
 
 
@@ -122,14 +124,14 @@ class SiamesePlus(nn.Module):
     def __init__(self, out_channel=1, init_n=800):
         super().__init__()
         # encoder
-        self.pointfeat = PointNet1D()
-        self.global_channel_n = 1024
+        self.global_channel_n = 512
+        self.pointfeat = PointNet1D(out_channel=self.global_channel_n)
 
         self.fps_n = [init_n // 2]
         self.radius_list = [[0.1, 0.2, 0.4]]
         self.in_channel_list = [0]
         self.nsample_list = [[8, 16, 32]]
-        self.mlp_list = [[[128, 128, 256] for _ in range(3)]]
+        self.mlp_list = [[[64, 64, 128] for _ in range(3)]]
 
         self.set_abstracts = nn.ModuleList()
         for i in range(len(self.fps_n)):
@@ -139,7 +141,7 @@ class SiamesePlus(nn.Module):
                                                                 mlp_list=self.mlp_list[i]))
 
         # decoder
-        self.in_decoder = self.global_channel_n + np.sum(np.array(self.mlp_list[0]))
+        self.in_decoder = self.global_channel_n + np.sum(np.array(self.mlp_list[0]), axis=0)[2]
         self.out_decoder = out_channel
         self.decoder_mlp = [2 * self.in_decoder, 512, self.out_decoder]
         self.decoder = nn.Sequential()
@@ -413,12 +415,14 @@ def sample_group(radius, fps_point_n, ball_point_n, xyz, points):
     batch, all_n, channel_n = xyz.shape
     fps_idx = batch_fps(xyz, fps_point_n)
     fps_points = index_points(xyz, fps_idx)
-
+    torch.cuda.empty_cache()
     group_idx = neighbour_ball(sample_n=ball_point_n, radius=radius,
                                all_points=xyz, centroid_points=fps_points)
+    torch.cuda.empty_cache()
     group_xyz = index_points(xyz, group_idx)
+    torch.cuda.empty_cache()
     group_xyz_norm = group_xyz - fps_points.view(batch, fps_point_n, 1, channel_n)
-
+    torch.cuda.empty_cache()
     if points is None:
         new_feat_points = group_xyz_norm
     else:
