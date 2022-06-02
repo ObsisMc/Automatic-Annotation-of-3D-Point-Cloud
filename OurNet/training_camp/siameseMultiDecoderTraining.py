@@ -25,7 +25,7 @@ def visualize(losses, step, k):
     return torch.sum(torch.Tensor(losses), dtype=torch.float32).detach()
 
 
-def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
+def main(epochs=200, batch=4, shuffle=False, wokers=4, cudan=0):
     device = "cuda:%d" % cudan if torch.cuda.is_available() else "cpu"
 
     dataset = NewDataSet("/home/zrh/Data/kitti/tracking/extracted_points_entend13")
@@ -53,7 +53,7 @@ def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
         {"params": net.decoders[3].parameters(), "lr": lr4},
         {"params": net.decoders[4].parameters(), "lr": lr3}],
         lr=lr1)
-    scheduler = optim.lr_scheduler.StepLR(optimizers, step_size=20, gamma=0.5)
+    scheduler = optim.lr_scheduler.StepLR(optimizers, step_size=10, gamma=0.5)
 
     totalstep = 0
     for epoch in range(epochs):
