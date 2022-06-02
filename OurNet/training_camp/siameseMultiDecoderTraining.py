@@ -53,7 +53,7 @@ def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
         {"params": net.decoders[3].parameters(), "lr": lr4},
         {"params": net.decoders[4].parameters(), "lr": lr3}],
         lr=lr1)
-    # optimizers = optim.Adam(net.parameters(), lr=0.01)
+    scheduler = optim.lr_scheduler.StepLR(optimizers, step_size=20, gamma=0.5)
 
     totalstep = 0
     for epoch in range(epochs):
@@ -88,6 +88,7 @@ def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
                        , losses[3].detach(), losses[4].detach()))
                 pass
         vis.add_scalar("total_loss", total_loss, epoch)
+        scheduler.step()
 
         if epoch % 10 == 0 and epoch > 0:
             io_utils.saveCheckPoint(net, epoch, total_loss)
