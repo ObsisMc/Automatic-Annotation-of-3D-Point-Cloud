@@ -26,7 +26,7 @@ def main(epochs=50, batch=5, shuffle=False, wokers=4, cudan=0):
     net = SiamesePlus()
     net.to(device)
 
-    optimizer = optim.Adam(net.parameters(), lr=0.001)
+    optimizer = optim.Adam(net.parameters(), lr=0.01)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
     vis = TensorBoardVis()
 
@@ -42,13 +42,13 @@ def main(epochs=50, batch=5, shuffle=False, wokers=4, cudan=0):
             optimizer.zero_grad()
             net = net.train()
             pred = net(source, target)
-            loss = F.smooth_l1_loss(pred, label[:, 0].view(batch, -1))
+            loss = F.smooth_l1_loss(pred, label[:, 0].view(-1, 1))
             loss.backward()
             optimizer.step()
             if n % 100 == 0:
                 print("Training loss: %f" % loss.detach())
             n += 1
-
+        scheduler.step()
         total_loss = 0
         for i, data in enumerate(valid_dataset):
             points, label = data
@@ -59,7 +59,7 @@ def main(epochs=50, batch=5, shuffle=False, wokers=4, cudan=0):
             optimizer.zero_grad()
             net = net.train()
             pred = net(source, target)
-            loss = F.smooth_l1_loss(pred, label[:, 0].view(batch, -1))
+            loss = F.smooth_l1_loss(pred, label[:, 0].view(-1, 1))
             loss.backward()
             optimizer.step()
             total_loss += loss.detach()
