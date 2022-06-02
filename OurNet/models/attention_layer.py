@@ -45,8 +45,9 @@ class CBAM(nn.Module):
             """
             @params: x (B,C,H,W)
 
-            @return: out (B,C)
+            @return: out (B,C,H,W)
             """
+            batch, channel, height, width = x.shape
             max_feat = self.linear(self.maxPool(x))  # (B,C)
             avg_feat = self.linear(self.avgPool(x))  # (B,C)
 
@@ -54,6 +55,7 @@ class CBAM(nn.Module):
             attention_feat = self.subAttention(attention_feat).squeeze(1)  # (B,C)
 
             out = self.activate(attention_feat)
+            out = x * out.view(batch, channel, 1, 1)
             return out
 
     class SpatialAttentionModule(nn.Module):
@@ -70,20 +72,39 @@ class CBAM(nn.Module):
         def forward(self, x):
             """
             @params: x, (B,C,H,W)
+
+            @return: out, (B,C,H,W)
             """
+            batch, channel, height, width = x.shape
             max_feat = torch.max(x, dim=1, keepdim=True)
             avg_feat = torch.mean(x, dim=1, keepdim=True)
 
             attention_feat = torch.cat([max_feat, avg_feat], dim=1)
             attention_feat = self.conv2(attention_feat)
 
-            out = self.activate(attention_feat)
+            out = self.activate(attention_feat)  # (B,H,W)
+            out = x * out.view(batch, 1, height, width)
             return out
 
-    def __init__(self, in_channel):
+    def __init__(self, in_channel, channel_scale=16, spatial_kernel=7, mode=0):
         super().__init__()
+        self.channelFeat = CBAM.ChannelAttentionModule(in_channel=in_channel, scale=channel_scale)
+        self.spatialFeat = CBAM.SpatialAttentionModule(in_channel=in_channel, kernel_size=spatial_kernel)
 
-        pass
+        self.backbone = nn.Sequential()
+        if mode == 0:
+            self.attentionFeat.add_module("channel", self.channelFeat)
+            self.attentionFeat.add_module("spatial", self.spatialFeat)
+        elif mode == 1:
+            self.attentionFeat.add_module("spatial", self.spatialFeat)
+            self.attentionFeat.add_module("channel", self.channelFeat)
+
+    def forward(self, x):
+        """
+        @params: x, (B,C,H,W)
+        """
+        x = self.backbone(x)
+        return x
 
 
 class ECAnet(nn.Module):
