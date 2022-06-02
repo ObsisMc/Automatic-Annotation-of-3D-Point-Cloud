@@ -33,29 +33,6 @@ class SimplePointNet(nn.Module):
         return x
 
 
-class AttentionPointNet(nn.Module):
-    def __init__(self, in_channel=3, in_point=800, channel_list=[64, 256, 1024]):
-        super(AttentionPointNet, self).__init__()
-        self.backbone = nn.Sequential()
-
-        last_channel = in_channel
-        for i, channel in enumerate(channel_list):
-            self.backbone.add_module("conv1_%d" % i, nn.Conv1d(last_channel, channel, (1, 1)))
-            self.backbone.add_module("bn%d" % i, nn.BatchNorm1d(channel))
-            self.backbone.add_module("relu%d" % i, nn.LeakyReLU())
-            last_channel = channel
-
-        self.attention = CBAM(in_channel=channel_list[-1], channel_scale=64, spatial_kernel=7)
-        self.weightMax = nn.Conv1d(in_point, 1, (1, 1))
-
-    def forward(self, x):
-        x = self.backbone(x)
-        batch, channel, num = x.shape
-        x = self.attention(x.view(batch, channel, num, 1))
-        x = self.weightMax(x.squeeze(-1).permute(0, 2, 1)).squeeze(1)
-        return x
-
-
 class Siamese2c(nn.Module):
     def __init__(self, k=5):
         super(Siamese2c, self).__init__()
@@ -116,6 +93,67 @@ class SiameseMultiDecoder(nn.Module):
         x = torch.cat((x1.unsqueeze(3), x2.unsqueeze(3)), 3).permute(0, 2, 1, 3)
         x = self.pointfeat(x)
 
+        y = [self.decoders[i].to(x.device)(x) for i in range(self.k)]
+        return y
+
+
+class AttentionPointNet(nn.Module):
+    def __init__(self, in_channel=3, in_point=800, channel_list=[64, 256, 1024]):
+        super(AttentionPointNet, self).__init__()
+        self.backbone = nn.Sequential()
+
+        last_channel = in_channel
+        for i, channel in enumerate(channel_list):
+            self.backbone.add_module("conv1_%d" % i, nn.Conv1d(last_channel, channel, 1))
+            self.backbone.add_module("bn%d" % i, nn.BatchNorm1d(channel))
+            self.backbone.add_module("relu%d" % i, nn.LeakyReLU())
+            last_channel = channel
+
+        self.attention = CBAM(in_channel=channel_list[-1], channel_scale=64, spatial_kernel=7)
+        self.weightMax = nn.Conv1d(in_point, 1, 1)
+
+    def forward(self, x):
+        """
+        x, (B,C,N)
+        """
+        x = self.backbone(x)
+        batch, channel, num = x.shape  # (B,C,N)
+        x = self.attention(x.view(batch, channel, num, 1))  # (B,C,N,1)
+        x = self.weightMax(x.squeeze(-1).permute(0, 2, 1)).squeeze(1)  # (B,C)
+        return x
+
+
+class SiameseAttentionMulti(nn.Module):
+    class Decoder(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.fc1 = nn.Linear(2048, 512)
+            self.fc2 = nn.Linear(512, 64)
+            self.fc3 = nn.Linear(64, 1)
+
+            self.bn1 = nn.BatchNorm1d(1024)
+            self.bn2 = nn.BatchNorm1d(512)
+            self.bn3 = nn.BatchNorm1d(64)
+
+        def forward(self, x):
+            x = F.leaky_relu(self.bn2(self.fc1(x)))
+            x = F.leaky_relu(self.bn3(self.fc2(x)))
+            x = self.fc3(x)
+            return x
+
+    def __init__(self, k=5):
+        super().__init__()
+        self.pointfeat = AttentionPointNet()
+        self.k = k
+        self.decoders = [self.Decoder() for _ in range(k)]  # x,y,z,angel,confidence
+
+    def forward(self, x1, x2):
+        """
+        x1 and x2: (B,N,3)
+        """
+        x1 = self.pointfeat(x1.permute(0, 2, 1))
+        x2 = self.pointfeat(x2.permute(0, 2, 1))
+        x = torch.cat([x1, x2], dim=-1)
         y = [self.decoders[i].to(x.device)(x) for i in range(self.k)]
         return y
 

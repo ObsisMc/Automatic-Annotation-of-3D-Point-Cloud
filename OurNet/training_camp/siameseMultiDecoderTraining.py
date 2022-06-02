@@ -1,4 +1,4 @@
-from OurNet.models.detector.SiameseNet import SiameseMultiDecoder
+from OurNet.models.detector.SiameseNet import SiameseMultiDecoder, SiameseAttentionMulti
 from OurNet.dataset.NewDataSet import NewDataSet
 from OurNet.visualization.tensorboard import TensorBoardVis
 from OurNet.models.model_utils import io_utils
@@ -38,7 +38,8 @@ def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
     print(blue('# of validation samples: %d' % len(valid_dataset)))
 
     k = 5
-    net = SiameseMultiDecoder(k)
+    # net = SiameseMultiDecoder(k)
+    net = SiameseAttentionMulti(k)
     net.to(device)
 
     lr1 = 0.01

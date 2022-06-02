@@ -48,8 +48,8 @@ class CBAM(nn.Module):
             @return: out (B,C,H,W)
             """
             batch, channel, height, width = x.shape
-            max_feat = self.linear(self.maxPool(x))  # (B,C)
-            avg_feat = self.linear(self.avgPool(x))  # (B,C)
+            max_feat = self.linear(self.maxPool(x).view(batch, -1))  # (B,C)
+            avg_feat = self.linear(self.avgPool(x).view(batch, -1))  # (B,C)
 
             attention_feat = torch.stack((max_feat, avg_feat), dim=1)  # (B,2,C)
             attention_feat = self.subAttention(attention_feat).squeeze(1)  # (B,C)
@@ -76,7 +76,7 @@ class CBAM(nn.Module):
             @return: out, (B,C,H,W)
             """
             batch, channel, height, width = x.shape
-            max_feat = torch.max(x, dim=1, keepdim=True)
+            max_feat = torch.max(x, dim=1, keepdim=True)[0]
             avg_feat = torch.mean(x, dim=1, keepdim=True)
 
             attention_feat = torch.cat([max_feat, avg_feat], dim=1)
