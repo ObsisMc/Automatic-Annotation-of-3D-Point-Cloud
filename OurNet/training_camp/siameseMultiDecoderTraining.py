@@ -75,8 +75,8 @@ def main(epochs=200, batch=4, shuffle=False, wokers=4, cudan=0):
                       range(0, k - 1)]  # maybe loss for angle can change to another one
             losses.append(loss_confidence)
 
-            for i in range(k):
-                losses[i].backward(retain_graph=True if i < k - 1 else False)
+            for j in range(k):
+                losses[j].backward(retain_graph=True if j < k - 1 else False)
 
             optimizers.step()
             total_loss = visualize(losses, step=totalstep, k=k)
