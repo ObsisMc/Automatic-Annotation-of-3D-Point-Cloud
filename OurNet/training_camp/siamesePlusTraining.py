@@ -28,7 +28,7 @@ def main(epochs=50, batch=5, shuffle=False, wokers=4, cudan=0):
 
     optimizer = optim.Adam(net.parameters(), lr=0.01)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
-    vis = TensorBoardVis()
+    vis = TensorBoardVis(net=net)
 
     totalstep = 0
     for epoch in range(epochs):
@@ -37,6 +37,7 @@ def main(epochs=50, batch=5, shuffle=False, wokers=4, cudan=0):
             points, label = data
             source = points[0].type(torch.FloatTensor)  # 一维卷积是在最后维度上扫的, change value in other dimension
             target = points[1].type(torch.FloatTensor)
+            label = label.to(torch.float32)
 
             source, target, label = source.to(device), target.to(device), label.to(device)
             optimizer.zero_grad()

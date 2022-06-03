@@ -10,7 +10,7 @@ import torch.nn.functional as F
 
 blue = lambda x: '\033[94m' + x + '\033[0m'
 
-vis = TensorBoardVis()
+vis = None
 vis_name = ["loss_x", "loss_y", "loss_z", "loss_angel", "loss_confidence"]
 
 
@@ -26,6 +26,7 @@ def visualize(losses, step, k):
 
 
 def main(epochs=200, batch=4, shuffle=False, wokers=4, cudan=0):
+    global vis
     device = "cuda:%d" % cudan if torch.cuda.is_available() else "cpu"
 
     dataset = NewDataSet()
@@ -41,6 +42,8 @@ def main(epochs=200, batch=4, shuffle=False, wokers=4, cudan=0):
     net = SiameseMultiDecoder(k)
     # net = SiameseAttentionMulti(k)
     net.to(device)
+
+    vis = TensorBoardVis(net=net)
 
     lr1 = 0.01
     lr2 = 0.05
@@ -62,6 +65,7 @@ def main(epochs=200, batch=4, shuffle=False, wokers=4, cudan=0):
             points, label = data
             source = points[0].type(torch.FloatTensor)  # 一维卷积是在最后维度上扫的, change value in other dimension
             target = points[1].type(torch.FloatTensor)
+            label = label.to(torch.float32)
 
             source, target, label = source.to(device), target.to(device), label.to(device)
             # for i in range(k):

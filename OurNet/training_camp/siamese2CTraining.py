@@ -29,7 +29,7 @@ def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
 
     optimizer = optim.Adam(net.parameters(), lr=0.001)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
-    vis = TensorBoardVis()
+    vis = TensorBoardVis(net=net)
 
     totalstep = 0
     for epoch in range(epochs):
