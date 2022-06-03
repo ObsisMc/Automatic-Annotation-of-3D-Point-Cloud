@@ -14,7 +14,7 @@ blue = lambda x: '\033[94m' + x + '\033[0m'
 def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
     device = "cuda:%d" % cudan if torch.cuda.is_available() else "cpu"
 
-    dataset = NewDataSet("/home/zrh/Data/kitti/tracking/extracted_points_default")
+    dataset = NewDataSet()
     train_dataset, valid_dataset = torch.utils.data.random_split(dataset, [int(0.8 * len(dataset)) - 1,
                                                                            len(dataset) - int(0.8 * len(dataset)) + 1])
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch, shuffle=shuffle, num_workers=wokers)
@@ -60,7 +60,8 @@ def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
             totalstep += 1
             n += 1
             if n % 100 == 0:
-                print(loss)
+                print("Epoch %d. total loss is %f: location->%f, angel->%f, confidence->%f " %
+                      (epoch, loss, loss_loc.detach(), loss_angel.detach(), loss_confidence.detach()))
                 pass
         vis.add_scalar("total_loss", loss, epoch)
         scheduler.step()

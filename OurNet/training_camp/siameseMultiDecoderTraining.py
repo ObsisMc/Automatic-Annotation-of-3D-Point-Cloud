@@ -28,7 +28,7 @@ def visualize(losses, step, k):
 def main(epochs=200, batch=4, shuffle=False, wokers=4, cudan=0):
     device = "cuda:%d" % cudan if torch.cuda.is_available() else "cpu"
 
-    dataset = NewDataSet("/home/zrh/Data/kitti/tracking/extracted_points_entend13")
+    dataset = NewDataSet()
     train_dataset, valid_dataset = torch.utils.data.random_split(dataset, [int(0.8 * len(dataset)) - 1,
                                                                            len(dataset) - int(0.8 * len(dataset)) + 1])
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch, shuffle=shuffle, num_workers=wokers)
@@ -38,8 +38,8 @@ def main(epochs=200, batch=4, shuffle=False, wokers=4, cudan=0):
     print(blue('# of validation samples: %d' % len(valid_dataset)))
 
     k = 5
-    # net = SiameseMultiDecoder(k)
-    net = SiameseAttentionMulti(k)
+    net = SiameseMultiDecoder(k)
+    # net = SiameseAttentionMulti(k)
     net.to(device)
 
     lr1 = 0.01
