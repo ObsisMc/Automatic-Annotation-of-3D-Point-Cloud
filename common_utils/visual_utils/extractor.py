@@ -53,10 +53,12 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
         cache_scenepoints_path = None
         cache_scenepoints = None
         with open(os.path.join(labelroot, labeltxt), "r") as f:
-            label = "0 -1 DontCare -1 -1 -10.000000 219.310000 188.490000 245.500000 218.560000 -1000.000000 -1000.000000 -1000.000000 -10.000000 -1.000000 -1.000000 -1.000000"
-            while label and label != "":
+            while True:
                 label = f.readline().rstrip("\n")
+                if label is None or label == "":
+                    break
                 labellist = label.split(" ")
+                print(label)
 
                 if inference:
                     confidence = labellist[17]
