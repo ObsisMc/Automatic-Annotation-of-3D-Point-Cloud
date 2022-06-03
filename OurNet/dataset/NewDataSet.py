@@ -15,7 +15,7 @@ class NewDataSet(DataSetTemplate):
 
     def __init__(self, datapath):
         super().__init__(datapath)
-        self.data_list = self.datasetcreator.gapTwoInTradj(num_threshold=200)
+        self.data_list = self.datasetcreator.gapTwoInTradj(num_threshold=None)
         NewDataSet.statics_analyse(self.data_list)
 
     def __getitem__(self, item):
