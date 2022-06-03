@@ -9,7 +9,7 @@ class TensorBoardVis:
     def __init__(self, path=None, net=None):
         if path is None:
             path = Config.load_model_visual()
-            path = os.path.join(path, net.__class__.__name__)
+            path = os.path.join(path, net.__class__.__name__, "negative")
             if not os.path.exists(path):
                 os.makedirs(path)
         self.writer = SummaryWriter(path)

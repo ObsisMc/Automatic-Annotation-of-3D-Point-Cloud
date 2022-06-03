@@ -17,7 +17,7 @@ def checkCheckpointFile():
 def saveCheckPoint(net, epoch, loss):
     model = net.__class__.__name__
 
-    filefolder = os.path.join(config_common["ckpt_out_path"], model)
+    filefolder = os.path.join(config_common["ckpt_out_path"], model, "negative")
     if not os.path.exists(filefolder):
         os.makedirs(filefolder)
 

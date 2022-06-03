@@ -43,29 +43,44 @@ def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
             source, target, label = source.to(device), target.to(device), label.to(device)
             optimizer.zero_grad()
             net = net.train()
-            pred = net(source, target)
+            pred = net(source, target).to(torch.float32)
 
-            pred_loc, pred_angle, pred_cfd = pred[:, :3].to(device), \
-                                             pred[:, 3].to(device), \
-                                             pred[:, 4].to(device)
+            mask = label[:, 4] == 1
+            batch_idx = torch.arange(batch)
+            pos_pred = pred[batch_idx[mask], :].to(device)
+            pos_label = label[batch_idx[mask], :].to(device)
+            neg_pred = pred[batch_idx[mask == False], :].to(device)
+            neg_label = label[batch_idx[mask == False], :].to(device)
 
-            loss_confidence = F.binary_cross_entropy_with_logits(pred_cfd, label[:, 4])
-            loss_loc = F.smooth_l1_loss(pred_loc, label[:, :3])
-            loss_angel = F.smooth_l1_loss(pred_angle, label[:, 3])  # maybe loss for angle can change to another one
-            loss = 2 * loss_loc + 1 * loss_confidence + 1 * loss_angel
+            pos_loss = 0
+            if pos_pred.shape[0] != 0:
+                pos_loss_confidence = F.binary_cross_entropy_with_logits(pos_pred[:, 4], pos_label[:, 4])
+                loss_loc = F.smooth_l1_loss(pos_pred[:, :3], pos_label[:, :3])
+                loss_angel = F.smooth_l1_loss(pos_pred[:, 3], pos_label[:, 3])
+                pos_loss = 2 * loss_loc + 1 * pos_loss_confidence + 1 * loss_angel
+                vis.add_scalar("loss_loc", loss_loc, totalstep)
+                vis.add_scalar("loss_angle", loss_angel, totalstep)
+                vis.add_scalar("pos_loss_confidence", pos_loss_confidence, totalstep)
+                vis.add_scalar("pos_loss", pos_loss, totalstep)
 
+            neg_loss = 0
+            if neg_pred.shape[0] != 0:
+                neg_loss_confidence = F.binary_cross_entropy_with_logits(neg_pred[:, 4], neg_label[:, 4])
+                neg_loss = 4 * neg_loss_confidence
+                vis.add_scalar("neg_loss_confidence", neg_loss_confidence, totalstep)
+                vis.add_scalar("neg_loss", neg_loss, totalstep)
+
+            loss = pos_loss + neg_loss
             loss = loss.to(torch.float32)
             loss.backward()
             optimizer.step()
-            vis.add_scalar("loss_loc", loss_loc, totalstep)
-            vis.add_scalar("loss_angle", loss_angel, totalstep)
-            vis.add_scalar("loss_confidence", loss_confidence, totalstep)
+
             vis.add_scalar("loss", loss, totalstep)
             totalstep += 1
             n += 1
             if n % 100 == 0:
-                print("Epoch %d. total loss is %f: location->%f, angel->%f, confidence->%f " %
-                      (epoch, loss, loss_loc.detach(), loss_angel.detach(), loss_confidence.detach()))
+                print("Epoch %d. total loss is %f " %
+                      (epoch, loss))
                 pass
         vis.add_scalar("total_loss", loss, epoch)
         scheduler.step()
