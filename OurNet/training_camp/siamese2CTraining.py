@@ -36,21 +36,25 @@ def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
         n = 0
         for i, data in enumerate(train_dataloader):
             points, label = data
-            source = points[0].type(torch.FloatTensor)  # 一维卷积是在最后维度上扫的, change value in other dimension
-            target = points[1].type(torch.FloatTensor)
+            source = points[0].to(torch.float32)  # 一维卷积是在最后维度上扫的, change value in other dimension
+            target = points[1].to(torch.float32)
+            label = label.to(torch.float32)
 
             source, target, label = source.to(device), target.to(device), label.to(device)
             optimizer.zero_grad()
             net = net.train()
             pred = net(source, target)
 
-            pred_loc, pred_angle, pred_cfd = pred[:, :3].to(device), pred[:, 3].to(device), pred[:, 4].to(device)
+            pred_loc, pred_angle, pred_cfd = pred[:, :3].to(device), \
+                                             pred[:, 3].to(device), \
+                                             pred[:, 4].to(device)
 
             loss_confidence = F.binary_cross_entropy_with_logits(pred_cfd, label[:, 4])
             loss_loc = F.smooth_l1_loss(pred_loc, label[:, :3])
             loss_angel = F.smooth_l1_loss(pred_angle, label[:, 3])  # maybe loss for angle can change to another one
             loss = 2 * loss_loc + 1 * loss_confidence + 1 * loss_angel
 
+            loss = loss.to(torch.float32)
             loss.backward()
             optimizer.step()
             vis.add_scalar("loss_loc", loss_loc, totalstep)
