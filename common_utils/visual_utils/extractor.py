@@ -53,8 +53,9 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
         cache_scenepoints_path = None
         cache_scenepoints = None
         with open(os.path.join(labelroot, labeltxt), "r") as f:
-            label = f.readline().rstrip("\n")
+            label = "0 -1 DontCare -1 -1 -10.000000 219.310000 188.490000 245.500000 218.560000 -1000.000000 -1000.000000 -1000.000000 -10.000000 -1.000000 -1.000000 -1.000000"
             while label and label != "":
+                label = f.readline().rstrip("\n")
                 labellist = label.split(" ")
 
                 if inference:
@@ -110,7 +111,6 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
                 io.save_object_points(extracted_points, os.path.join(outputpath, "points"), name + ".npy")
                 io.save_object_label(new_box, os.path.join(outputpath, "labels"),
                                      name + ".txt")  # save [location,l,h,w,angle], size is extended
-                label = f.readline().rstrip("\n")
         print("Scene{} finished!".format(sceneid))
 
 
