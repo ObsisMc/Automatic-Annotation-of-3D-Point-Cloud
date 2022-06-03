@@ -47,12 +47,12 @@ def main(epochs=200, batch=4, shuffle=False, wokers=4, cudan=0):
     lr3 = 0.005
     lr4 = 0.0001
     optimizers = optim.Adam([
-        {'params': net.decoders[0].parameters(), "lr": lr4},
-        {"params": net.decoders[1].parameters(), "lr": lr4},
+        {'params': net.decoders[0].parameters(), "lr": lr3},
+        {"params": net.decoders[1].parameters(), "lr": lr3},
         {"params": net.decoders[2].parameters(), "lr": lr3},
-        {"params": net.decoders[3].parameters(), "lr": lr4},
+        {"params": net.decoders[3].parameters(), "lr": lr3},
         {"params": net.decoders[4].parameters(), "lr": lr3}],
-        lr=lr1)
+        lr=lr3)
     scheduler = optim.lr_scheduler.StepLR(optimizers, step_size=10, gamma=0.5)
 
     totalstep = 0
