@@ -75,8 +75,8 @@ class SiameseMultiDecoder(nn.Module):
             self.bn3 = nn.BatchNorm1d(64)
 
         def forward(self, x):
-            x = F.leaky_relu(self.bn2(self.fc1(x)))
-            x = F.leaky_relu(self.bn3(self.fc2(x)))
+            x = F.leaky_relu(self.fc1(x))
+            x = F.leaky_relu(self.fc2(x))
             x = self.fc3(x)
             return x
 
@@ -136,8 +136,8 @@ class SiameseAttentionMulti(nn.Module):
             self.bn3 = nn.BatchNorm1d(64)
 
         def forward(self, x):
-            x = F.leaky_relu(self.bn2(self.fc1(x)))
-            x = F.leaky_relu(self.bn3(self.fc2(x)))
+            x = F.leaky_relu(self.fc1(x))
+            x = F.leaky_relu(self.fc2(x))
             x = self.fc3(x)
             return x
 
