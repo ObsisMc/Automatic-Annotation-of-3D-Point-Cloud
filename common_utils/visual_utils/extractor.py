@@ -58,7 +58,7 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
                 if label is None or label == "":
                     break
                 labellist = label.split(" ")
-                print(label)
+                # print(label)
 
                 if inference:
                     confidence = labellist[17]
