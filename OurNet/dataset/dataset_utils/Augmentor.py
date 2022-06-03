@@ -4,8 +4,8 @@ import utils
 
 class Augmentor():
     def guassianAug(self, points: np.ndarray):
-        x_error = np.random.normal(loc=0, scale=0.3, size=None)
-        y_error = np.random.normal(loc=0, scale=0.3, size=None)
+        x_error = np.random.normal(loc=0, scale=0.5, size=None)
+        y_error = np.random.normal(loc=0, scale=0.5, size=None)
         # z_error = np.random.normal(loc=0, scale=1, size=None)
         z_error = 0
         angle = np.random.normal(loc=0, scale=0.3, size=None)
