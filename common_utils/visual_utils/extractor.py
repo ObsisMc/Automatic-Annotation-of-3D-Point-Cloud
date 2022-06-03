@@ -56,7 +56,6 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
             label = f.readline().rstrip("\n")
             while label and label != "":
                 labellist = label.split(" ")
-                label = f.readline().rstrip("\n")
 
                 if inference:
                     confidence = labellist[17]
@@ -112,7 +111,6 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
                 io.save_object_label(new_box, os.path.join(outputpath, "labels"),
                                      name + ".txt")  # save [location,l,h,w,angle], size is extended
                 label = f.readline().rstrip("\n")
-
         print("Scene{} finished!".format(sceneid))
 
 
