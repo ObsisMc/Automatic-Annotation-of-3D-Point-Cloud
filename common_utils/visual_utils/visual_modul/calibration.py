@@ -77,6 +77,30 @@ class Calibration(object):
         bbox_lidar = np.concatenate([loc_lidar, l, w, h, -(np.pi / 2 + rots[..., np.newaxis])], axis=1)
         return bbox_lidar
 
+    def lidar_to_bbox_rect(self, lidar_box, extend, bbox_format=False):
+        """
+        Transform the lidar_box from camera system to the lidar system.
+        Args:
+            lidar_box: [N, 7], [x, y, z, l, w, h, heading]
+        Returns:
+            bbox_bbox: [N, 7], [h, w, l, x, y, z, heading] or [x, y, z, l, w, h, heading]
+        """
+        loc, dims, rots = lidar_box[:, :3], lidar_box[:, 3:6], lidar_box[:, 6]
+
+        loc_bbox = loc
+        loc_bbox[:, 2] -= dims[:, 2] / 2
+        loc_bbox = self.lidar_to_rect(loc_bbox)
+
+        angel_bbox = -rots - np.pi / 2
+
+        dims /= extend
+        if bbox_format:
+            dims[:, [0, 2]] = dims[:, [2, 0]]
+            bbox_rect = np.c_[dims, loc_bbox, angel_bbox]
+        else:
+            bbox_rect = np.c_[loc_bbox, dims, angel_bbox]
+        return bbox_rect
+
     def lidar_to_rect(self, pts_lidar):
         """
         :param pts_lidar: (N, 3)
