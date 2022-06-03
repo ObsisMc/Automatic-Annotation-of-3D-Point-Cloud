@@ -12,11 +12,11 @@ cafolder_test = '/public_dataset/kitti/tracking/data_tracking_calib/testing/cali
 imfolder_train = '/public_dataset/kitti/tracking/data_tracking_image_2/training/image_02'
 vefolder_train = '/public_dataset/kitti/tracking/data_tracking_velodyne/training/velodyne'
 cafolder_train = '/public_dataset/kitti/tracking/data_tracking_calib/training/calib'
-lafolder = '/home/zrh/Data/kitti/tracking/extract2track/label_02'
+lafolder = '/home2/lie/zhanglr/IP/my_size_car'
 
-output = '/home/zrh/Data/kitti/tracking/extract2track2object'
+output = '/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/object_format_changeSize_tradition'
 # output = '../test/object'
-splittext = '/home/zrh/Data/kitti/tracking/splitpos.txt'
+splittext = '/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/training/splitpos.txt'
 
 
 def getfmt(generic):
@@ -144,7 +144,7 @@ def tmpmethod():
 
 
 if __name__ == '__main__':
-    n = 10
+    n = 21
     # data = {"testing": {"image_2": imfolder_test, "velodyne": vefolder_test, "calib": cafolder_test},
     #         "training": {"image_2": imfolder_train, "velodyne": vefolder_train, "calib": cafolder_train,
     #                      "label_2": lafolder}}

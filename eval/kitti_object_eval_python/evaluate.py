@@ -13,7 +13,7 @@ def _read_imageset_file(path):
 
 
 def evaluate(label_path='/home2/lie/zhangsh/InnovativePractice1_SUSTech/labels/kitti_track2object/training/label_2',
-             result_path='/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/object_format_changeSize/training/label_2',
+             result_path='/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/object_format_changeSize_tradition/training/label_2',
              label_split_file='/home2/lie/zhangsh/InnovativePractice1_SUSTech/eval/kitti_object_eval_python/ImageSets/tracking_all.txt',
              current_class=0,
              coco=False,

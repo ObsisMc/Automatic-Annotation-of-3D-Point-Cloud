@@ -1,18 +1,17 @@
-import torch.utils.data
-from OurNet.models.model_utils import io_utils
+from dataset.dataset_utils.Sampler import Sampler
+import torch
+from models.detector.SiameseNet import Siamese2c
 
-from dataset.NewDataSet import NewDataSet
-from NewModel import NewModel
 
 device = "cuda:%d" % 0 if torch.cuda.is_available() else "cpu"
 
 
 def test(points1, points2):
-    dataset = NewDataSet(io_utils.getDataSetPath())
-    points1, points2 = dataset.sampler.fps(points1), dataset.sampler.fps(points2)
-    net = NewModel()
-    net.load_state_dict(torch.load("/home2/lie/zhanglr/IP/OurNet/checkpoints/NewModel/ckpt_epc100_0.010029.pth"))
+    sampler = Sampler()
+    points1, points2 = sampler.fps(points1), sampler.fps(points2)
+    points1, points2 = torch.from_numpy(points1).unsqueeze(0).type(torch.float32).to(device), torch.from_numpy(points2).unsqueeze(0).type(torch.float32).to(device)
+    net = Siamese2c()
+    net.load_state_dict(torch.load("/home2/lie/zhangsh/InnovativePractice1_SUSTech/OurNet/checkpoints/Siamese2c/save/ckpt_epc170_0.002786.pth"))
     net.to(device)
-    output = net(points1, points2)
+    output = net.forward(points1, points2)
     return output
-
