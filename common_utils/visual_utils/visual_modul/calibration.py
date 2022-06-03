@@ -96,9 +96,9 @@ class Calibration(object):
         dims /= extend
         if bbox_format:
             dims[:, [0, 2]] = dims[:, [2, 0]]
-            bbox_rect = np.c_[dims, loc_bbox, angel_bbox]
+            bbox_rect = np.c_[dims, loc_bbox, angel_bbox]  # [h, w, l, x, y, z, heading]
         else:
-            bbox_rect = np.c_[loc_bbox, dims, angel_bbox]
+            bbox_rect = np.c_[loc_bbox, dims, angel_bbox]  # [x, y, z, l, w, h, heading]
         return bbox_rect
 
     def lidar_to_rect(self, pts_lidar):
