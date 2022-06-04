@@ -46,7 +46,7 @@ def main(epochs=200, batch=5, shuffle=False, wokers=4, cudan=0):
             pred = net(source, target).to(torch.float32)
 
             mask = label[:, 4] == 1
-            batch_idx = torch.arange(batch)
+            batch_idx = torch.arange(source.shape[0])
             pos_pred = pred[batch_idx[mask], :].to(device)
             pos_label = label[batch_idx[mask], :].to(device)
             neg_pred = pred[batch_idx[mask == False], :].to(device)
