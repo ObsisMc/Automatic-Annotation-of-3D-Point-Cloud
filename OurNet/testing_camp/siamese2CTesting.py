@@ -18,20 +18,21 @@ blue = lambda x: '\033[94m' + x + '\033[0m'
 def eval(batchs=1, workers=4, shuffle=False, mode=0, ratio=1):
     def init_dataset_net(model: int, device: str):
         dataset_tmp = net_tmp = None
-        ckpt_root = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/"
+        ckpt_root = "OurNet/checkpoints/"
+        dataset_root = "/home2/lie/zhangrh/data/extracted_points_test_default"
         if model == 0:  # Siamese2C
-            ckp_pth = os.path.join(ckpt_root, "Siamese2c/ckpt_epc120_0.028655.pth")
-            dataset_tmp = NewDataSet("/home/zrh/Data/kitti/tracking/extracted_points_default")
+            ckp_pth = os.path.join(ckpt_root, "Siamese2c/ckpt_epc130_0.003029.pth")
+            dataset_tmp = NewDataSet(dataset_root)
             net_tmp = Siamese2c().to(device)
             net_tmp.load_state_dict(torch.load(ckp_pth))
         elif model == 1:  # SiameseMultiDecoder
             ckp_pth = os.path.join(ckpt_root, "SiameseMultiDecoder/ckpt_epc20_0.088397.pth")
-            dataset_tmp = NewDataSet("/home/zrh/Data/kitti/tracking/extracted_points_default")
+            dataset_tmp = NewDataSet(dataset_root)
             net_tmp = SiameseMultiDecoder().to(device)
             net_tmp.load_state_dict(torch.load(ckp_pth))
         elif model == 2:  # SiameseAttentionMulti
             ckp_pth = os.path.join(ckpt_root, "SiameseAttentionMulti/ckpt_epc80_0.029859.pth")
-            dataset_tmp = NewDataSet("/home/zrh/Data/kitti/tracking/extracted_points_default")
+            dataset_tmp = NewDataSet(dataset_root)
             net_tmp = SiameseAttentionMulti().to(device)
             net_tmp.load_state_dict(torch.load(ckp_pth))
         assert dataset_tmp and net_tmp
