@@ -13,7 +13,7 @@ def test_extract_single_object():
     calib = Calibration("/home/zrh/Data/kitti/data_tracking_calib/training/calib/0000.txt")
     box = "0 0 Van 0 0 -1.793451 296.744956 161.752147 455.226042 292.372804 2.000000 1.823255 4.433886 -4.552284 1.858523 13.410495 -2.115488"
     gt_extracted_points = np.load(
-        "/home/zrh/Data/kitti/tracking/extracted_points_entend13/0000/Van#0/points/000000.npy")
+        "/home/zrh/Data/kitti/tracking/extracted_points_canonical/0000/Van#0/points/000000.npy")
     extracted_points = extract_single_object(scene_points, calib, box, 1.3)
 
     diff = np.abs(gt_extracted_points - extracted_points)
