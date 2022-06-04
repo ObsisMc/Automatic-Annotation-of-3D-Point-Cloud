@@ -160,7 +160,7 @@ class PointTransformer:
         points_translated = (points - center).reshape(1, -1)
 
         # rotation
-        points_canonical = PointTransformer.rotate_points_along_z(points_translated.reshape(1, -1, 3), -box[-1])
+        points_canonical = PointTransformer.rotate_points_along_z(points_translated.reshape(-1, 3), -box[-1])
         return points_canonical, box
 
     def to_earth_pose(self, points: np.ndarray, oxst_config, box: np.ndarray):
