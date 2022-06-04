@@ -94,6 +94,7 @@ class SiameseMultiDecoder(nn.Module):
         x = self.pointfeat(x)
 
         y = [self.decoders[i].to(x.device)(x) for i in range(self.k)]
+        y = torch.cat(y, dim=-1)
         return y
 
 
@@ -154,7 +155,9 @@ class SiameseAttentionMulti(nn.Module):
         x1 = self.pointfeat(x1.permute(0, 2, 1))
         x2 = self.pointfeat(x2.permute(0, 2, 1))
         x = torch.cat([x1, x2], dim=-1)
+
         y = [self.decoders[i].to(x.device)(x) for i in range(self.k)]
+        y = torch.cat(y, dim=-1)
         return y
 
 

@@ -13,7 +13,7 @@ class NewDataSet(DataSetTemplate):
                     |-> 000000.txt
     """
 
-    def __init__(self, datapath="/home/zrh/Data/kitti/tracking/extracted_points_default"):
+    def __init__(self, datapath="/home/zrh/Data/kitti/tracking/extracted_points_canonical"):
         super().__init__(datapath)
         self.data_list = self.datasetcreator.gapTwoInTradj(num_threshold=None)
         NewDataSet.statics_analyse(self.data_list)
