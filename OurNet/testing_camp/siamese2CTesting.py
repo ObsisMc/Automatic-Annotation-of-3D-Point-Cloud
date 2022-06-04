@@ -15,7 +15,7 @@ from tqdm import tqdm
 blue = lambda x: '\033[94m' + x + '\033[0m'
 
 
-def eval(batchs=1, workers=4, shuffle=False, ratio=0.1):
+def eval(batchs=1, workers=4, shuffle=False, mode=0, ratio=1):
     def init_dataset_net(model: int, device: str):
         dataset_tmp = net_tmp = None
         ckpt_root = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/"
@@ -51,7 +51,7 @@ def eval(batchs=1, workers=4, shuffle=False, ratio=0.1):
     batchs, workers, shuffle = batchs, workers, shuffle
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-    dataset, net = init_dataset_net(0, device)
+    dataset, net = init_dataset_net(model=mode, device=device)
     valid_len = int(len(dataset) * ratio)
     train_len = len(dataset) - valid_len
     _, valid_data = torch.utils.data.random_split(dataset, [train_len, valid_len])
