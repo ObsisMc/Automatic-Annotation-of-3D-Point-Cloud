@@ -3,7 +3,7 @@ import utils
 
 
 class Augmentor:
-    def guassianAug(self, points: np.ndarray, conf=1):
+    def guassianAug(self, points: np.ndarray, conf=None):
         confidence = np.random.randint(2) if conf is None else conf
         x_error = y_error = angel = z_error = 0
         if confidence == 1:
@@ -18,16 +18,16 @@ class Augmentor:
                 angel = np.random.normal(loc=0, scale=1, size=None)
 
                 num = points.shape[0]
-                sample_n = num // 100 if num > 100 else num // 10
+                sample_n = (num // 100) if num > 100 else (num // 10)
                 sample_idx = np.random.choice(np.arange(num), size=sample_n)
                 points = points[sample_idx, :]
 
                 padding = np.zeros((num - sample_n, 3))
-                points = np.r_[points, padding].astype(np.double)
+                points = np.r_[points, padding].astype(np.float)
             else:
-                points = np.zeros((800, 3), dtype=np.double)
+                points = np.zeros((800, 3), dtype=np.float)
         points = utils.rotate_points_along_z(points + np.array([x_error, y_error, z_error]), angel)
-        return points, np.array([-x_error, -y_error, -z_error, -angel, confidence])
+        return points, np.array([-x_error, -y_error, -z_error, -angel, confidence],dtype=np.float)
 
     def guassianTrajAug(self, poses, points_dicts, centers, max_size: int, actual_size: int):
         """
