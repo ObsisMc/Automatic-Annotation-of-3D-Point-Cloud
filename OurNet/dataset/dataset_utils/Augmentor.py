@@ -3,13 +3,13 @@ import utils
 
 
 class Augmentor:
-    def guassianAug(self, points: np.ndarray, conf=None):
+    def guassianAug(self, points: np.ndarray, conf=1):
         confidence = np.random.randint(2) if conf is None else conf
         x_error = y_error = angel = z_error = 0
         if confidence == 1:
-            x_error = np.random.normal(loc=0, scale=0.5, size=None)
-            y_error = np.random.normal(loc=0, scale=0.5, size=None)
-            angel = np.random.normal(loc=0, scale=0.3, size=None)
+            x_error = np.random.normal(loc=0, scale=0.16, size=None)
+            y_error = np.random.normal(loc=0, scale=0.16, size=None)
+            angel = np.random.normal(loc=0, scale=0.17, size=None)
         else:
             sd = np.random.randint(2)
             if sd:
@@ -21,8 +21,11 @@ class Augmentor:
                 sample_n = num // 100 if num > 100 else num // 10
                 sample_idx = np.random.choice(np.arange(num), size=sample_n)
                 points = points[sample_idx, :]
+
+                padding = np.zeros((num - sample_n, 3))
+                points = np.r_[points, padding].astype(np.double)
             else:
-                points = np.zeros((0, 3))
+                points = np.zeros((800, 3), dtype=np.double)
         points = utils.rotate_points_along_z(points + np.array([x_error, y_error, z_error]), angel)
         return points, np.array([-x_error, -y_error, -z_error, -angel, confidence])
 
