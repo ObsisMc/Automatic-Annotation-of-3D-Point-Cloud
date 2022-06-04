@@ -10,109 +10,12 @@ from OurNet.models.detector.SiameseNet import Siamese2c, SiameseAttentionMulti, 
 from OurNet.dataset.dataset_utils.Sampler import Sampler
 from OurNet.dataset.NewDataSet import NewDataSet
 
+from tqdm import tqdm
+
 blue = lambda x: '\033[94m' + x + '\033[0m'
 
 
-def test_Siamese2c():
-    print()
-    source_path = "/home/zrh/Data/kitti/tracking/extracted_points_entend13/0000/Van#0/points/000000.npy"
-    target_path = "/home/zrh/Data/kitti/tracking/extracted_points_entend13/0000/Van#0/points/000001.npy"
-
-    sampler = Sampler()
-    raw_source = sampler.fps(np.load(source_path))
-    raw_target = sampler.fps(np.load(target_path))
-    target = o3d_utils.rotate_points_along_z(raw_target, 0.4)
-    target = target + np.array([0.2, 0.2, 0]).reshape(1, -1)
-
-    # o3d_utils.draw_object(points=target)
-
-    source_tensor = torch.tensor(raw_source, dtype=torch.float32).unsqueeze(0)
-    target_tensor = torch.tensor(target, dtype=torch.float32).unsqueeze(0)
-
-    # o3d_utils.draw_object(points=None, multi_points=[raw_source, target], colorful=True)
-
-    net = Siamese2c()
-    ckp_pth = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/Siamese2c/ckpt_epc120_0.028655.pth"
-    state_dict = torch.load(ckp_pth)
-    net.load_state_dict(state_dict)
-    pred = net(source_tensor, target_tensor)
-
-    print(pred)
-    angel = pred[0, 3].detach()
-    translation = pred[0, :3].detach().numpy().reshape(1, 3)
-    target_adjust = o3d_utils.rotate_points_along_z(target, angel) + translation
-    o3d_utils.draw_object(points=None, multi_points=[raw_source, target_adjust], colorful=True)
-
-
-def test_SiameseAttentionMulti():
-    print()
-    source_path = "/home/zrh/Data/kitti/tracking/extracted_points_entend13/0000/Van#0/points/000000.npy"
-    target_path = "/home/zrh/Data/kitti/tracking/extracted_points_entend13/0000/Van#0/points/000001.npy"
-
-    sampler = Sampler()
-    raw_source = sampler.fps(np.load(source_path))
-    raw_target = sampler.fps(np.load(target_path))
-    target = o3d_utils.rotate_points_along_z(raw_target, 0.1)
-    target = target + np.array([0.2, 0.1, 0]).reshape(1, -1)
-
-    # o3d_utils.draw_object(points=target)
-
-    source_tensor = torch.tensor(raw_source, dtype=torch.float32).unsqueeze(0)
-    target_tensor = torch.tensor(target, dtype=torch.float32).unsqueeze(0)
-
-    # o3d_utils.draw_object(points=None, multi_points=[raw_source, target], colorful=True)
-
-    net = SiameseAttentionMulti()
-    ckpt = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/SiameseAttentionMulti/ckpt_epc80_0.029859.pth"
-    state_dict = torch.load(ckpt)
-    net.load_state_dict(state_dict)
-    pred = net(source_tensor, target_tensor)
-
-    dx, dy, dz = pred[0][0, 0].detach(), pred[1][0, 0].detach(), pred[2][0, 0].detach()
-    translation = np.array([dx, dy, dz])
-    angel = pred[3][0, 0].detach()
-
-    print(translation, angel)
-
-    # target_adjust = o3d_utils.rotate_points_along_z(target, angel) + translation
-    # o3d_utils.draw_object(points=None, multi_points=[raw_source, target_adjust], colorful=True)
-
-
-def test_SiameseMultiDecoder():
-    print()
-    source_path = "/home/zrh/Data/kitti/tracking/extracted_points_entend13/0000/Van#0/points/000000.npy"
-    target_path = "/home/zrh/Data/kitti/tracking/extracted_points_entend13/0000/Van#0/points/000001.npy"
-
-    sampler = Sampler()
-    raw_source = sampler.fps(np.load(source_path))
-    raw_target = sampler.fps(np.load(target_path))
-    target = o3d_utils.rotate_points_along_z(raw_target, 0.1)
-    target = target + np.array([0.2, 0.1, 0]).reshape(1, -1)
-
-    # o3d_utils.draw_object(points=target)
-
-    source_tensor = torch.tensor(raw_source, dtype=torch.float32).unsqueeze(0)
-    target_tensor = torch.tensor(target, dtype=torch.float32).unsqueeze(0)
-
-    # o3d_utils.draw_object(points=None, multi_points=[raw_source, target], colorful=True)
-
-    net = SiameseMultiDecoder()
-    ckpt = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/SiameseMultiDecoder/ckpt_epc20_0.088397.pth"
-    state_dict = torch.load(ckpt)
-    net.load_state_dict(state_dict)
-    pred = net(source_tensor, target_tensor)
-
-    dx, dy, dz = pred[0][0, 0].detach(), pred[1][0, 0].detach(), pred[2][0, 0].detach()
-    translation = np.array([dx, dy, dz])
-    angel = pred[3][0, 0].detach()
-
-    print(translation, angel)
-
-    target_adjust = o3d_utils.rotate_points_along_z(target, angel) + translation
-    o3d_utils.draw_object(points=None, multi_points=[raw_source, target_adjust], colorful=True)
-
-
-def eval(batchs=1, workers=4, shuffle=False):
+def eval(batchs=1, workers=4, shuffle=False, mode=0, ratio=1):
     def init_dataset_net(model: int, device: str):
         dataset_tmp = net_tmp = None
         ckpt_root = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/"
@@ -139,18 +42,25 @@ def eval(batchs=1, workers=4, shuffle=False):
         loss_y = torch.sum(torch.abs(lb[1] - pd[1])).detach()
         loss_z = torch.sum(torch.abs(lb[2] - pd[2])).detach()
         loss_angel = torch.sum(torch.abs(lb[3] - pd[3])).detach()
-        loss_confidence = F.binary_cross_entropy_with_logits(pd[4], lb[4]).detach()
+
+        poss = torch.sigmoid(pd[4])
+        loss_confidence = 0 if poss > 0.95 else 1
+
         return loss_x, loss_y, loss_z, loss_angel, loss_confidence
 
     batchs, workers, shuffle = batchs, workers, shuffle
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-    dataset, net = init_dataset_net(0, device)
-    _, valid_data = torch.utils.data.random_split(dataset, [0, len(dataset)])
+    dataset, net = init_dataset_net(model=mode, device=device)
+    valid_len = int(len(dataset) * ratio)
+    train_len = len(dataset) - valid_len
+    _, valid_data = torch.utils.data.random_split(dataset, [train_len, valid_len])
     vaild_dataloader = torch.utils.data.DataLoader(valid_data, num_workers=workers, batch_size=batchs, shuffle=shuffle)
 
-    valid_len = len(valid_data)
     print(blue('# of validation samples: %d' % valid_len))
+
+    pbar = tqdm(total=valid_len)
+    pbar.set_description("Eval process")
 
     error_x = error_y = error_z = error_angel = error_con = 0
     for i, data in enumerate(vaild_dataloader):
@@ -170,11 +80,13 @@ def eval(batchs=1, workers=4, shuffle=False):
         error_z += loss_z
         error_angel += loss_angel
         error_con += loss_confidence
+        pbar.update(1)
     avg_e_x = error_x / valid_len
     avg_e_y = error_y / valid_len
     avg_e_z = error_z / valid_len
     avg_e_angel = error_angel / valid_len
     avg_e_con = error_con / valid_len
+    print(error_x, error_y, error_z, error_angel, error_con, valid_len)
     print("error_x: %f, error_y: %f, error_z: %f, error_angel: %f, error_con: %f" %
           (avg_e_x, avg_e_y, avg_e_z, avg_e_angel, avg_e_con))
 

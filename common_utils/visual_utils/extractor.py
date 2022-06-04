@@ -74,7 +74,7 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
                           [labellist[16]]  # location,l, h, w,angle
                     extend_mtx = np.array([1, 1, 1, extend, extend, extend, 1]).reshape(1, -1)
                 box = calibration.bbox_rect_to_lidar(np.array(box, dtype=np.float32).reshape(-1, len(box)) * extend_mtx) \
-                    .reshape(len(box), )
+                    .reshape(len(box), )  # location, l, w, h, angel
 
                 # get .bin (velodyne)
                 pointspath = os.path.join(pointroot, sceneid, "{:06d}.bin".format(int(frameid)))
