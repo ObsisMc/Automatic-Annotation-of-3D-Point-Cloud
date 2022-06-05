@@ -1,9 +1,9 @@
 import os
 import common_utils.cfgs as Config
 import numpy as np
-from visual_modul import open3d_vis_utils as V, io_utils as io
-from visual_modul.calibration import Calibration
-from visual_modul.oxst_projector import OxstProjector
+from .visual_modul import open3d_vis_utils as V, io_utils as io
+from .visual_modul.calibration import Calibration
+from .visual_modul.oxst_projector import OxstProjector
 
 
 # labels extracted are processed and their location (to world coordinate), size (extended) and angle is different from original labels

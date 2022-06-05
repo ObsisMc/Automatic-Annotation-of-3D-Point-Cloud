@@ -113,6 +113,10 @@ def extract_points(scene, frame_num, box):
     return extracted_points
 
 
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
 if __name__ == "__main__":
     trajectory_paths = get_trajectory_path(data_dir)
     # Complement within the trajectory first
@@ -167,7 +171,7 @@ if __name__ == "__main__":
                 points_path = os.path.join(trajectory + "/points", points_name)
                 output = net_predict(np.load(points_path).reshape(-1, 3), points)
                 output = output.view(-1).cpu().detach().numpy()
-                if output[0] > 0.5:
+                if sigmoid(output[0]) > 0.8:
                     x += output[1]
                     y += output[2]
                     z += output[3]
@@ -184,7 +188,7 @@ if __name__ == "__main__":
                 label_path = os.path.join(trajectory + "/labels", label_name)
                 with open(label_path, "w") as f:
                     f.write(
-                        str(x) + " " + str(y) + " " + str(z) + " " + str(l) + " " + str(h) + " " + str(w) + " " + str(
+                        str(x) + " " + str(y) + " " + str(z) + " " + str(l) + " " + str(w) + " " + str(h) + " " + str(
                             theta))
                 print("Add frame " + str(first_frame + 1) + " to trajectory " + trajectory)
                 continue
@@ -214,7 +218,7 @@ if __name__ == "__main__":
                 points_path = os.path.join(trajectory + "/points", points_name)
                 output = net_predict(np.load(points_path).reshape(-1, 3), points)
                 output = output.view(-1).cpu().detach().numpy()
-                if output[0] > 0.5:
+                if sigmoid(output[0]) > 0.8:
                     pred_x += output[1]
                     pred_y += output[2]
                     pred_z += output[3]
@@ -231,8 +235,8 @@ if __name__ == "__main__":
                 label_path = os.path.join(trajectory + "/labels", label_name)
                 with open(label_path, "w") as f:
                     f.write(
-                        str(pred_x) + " " + str(pred_y) + " " + str(pred_z) + " " + str(l) + " " + str(h) + " " + str(
-                            w) + " " + str(pred_theta))
+                        str(pred_x) + " " + str(pred_y) + " " + str(pred_z) + " " + str(l) + " " + str(w) + " " + str(
+                            h) + " " + str(pred_theta))
                 print("Add frame " + str(begin - 1) + " to trajectory " + trajectory)
             # Predict the trajectory forward
             if end != last_frame:
@@ -249,7 +253,7 @@ if __name__ == "__main__":
                 points_path = os.path.join(trajectory + "/points", points_name)
                 output = net_predict(np.load(points_path).reshape(-1, 3), points)
                 output = output.view(-1).cpu().detach().numpy()
-                if output[0] > 0.5:
+                if sigmoid(output[0]) > 0.8:
                     pred_x += output[1]
                     pred_y += output[2]
                     pred_z += output[3]
@@ -266,8 +270,8 @@ if __name__ == "__main__":
                 label_path = os.path.join(trajectory + "/labels", label_name)
                 with open(label_path, "w") as f:
                     f.write(
-                        str(pred_x) + " " + str(pred_y) + " " + str(pred_z) + " " + str(l) + " " + str(h) + " " + str(
-                            w) + " " + str(pred_theta))
+                        str(pred_x) + " " + str(pred_y) + " " + str(pred_z) + " " + str(l) + " " + str(w) + " " + str(
+                            h) + " " + str(pred_theta))
                 print("Add frame " + str(end + 1) + " to trajectory " + trajectory)
     # Predict both ends of the trajectory and merge overlapping trajectories.
     print("Begin to merge overlapping trajectories")
@@ -321,7 +325,7 @@ if __name__ == "__main__":
                     points_path = os.path.join(trajectory + "/points", points_name)
                     output = net_predict(np.load(points_path).reshape(-1, 3), points)
                     output = output.view(-1).cpu().detach().numpy()
-                    if output[0] > 0.5:
+                    if sigmoid(output[0]) > 0.8:
                         print("Add frame " + str(first_frame - 1) + " to trajectory " + trajectory)
                         add_count += 1
                         pred_x += output[1]
@@ -354,8 +358,8 @@ if __name__ == "__main__":
                             with open(label_path, "w") as f:
                                 f.write(
                                     str(pred_x) + " " + str(pred_y) + " " + str(pred_z) + " " + str(l) + " " + str(
-                                        h) + " " + str(
-                                        w) + " " + str(pred_theta))
+                                        w) + " " + str(
+                                        h) + " " + str(pred_theta))
                             # Save the points
                             box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(
                                 pred_x) + " " + str(
@@ -385,7 +389,7 @@ if __name__ == "__main__":
                 points_path = os.path.join(trajectory + "/points", points_name)
                 output = net_predict(np.load(points_path).reshape(-1, 3), points)
                 output = output.view(-1).cpu().detach().numpy()
-                if output[0] > 0.5:
+                if sigmoid(output[0]) > 0.8:
                     print("Add frame " + str(last_frame + 1) + " to trajectory " + trajectory)
                     add_count += 1
                     pred_x += output[1]
@@ -419,8 +423,8 @@ if __name__ == "__main__":
                         with open(label_path, "w") as f:
                             f.write(
                                 str(pred_x) + " " + str(pred_y) + " " + str(pred_z) + " " + str(l) + " " + str(
-                                    h) + " " + str(
-                                    w) + " " + str(pred_theta))
+                                    w) + " " + str(
+                                    h) + " " + str(pred_theta))
                         # Save the points
                         box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(
                             pred_x) + " " + str(
