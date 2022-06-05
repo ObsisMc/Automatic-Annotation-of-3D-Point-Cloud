@@ -84,17 +84,21 @@ class SiameseMultiDecoder(nn.Module):
         super().__init__()
         self.pointfeat = SimplePointNet()
         self.k = k
-        self.decoders = [self.Decoder() for _ in range(k)]  # x,y,z,angel,confidence
+        self.decoders = nn.ModuleList()  # x,y,z,angel,confidence
+        for _ in range(k):
+            self.decoders.append(self.Decoder())
 
     def forward(self, x1, x2):
         """
         x1 and x2: (B,N,3)
         """
+        batch, num, channel = x1.shape
         x = torch.cat((x1.unsqueeze(3), x2.unsqueeze(3)), 3).permute(0, 2, 1, 3)
         x = self.pointfeat(x)
 
-        y = [self.decoders[i].to(x.device)(x) for i in range(self.k)]
-        y = torch.cat(y, dim=-1)
+        y = torch.Tensor((batch, self.k)).to(x.device)
+        for i, decoder in enumerate(self.decoders):
+            y[:, i] = decoder.to(x.device)(x).view(batch, 1)
         return y
 
 
@@ -146,18 +150,22 @@ class SiameseAttentionMulti(nn.Module):
         super().__init__()
         self.pointfeat = AttentionPointNet()
         self.k = k
-        self.decoders = [self.Decoder() for _ in range(k)]  # x,y,z,angel,confidence
+        self.decoders = nn.ModuleList()  # x,y,z,angel,confidence
+        for _ in range(k):
+            self.decoders.append(self.Decoder())
 
     def forward(self, x1, x2):
         """
         x1 and x2: (B,N,3)
         """
+        batch, num, channel = x1.shape
         x1 = self.pointfeat(x1.permute(0, 2, 1))
         x2 = self.pointfeat(x2.permute(0, 2, 1))
         x = torch.cat([x1, x2], dim=-1)
 
-        y = [self.decoders[i].to(x.device)(x) for i in range(self.k)]
-        y = torch.cat(y, dim=-1)
+        y = torch.Tensor((batch, self.k)).to(x1.device)
+        for i, decoder in enumerate(self.decoders):
+            y[:, i] = decoder.to(x.device)(x).view(batch, 1)
         return y
 
 
