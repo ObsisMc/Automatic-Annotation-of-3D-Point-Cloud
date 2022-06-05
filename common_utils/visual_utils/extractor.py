@@ -1,9 +1,9 @@
 import os
 import common_utils.cfgs as Config
 import numpy as np
-from visual_modul import open3d_vis_utils as V, io_utils as io
-from visual_modul.calibration import Calibration
-from visual_modul.oxst_projector import OxstProjector
+from .visual_modul import open3d_vis_utils as V, io_utils as io
+from .visual_modul.calibration import Calibration
+from .visual_modul.oxst_projector import OxstProjector
 
 
 # labels extracted are processed and their location (to world coordinate), size (extended) and angle is different from original labels
@@ -119,9 +119,13 @@ def extract_tracking_scene(labelroot, calibroot, pointroot, outputroot, extend=1
 def extract_single_object(scene_points: np.ndarray, calib: Calibration, box: str, extend=1,
                           point_transform="canonical"):
     """
-    @params box, a string about a single tracking label
+    @params box, a string about a single tracking label which is in lidar coordinates but tracking format
     """
-    calib_box = calib.bbox_rect_to_lidar(io.trans_track_txt_to_calib_format(box, extend)).reshape(-1, )
+    # calib_box = calib.bbox_rect_to_lidar(io.trans_track_txt_to_calib_format(box, extend)).reshape(-1, )
+    calib_box = np.array(box.split(" ")[3:], dtype=np.float)[7:14]
+    calib_box[[0, 1, 2, 3, 4, 5]] = calib_box[[3, 4, 5, 0, 1, 2]]
+    calib_box[[3, 5]] = calib_box[[5, 3]]
+    calib_box[3:6] = calib_box[3:6] * extend
     extracted_points, _, _ = V.extract_object(scene_points, calib_box)
 
     point_transformer = PointTransformer(point_transform)
