@@ -3,10 +3,8 @@ import torch
 from models.detector.SiameseNet import Siamese2c
 
 
-device = "cuda:%d" % 0 if torch.cuda.is_available() else "cpu"
-
-
 def test(points1, points2):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     sampler = Sampler()
     points1, points2 = sampler.fps(points1), sampler.fps(points2)
     points1, points2 = torch.from_numpy(points1).unsqueeze(0).type(torch.float32).to(device), torch.from_numpy(points2).unsqueeze(0).type(torch.float32).to(device)

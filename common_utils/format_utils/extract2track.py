@@ -1,7 +1,7 @@
 import os
 
 
-extract_dir = '/home2/lie/InnovativePractice2/data/kitti/tracking/extracted_08/'
+extract_dir = '/home2/lie/InnovativePractice2/data/kitti/tracking/extracted_08_2_test/'
 old_track_dir = '/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/data/'
 new_track_dir = '/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/data_changeSize/'
 
