@@ -117,6 +117,25 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
+def remove_empty_points(data_path):
+    """
+    Remove the npy file if there are less than 5 points
+    :param data_path: the path of the data
+    """
+    scene_list = os.listdir(data_path)
+    for scene_id in scene_list:
+        trajectory_list = os.listdir(os.path.join(data_path, scene_id))
+        for trajectory_id in trajectory_list:
+            point_list = os.listdir(os.path.join(data_path, scene_id, trajectory_id, "points"))
+            for point in point_list:
+                points = np.load(os.path.join(data_path, scene_id, trajectory_id, "points", point))
+                if points.shape[0] < 15:
+                    os.remove(os.path.join(data_path, scene_id, trajectory_id, "points", point))
+                    label_name = point.split(".")[0] + ".txt"
+                    os.remove(os.path.join(data_path, scene_id, trajectory_id, "labels", label_name))
+                    print("Remove " + scene_id + " " + trajectory_id + " " + point)
+
+
 if __name__ == "__main__":
     trajectory_paths = get_trajectory_path(data_dir)
     # Complement within the trajectory first
@@ -150,7 +169,7 @@ if __name__ == "__main__":
                     line = f.readline()
                     data = line.split(" ")
                     x1, y1, z1, theta1 = float(data[0]), float(data[1]), float(data[2]), float(data[6])
-                    l, h, w = float(data[3]), float(data[4]), float(data[5])
+                    l, w, h = float(data[3]), float(data[4]), float(data[5])
                 label_name = str(second_frame).zfill(6) + ".txt"
                 label_path = os.path.join(trajectory + "/labels", label_name)
                 with open(label_path, "r") as f:
@@ -171,7 +190,7 @@ if __name__ == "__main__":
                 points_path = os.path.join(trajectory + "/points", points_name)
                 output = net_predict(np.load(points_path).reshape(-1, 3), points)
                 output = output.view(-1).cpu().detach().numpy()
-                if sigmoid(output[0]) > 0.8:
+                if sigmoid(output[0]) > 0.5:
                     x += output[1]
                     y += output[2]
                     z += output[3]
@@ -201,7 +220,7 @@ if __name__ == "__main__":
                     line = f.readline()
                     data = line.split(" ")
                     position_list.append([float(data[0]), float(data[1]), float(data[2]), float(data[6])])
-                    l, h, w = float(data[3]), float(data[4]), float(data[5])
+                    l, w, h = float(data[3]), float(data[4]), float(data[5])
             position_list = np.array(position_list)
             # Predict the trajectory backward first
             if begin != first_frame:
@@ -218,7 +237,7 @@ if __name__ == "__main__":
                 points_path = os.path.join(trajectory + "/points", points_name)
                 output = net_predict(np.load(points_path).reshape(-1, 3), points)
                 output = output.view(-1).cpu().detach().numpy()
-                if sigmoid(output[0]) > 0.8:
+                if sigmoid(output[0]) > 0.5:
                     pred_x += output[1]
                     pred_y += output[2]
                     pred_z += output[3]
@@ -253,7 +272,7 @@ if __name__ == "__main__":
                 points_path = os.path.join(trajectory + "/points", points_name)
                 output = net_predict(np.load(points_path).reshape(-1, 3), points)
                 output = output.view(-1).cpu().detach().numpy()
-                if sigmoid(output[0]) > 0.8:
+                if sigmoid(output[0]) > 0.5:
                     pred_x += output[1]
                     pred_y += output[2]
                     pred_z += output[3]
@@ -308,7 +327,7 @@ if __name__ == "__main__":
                         line = f.readline()
                         data = line.split(" ")
                         position_list.append([float(data[0]), float(data[1]), float(data[2]), float(data[6])])
-                        l, h, w = float(data[3]), float(data[4]), float(data[5])
+                        l, w, h = float(data[3]), float(data[4]), float(data[5])
                 position_list = np.array(position_list)
                 # Predict the trajectory backward first
                 if first_frame != 0:
@@ -325,7 +344,7 @@ if __name__ == "__main__":
                     points_path = os.path.join(trajectory + "/points", points_name)
                     output = net_predict(np.load(points_path).reshape(-1, 3), points)
                     output = output.view(-1).cpu().detach().numpy()
-                    if sigmoid(output[0]) > 0.8:
+                    if sigmoid(output[0]) > 0.5:
                         print("Add frame " + str(first_frame - 1) + " to trajectory " + trajectory)
                         add_count += 1
                         pred_x += output[1]
@@ -389,7 +408,7 @@ if __name__ == "__main__":
                 points_path = os.path.join(trajectory + "/points", points_name)
                 output = net_predict(np.load(points_path).reshape(-1, 3), points)
                 output = output.view(-1).cpu().detach().numpy()
-                if sigmoid(output[0]) > 0.8:
+                if sigmoid(output[0]) > 0.5:
                     print("Add frame " + str(last_frame + 1) + " to trajectory " + trajectory)
                     add_count += 1
                     pred_x += output[1]
@@ -436,3 +455,4 @@ if __name__ == "__main__":
                 if add_count == 0:
                     trajectory_paths.remove(trajectory)
                     print("Trajectory " + trajectory + " finished")
+    remove_empty_points(data_dir)

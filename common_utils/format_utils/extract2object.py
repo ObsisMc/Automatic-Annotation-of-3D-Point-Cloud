@@ -33,7 +33,7 @@ def extract_to_track(extract_dir, output_dir, scene_split):
                     rect_box = calibration.lidar_to_bbox_rect(lidar_box, 1.3)
                     location = str(rect_box[0][0]) + ' ' + str(rect_box[0][1]) + ' ' + str(rect_box[0][2])
                     angle = str(rect_box[0][6])
-                    f.write(type + ' ' + '0 0 0 1 2 3 4 ' + dimensions + ' ' + location + ' ' + angle + ' 1\n')
+                    f.write(type + ' ' + '0 0 0 0 0 0 0 ' + dimensions + ' ' + location + ' ' + angle + ' 1\n')
     for i in range(scene_split[-1]):
         # If {.06d}.txt does not exist, create it
         if not os.path.exists(os.path.join(output_dir, '{:06d}.txt'.format(i))):
