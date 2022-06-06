@@ -15,26 +15,26 @@ from tqdm import tqdm
 blue = lambda x: '\033[94m' + x + '\033[0m'
 
 
-def eval(batchs=1, workers=4, shuffle=False, mode=0, ratio=1):
+def eval(batchs=1, workers=4, shuffle=False, mode=1, ratio=0.3):
     def init_dataset_net(model: int, device: str):
         dataset_tmp = net_tmp = None
-        ckpt_root = "OurNet/checkpoints/"
-        dataset_root = "/home2/lie/zhangrh/data/extracted_points_test_default"
+        ckpt_root = "/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/checkpoints/"
+        dataset_root = "/home/zrh/Data/kitti/tracking/extracted_points_canonical/"
         if model == 0:  # Siamese2C
-            ckp_pth = os.path.join(ckpt_root, "Siamese2c/ckpt_epc130_0.003029.pth")
+            ckp_pth = os.path.join(ckpt_root, "Siamese2c/test/ckpt_epc140_0.009079.pth")
             dataset_tmp = NewDataSet(dataset_root)
             net_tmp = Siamese2c().to(device)
-            net_tmp.load_state_dict(torch.load(ckp_pth))
+            net_tmp.load_state_dict(torch.load(ckp_pth, map_location="cuda:0"))
         elif model == 1:  # SiameseMultiDecoder
-            ckp_pth = os.path.join(ckpt_root, "SiameseMultiDecoder/ckpt_epc20_0.088397.pth")
+            ckp_pth = os.path.join(ckpt_root, "SiameseMultiDecoder/test/ckpt_epc80_0.002702.pth")
             dataset_tmp = NewDataSet(dataset_root)
             net_tmp = SiameseMultiDecoder().to(device)
-            net_tmp.load_state_dict(torch.load(ckp_pth))
+            net_tmp.load_state_dict(torch.load(ckp_pth, map_location="cuda:0"))
         elif model == 2:  # SiameseAttentionMulti
-            ckp_pth = os.path.join(ckpt_root, "SiameseAttentionMulti/ckpt_epc80_0.029859.pth")
+            ckp_pth = os.path.join(ckpt_root, "SiameseAttentionMulti/ckpt_epc30_0.035830.pth")
             dataset_tmp = NewDataSet(dataset_root)
             net_tmp = SiameseAttentionMulti().to(device)
-            net_tmp.load_state_dict(torch.load(ckp_pth))
+            net_tmp.load_state_dict(torch.load(ckp_pth, map_location="cuda:0"))
         assert dataset_tmp and net_tmp
         return dataset_tmp, net_tmp
 
@@ -44,10 +44,18 @@ def eval(batchs=1, workers=4, shuffle=False, mode=0, ratio=1):
         loss_z = torch.sum(torch.abs(lb[2] - pd[2])).detach()
         loss_angel = torch.sum(torch.abs(lb[3] - pd[3])).detach()
 
-        poss = torch.sigmoid(pd[4])
-        loss_confidence = 0 if poss > 0.95 else 1
+        loss_confidence = F.binary_cross_entropy_with_logits(pd[4], lb[4]).detach()
 
         return loss_x, loss_y, loss_z, loss_angel, loss_confidence
+
+    def confusion_metric(tpn, tnn, fpn, fnn, alpha=1):
+        p_accu = tpn / (tpn + fpn)
+        p_recall = tpn / (tpn + fnn)
+        n_accu = tnn / (tnn + fnn)
+        n_recall = tnn / (tnn + fpn)
+        p_f1 = (1 + alpha ** 2) * p_accu * p_recall / (alpha ** 2 * p_accu + p_recall)
+        n_f1 = (1 + alpha ** 2) * n_accu * n_recall / (alpha ** 2 * n_accu + n_recall)
+        return [p_accu, p_recall, p_f1, n_accu, n_recall, n_f1]
 
     batchs, workers, shuffle = batchs, workers, shuffle
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -63,7 +71,8 @@ def eval(batchs=1, workers=4, shuffle=False, mode=0, ratio=1):
     pbar = tqdm(total=valid_len)
     pbar.set_description("Eval process")
 
-    error_x = error_y = error_z = error_angel = error_con = 0
+    error_x = error_y = error_z = error_angel = 0
+    fp = fn = tp = tn = 0
     for i, data in enumerate(vaild_dataloader):
         net.eval()
         points, label = data
@@ -76,20 +85,32 @@ def eval(batchs=1, workers=4, shuffle=False, mode=0, ratio=1):
         label = label.squeeze()
 
         loss_x, loss_y, loss_z, loss_angel, loss_confidence = calc_error(label, pred)
-        error_x += loss_x
-        error_y += loss_y
-        error_z += loss_z
-        error_angel += loss_angel
-        error_con += loss_confidence
+        exist = 1 if torch.sigmoid(loss_confidence) > 0.5 else 0
+
+        sample_tp = (label[4].detach() == 1 and exist == 1)
+        tn += 1 if label[4].detach() == 0 and exist == 0 else 0
+        tp += 1 if sample_tp else 0
+        fn += 1 if label[4].detach() == 1 and exist == 0 else 0
+        fp += 1 if label[4].detach() == 0 and exist == 1 else 0
+
+        error_x += loss_x.detach() * sample_tp
+        error_y += loss_y.detach() * sample_tp
+        error_z += loss_z.detach() * sample_tp
+        error_angel += loss_angel.detach() * sample_tp
         pbar.update(1)
-    avg_e_x = error_x / valid_len
-    avg_e_y = error_y / valid_len
-    avg_e_z = error_z / valid_len
-    avg_e_angel = error_angel / valid_len
-    avg_e_con = error_con / valid_len
-    print(error_x, error_y, error_z, error_angel, error_con, valid_len)
-    print("error_x: %f, error_y: %f, error_z: %f, error_angel: %f, error_con: %f" %
-          (avg_e_x, avg_e_y, avg_e_z, avg_e_angel, avg_e_con))
+
+    avg_e_x = error_x / tp
+    avg_e_y = error_y / tp
+    avg_e_z = error_z / tp
+    avg_e_angel = error_angel / tp
+
+    p_accu, p_recall, p_f1, n_accu, n_recall, n_f1 = confusion_metric(tp, tn, fp, fn)
+
+    print("--> Eval Result:\n " 
+          "Pose: error_x: %f, error_y: %f, error_z: %f, error_angel: %f\n "
+          "Positive Sample: accu: %f, recall: %f, f1: %f\n "
+          "Negative Sample: accu: %f, recall: %f, f1: %f\n" %
+          (avg_e_x, avg_e_y, avg_e_z, avg_e_angel, p_accu, p_recall, p_f1, n_accu, n_recall, n_f1))
 
 
 if __name__ == "__main__":
