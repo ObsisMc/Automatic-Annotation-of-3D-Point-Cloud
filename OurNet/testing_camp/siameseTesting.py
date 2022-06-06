@@ -85,6 +85,11 @@ def eval(batchs=1, workers=4, shuffle=False, find_best=False, mode=0, ratio=0.05
     fp = fn = tp = tn = 0
 
     logger = EvalLog("/home/zrh/Repository/gitrepo/InnovativePractice1_SUSTech/OurNet/evaluation", net)
+
+    best_adjust_ckpt = None
+    best_adjust = 1e10
+    best_confidence_ckpt = None
+    best_confidence = 0
     for i, ckpt_path in enumerate(ckpt_paths):
         net.load_state_dict(torch.load(ckpt_path, map_location=device))
         pbar.reset(valid_len)
@@ -130,6 +135,21 @@ def eval(batchs=1, workers=4, shuffle=False, find_best=False, mode=0, ratio=0.05
                   p_accu, p_recall, p_f1, n_accu, n_recall, n_f1)
         logger.log_eval_ckpt(prompt)
         print("\n" + prompt)
+
+        # find best
+        total_pose_loss = 2 * (avg_e_x + avg_e_y + avg_e_z) + avg_e_angel
+        total_f1 = p_f1 + n_f1
+        if best_confidence < total_f1:
+            best_confidence_ckpt = ckpt_name
+            best_confidence = total_f1
+        if best_adjust > total_pose_loss:
+            best_adjust = total_pose_loss
+            best_adjust_ckpt = ckpt_name
+    best_prompt = "\nBest:\nPose adjustment-> name: %s, total loss: %f\n" \
+                  "Confidence-> name: %s, total_f1: %f\n" % \
+                  (best_adjust_ckpt, best_adjust, best_confidence_ckpt, best_confidence)
+    logger.log_eval_ckpt(best_prompt)
+    print(best_prompt)
 
 
 if __name__ == "__main__":
