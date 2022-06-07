@@ -45,3 +45,13 @@ mkdir ${track_path}
 python ${o2t_relative_path}
 echo "Finish all procedures :)"
 
+# update SUSTechPOINTS
+SUSTech_POINTS=/home2/lie/code/SUSTechPOINTS_forgarage/
+SUSTech_POINTS_track=/home2/lie/code/SUSTechPOINTS_forgarage/tracking_format_final
+sh_path=${SUSTech_POINTS}trans_format_for_tracking.sh
+
+rm -r ${SUSTech_POINTS_track}
+cp -r ${track_path} ${SUSTech_POINTS_track}
+cd ${SUSTech_POINTS}
+sh ${sh_path}
+
