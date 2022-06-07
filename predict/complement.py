@@ -177,9 +177,9 @@ if __name__ == "__main__":
                     data = line.split(" ")
                     x2, y2, z2 = float(data[0]), float(data[1]), float(data[2])
                     theta2 = float(data[6])
-                    if theta2 > theta1 + math.pi:
+                    while theta2 > theta1 + math.pi:
                         theta2 -= math.pi * 2
-                    if theta2 < theta1 - math.pi:
+                    while theta2 < theta1 - math.pi:
                         theta2 += math.pi * 2
                 # Predict the position of the frame after the first frame
                 x = x1 + (x2 - x1) / (last_frame - first_frame)
