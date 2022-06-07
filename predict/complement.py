@@ -308,7 +308,7 @@ if __name__ == "__main__":
     print("Begin to merge overlapping trajectories")
     scene_paths = get_scene_list(data_dir)
     for scene in scene_paths:
-        print("Merge trajectories in scene " + scene)
+        print("Processing trajectories in scene " + scene)
         trajectory_names = os.listdir(scene)
         trajectory_names.sort()
         trajectory_paths = [os.path.join(scene, trajectory_name) for trajectory_name in trajectory_names]
@@ -379,7 +379,7 @@ if __name__ == "__main__":
                                 data = line.split(" ")
                                 # If the distance between the predicted box and the previous box is less than 0.3m and theta is less than 0.3rad, merge the two trajectories
                                 if (pred_x - float(data[0])) ** 2 + (pred_y - float(data[1])) ** 2 + (pred_z - float(data[2])) ** 2 < 0.09 and abs(
-                                        pred_theta - float(data[6])) < 0.3:
+                                        (pred_theta % math.pi) - (float(data[6]) % math.pi)) < 0.3:
                                     # Get the trajectory path
                                     trajectory_path = os.path.dirname(os.path.dirname(label_path))
                                     # Move files in trajectory_path/labels and trajectory_path/points to trajectory/labels and trajectory/points
@@ -444,7 +444,7 @@ if __name__ == "__main__":
                             # If the distance between the predicted box and the previous box is less than 0.3m and theta is less than 0.3rad, merge the two trajectories
                             if (pred_x - float(data[0])) ** 2 + (pred_y - float(data[1])) ** 2 + (
                                     pred_z - float(data[2])) ** 2 < 0.09 and abs(
-                                    pred_theta - float(data[6])) < 0.3:
+                                    (pred_theta % math.pi) - (float(data[6]) % math.pi)) < 0.3:
                                 # Get the trajectory path
                                 trajectory_path = os.path.dirname(os.path.dirname(label_path))
                                 # Move files in trajectory_path/labels and trajectory_path/points to trajectory/labels and trajectory/points
