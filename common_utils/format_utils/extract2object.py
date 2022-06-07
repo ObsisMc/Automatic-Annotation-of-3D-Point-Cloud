@@ -6,8 +6,8 @@ import numpy as np
 sys.path.append('..')
 from visual_utils.visual_modul.calibration import Calibration
 
-extract_dir = '/home2/lie/InnovativePractice2/data/kitti/tracking/extracted__08_2_test_bck'
-output_dir = '/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/object_format_before_complement'
+extract_dir = '/home2/lie/InnovativePractice2/data/kitti/tracking/extracted_08_2_test'
+output_dir = '/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/object_format_final'
 calib_dir = '/public_dataset/kitti/tracking/data_tracking_calib/training/calib'
 scene_split = [0, 154, 601, 834, 978, 1292, 1589, 1859, 2659, 3049, 3852, 4146, 4519, 4597, 4937, 5043, 5419, 5628,
                5773, 6112, 7171, 8008]
