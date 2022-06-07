@@ -1,7 +1,7 @@
 import os
 import predict
 import numpy as np
-import cv2
+import math
 import shutil
 import sys
 sys.path.append("..")
@@ -168,14 +168,14 @@ if __name__ == "__main__":
                 with open(label_path, "r") as f:
                     line = f.readline()
                     data = line.split(" ")
-                    x1, y1, z1, theta1 = float(data[0]), float(data[1]), float(data[2]), float(data[6])
+                    x1, y1, z1, theta1 = float(data[0]), float(data[1]), float(data[2]), float(data[6]) % (2*math.pi)
                     l, w, h = float(data[3]), float(data[4]), float(data[5])
                 label_name = str(second_frame).zfill(6) + ".txt"
                 label_path = os.path.join(trajectory + "/labels", label_name)
                 with open(label_path, "r") as f:
                     line = f.readline()
                     data = line.split(" ")
-                    x2, y2, z2, theta2 = float(data[0]), float(data[1]), float(data[2]), float(data[6])
+                    x2, y2, z2, theta2 = float(data[0]), float(data[1]), float(data[2]), float(data[6]) % (2*math.pi)
                 # Predict the position of the frame after the first frame
                 x = x1 + (x2 - x1) / (last_frame - first_frame)
                 y = y1 + (y2 - y1) / (last_frame - first_frame)
@@ -219,7 +219,7 @@ if __name__ == "__main__":
                 with open(label_path, "r") as f:
                     line = f.readline()
                     data = line.split(" ")
-                    position_list.append([float(data[0]), float(data[1]), float(data[2]), float(data[6])])
+                    position_list.append([float(data[0]), float(data[1]), float(data[2]), float(data[6]) % (2*math.pi)])
                     l, w, h = float(data[3]), float(data[4]), float(data[5])
             position_list = np.array(position_list)
             # Predict the trajectory backward first
@@ -326,7 +326,7 @@ if __name__ == "__main__":
                     with open(label_path, "r") as f:
                         line = f.readline()
                         data = line.split(" ")
-                        position_list.append([float(data[0]), float(data[1]), float(data[2]), float(data[6])])
+                        position_list.append([float(data[0]), float(data[1]), float(data[2]), float(data[6]) % (2*math.pi)])
                         l, w, h = float(data[3]), float(data[4]), float(data[5])
                 position_list = np.array(position_list)
                 # Predict the trajectory backward first
