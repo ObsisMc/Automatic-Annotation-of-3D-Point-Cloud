@@ -16,7 +16,9 @@ class Sampler():
         """
         points: (N,3)
         """
-        points = self.z_filter(points)
+        if points.shape[0] > 0:
+            points = self.z_filter(points)
+
         if points.shape[0] < n:
             padding = [(0, 0, 0)] * (n - points.shape[0])
             return np.r_[points, np.array(padding)]
