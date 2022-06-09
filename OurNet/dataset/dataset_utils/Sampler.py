@@ -7,10 +7,16 @@ class Sampler():
     def __init__(self, pointsn=800):
         self.pointsn = pointsn
 
+    def z_filter(self, points: np.ndarray, rg=5e-2):
+        min_z = np.min(points, axis=0)[2]
+        points = points[points[:, 2] > min_z + rg]
+        return points
+
     def before_sample(self, points: np.ndarray, n):
         """
         points: (N,3)
         """
+        points = self.z_filter(points)
         if points.shape[0] < n:
             padding = [(0, 0, 0)] * (n - points.shape[0])
             return np.r_[points, np.array(padding)]
