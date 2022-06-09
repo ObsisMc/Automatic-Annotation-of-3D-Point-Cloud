@@ -4,6 +4,7 @@ import numpy as np
 import math
 import shutil
 import sys
+
 sys.path.append("..")
 from common_utils.visual_utils.extractor import extract_single_object
 from common_utils.visual_utils.visual_modul.io_utils import load_points
@@ -198,11 +199,11 @@ if __name__ == "__main__":
                 if sigmoid(output[0]) > 0.5:
                     x += output[1]
                     y += output[2]
-                    z += output[3]
-                    theta += output[4]
+                    # z += output[3]
+                    # theta += output[4]
                 # Save the points
                 box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(x) + " " + str(
-                y) + " " + str(z) + " " + str(theta)
+                    y) + " " + str(z) + " " + str(theta)
                 points = extract_points(scene, first_frame + 1, box)
                 points_name = str(first_frame + 1).zfill(6) + ".npy"
                 points_path = os.path.join(trajectory + "/points", points_name)
@@ -252,8 +253,8 @@ if __name__ == "__main__":
                 if sigmoid(output[0]) > 0.5:
                     pred_x += output[1]
                     pred_y += output[2]
-                    pred_z += output[3]
-                    pred_theta += output[4]
+                    # pred_z += output[3]
+                    # pred_theta += output[4]
                 # Save the points
                 box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(pred_x) + " " + str(
                     pred_y) + " " + str(pred_z) + " " + str(pred_theta)
@@ -287,8 +288,8 @@ if __name__ == "__main__":
                 if sigmoid(output[0]) > 0.5:
                     pred_x += output[1]
                     pred_y += output[2]
-                    pred_z += output[3]
-                    pred_theta += output[4]
+                    # pred_z += output[3]
+                    # pred_theta += output[4]
                 # Save the points
                 box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(pred_x) + " " + str(
                     pred_y) + " " + str(pred_z) + " " + str(pred_theta)
@@ -371,8 +372,8 @@ if __name__ == "__main__":
                         add_count += 1
                         pred_x += output[1]
                         pred_y += output[2]
-                        pred_z += output[3]
-                        pred_theta += output[4]
+                        # pred_z += output[3]
+                        # pred_theta += output[4]
                         # Check if the predicted trajectory is overlapping with the previous trajectory
                         label_paths = get_all_other_labels(scene, trajectory, first_frame - 1)
                         merged = False
@@ -381,7 +382,8 @@ if __name__ == "__main__":
                                 line = f.readline()
                                 data = line.split(" ")
                                 # If the distance between the predicted box and the previous box is less than 0.3m and theta is less than 0.3rad, merge the two trajectories
-                                if (pred_x - float(data[0])) ** 2 + (pred_y - float(data[1])) ** 2 + (pred_z - float(data[2])) ** 2 < 0.09 and abs(
+                                if (pred_x - float(data[0])) ** 2 + (pred_y - float(data[1])) ** 2 + (
+                                        pred_z - float(data[2])) ** 2 < 0.09 and abs(
                                         (pred_theta % math.pi) - (float(data[6]) % math.pi)) < 0.3:
                                     # Get the trajectory path
                                     trajectory_path = os.path.dirname(os.path.dirname(label_path))
@@ -436,8 +438,8 @@ if __name__ == "__main__":
                     add_count += 1
                     pred_x += output[1]
                     pred_y += output[2]
-                    pred_z += output[3]
-                    pred_theta += output[4]
+                    # pred_z += output[3]
+                    # pred_theta += output[4]
                     # Check if the predicted trajectory is overlapping with the previous trajectory
                     label_paths = get_all_other_labels(scene, trajectory, last_frame + 1)
                     merged = False
@@ -448,7 +450,7 @@ if __name__ == "__main__":
                             # If the distance between the predicted box and the previous box is less than 0.3m and theta is less than 0.3rad, merge the two trajectories
                             if (pred_x - float(data[0])) ** 2 + (pred_y - float(data[1])) ** 2 + (
                                     pred_z - float(data[2])) ** 2 < 0.09 and abs(
-                                    (pred_theta % math.pi) - (float(data[6]) % math.pi)) < 0.3:
+                                (pred_theta % math.pi) - (float(data[6]) % math.pi)) < 0.3:
                                 # Get the trajectory path
                                 trajectory_path = os.path.dirname(os.path.dirname(label_path))
                                 # Move files in trajectory_path/labels and trajectory_path/points to trajectory/labels and trajectory/points
