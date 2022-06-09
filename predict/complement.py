@@ -1,7 +1,7 @@
 import os
 import predict
 import numpy as np
-import cv2
+import math
 import shutil
 import sys
 sys.path.append("..")
@@ -175,7 +175,12 @@ if __name__ == "__main__":
                 with open(label_path, "r") as f:
                     line = f.readline()
                     data = line.split(" ")
-                    x2, y2, z2, theta2 = float(data[0]), float(data[1]), float(data[2]), float(data[6])
+                    x2, y2, z2 = float(data[0]), float(data[1]), float(data[2])
+                    theta2 = float(data[6])
+                    while theta2 > theta1 + math.pi:
+                        theta2 -= math.pi * 2
+                    while theta2 < theta1 - math.pi:
+                        theta2 += math.pi * 2
                 # Predict the position of the frame after the first frame
                 x = x1 + (x2 - x1) / (last_frame - first_frame)
                 y = y1 + (y2 - y1) / (last_frame - first_frame)
@@ -219,7 +224,14 @@ if __name__ == "__main__":
                 with open(label_path, "r") as f:
                     line = f.readline()
                     data = line.split(" ")
-                    position_list.append([float(data[0]), float(data[1]), float(data[2]), float(data[6])])
+                    # Guarantee that the theta difference between two consecutive frames is less than pi
+                    theta = float(data[6])
+                    if len(position_list) > 0:
+                        while theta > position_list[-1][3] + math.pi:
+                            theta -= 2 * math.pi
+                        while theta < position_list[-1][3] - math.pi:
+                            theta += 2 * math.pi
+                    position_list.append([float(data[0]), float(data[1]), float(data[2]), theta])
                     l, w, h = float(data[3]), float(data[4]), float(data[5])
             position_list = np.array(position_list)
             # Predict the trajectory backward first
@@ -296,7 +308,7 @@ if __name__ == "__main__":
     print("Begin to merge overlapping trajectories")
     scene_paths = get_scene_list(data_dir)
     for scene in scene_paths:
-        print("Merge trajectories in scene " + scene)
+        print("Processing trajectories in scene " + scene)
         trajectory_names = os.listdir(scene)
         trajectory_names.sort()
         trajectory_paths = [os.path.join(scene, trajectory_name) for trajectory_name in trajectory_names]
@@ -326,7 +338,14 @@ if __name__ == "__main__":
                     with open(label_path, "r") as f:
                         line = f.readline()
                         data = line.split(" ")
-                        position_list.append([float(data[0]), float(data[1]), float(data[2]), float(data[6])])
+                        # Guarantee that the theta difference between two consecutive frames is less than pi
+                        theta = float(data[6])
+                        if len(position_list) > 0:
+                            while theta > position_list[-1][3] + math.pi:
+                                theta -= 2 * math.pi
+                            while theta < position_list[-1][3] - math.pi:
+                                theta += 2 * math.pi
+                        position_list.append([float(data[0]), float(data[1]), float(data[2]), theta])
                         l, w, h = float(data[3]), float(data[4]), float(data[5])
                 position_list = np.array(position_list)
                 # Predict the trajectory backward first
@@ -360,7 +379,7 @@ if __name__ == "__main__":
                                 data = line.split(" ")
                                 # If the distance between the predicted box and the previous box is less than 0.3m and theta is less than 0.3rad, merge the two trajectories
                                 if (pred_x - float(data[0])) ** 2 + (pred_y - float(data[1])) ** 2 + (pred_z - float(data[2])) ** 2 < 0.09 and abs(
-                                        pred_theta - float(data[6])) < 0.3:
+                                        (pred_theta % math.pi) - (float(data[6]) % math.pi)) < 0.3:
                                     # Get the trajectory path
                                     trajectory_path = os.path.dirname(os.path.dirname(label_path))
                                     # Move files in trajectory_path/labels and trajectory_path/points to trajectory/labels and trajectory/points
@@ -425,7 +444,7 @@ if __name__ == "__main__":
                             # If the distance between the predicted box and the previous box is less than 0.3m and theta is less than 0.3rad, merge the two trajectories
                             if (pred_x - float(data[0])) ** 2 + (pred_y - float(data[1])) ** 2 + (
                                     pred_z - float(data[2])) ** 2 < 0.09 and abs(
-                                    pred_theta - float(data[6])) < 0.3:
+                                    (pred_theta % math.pi) - (float(data[6]) % math.pi)) < 0.3:
                                 # Get the trajectory path
                                 trajectory_path = os.path.dirname(os.path.dirname(label_path))
                                 # Move files in trajectory_path/labels and trajectory_path/points to trajectory/labels and trajectory/points

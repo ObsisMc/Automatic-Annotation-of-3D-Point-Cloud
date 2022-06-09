@@ -1,3 +1,4 @@
 common_utils/cfgs/dataset
 common_utils/cfgs/models
 common_utils/cfgs/visual_modul
+__pycache__

@@ -11,13 +11,13 @@ data_bck_path=/home2/lie/InnovativePractice2/data/kitti/tracking/extracted__08_2
 object_path=/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/object_format_final
 track_path=/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/tracking_format_final
 
-# project root
+# path
 project_root=.
-
+format_utils=common_utils/format_utils/
 # code
 complement_relative_path=predict/complement.py
-e2o_relative_path=common_utils/format_utils/extract2object.py
-o2t_relative_path=common_utils/format_utils/objectLabel2Tracking.py
+e2o_relative_path=extract2object.py
+o2t_relative_path=objectLabel2Tracking.py
 
 # remove last data and cp back-up data to data
 echo "Clean old data and copy back-up data"
@@ -29,14 +29,29 @@ echo "Finish data preparation"
 echo "Begin complementing"
 cd ${project_root}
 python ${complement_relative_path}
-echo "Finish complement"\
+echo "Finish complement"
 
 # extract2Object2track
+cd ${format_utils}
+
 echo "Clean old object result and transfer from extract to object"
 rm -r ${object_path}
+mkdir ${object_path}
 python ${e2o_relative_path}
+
 echo "Clean old track result and transfer from object to track"
 rm -r ${track_path}
+mkdir ${track_path}
 python ${o2t_relative_path}
-echo "Finish all procedures :)"
 
+# update SUSTechPOINTS
+SUSTech_POINTS=/home2/lie/code/SUSTechPOINTS_forgarage/
+SUSTech_POINTS_track=/home2/lie/code/SUSTechPOINTS_forgarage/tracking_format_final
+sh_path=${SUSTech_POINTS}trans_format_for_tracking.sh
+echo "Begin mount onto SUSTechPOINTS"
+
+rm -r ${SUSTech_POINTS_track}
+cp -r ${track_path} ${SUSTech_POINTS_track}
+cd ${SUSTech_POINTS}
+sh ${sh_path}
+echo "Finish all procedures :)"

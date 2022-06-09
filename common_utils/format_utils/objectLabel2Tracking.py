@@ -1,9 +1,9 @@
 # You should use test.py with '-save_to_file' to get txt firstly
 import os
 
-object_result = "/home2/lie/InnovativePractice2/OpenPCDet/output/cfgs/kitti_models/pv_rcnn/default/eval/epoch_30/val/default/final_result/data"
+object_result = "/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/object_format_final"
 splitpos = "/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/training/splitpos.txt"
-output = "/home2/lie/InnovativePractice2/OpenPCDet/data/kitti/tracking_label/kitti/"
+output = "/home2/lie/InnovativePractice2/AB3DMOT/results/pv_rcnn_epoch_8369_08_test/tracking_format_final"
 
 
 def parserLable():
@@ -48,7 +48,7 @@ def main(threshold=0.6):
                         # filter low confidence
                         if float(label[-1]) < threshold:
                             continue
-                        framelabel = "{} {} {}".format(frame - baseframe, label[0], " ".join(label[1:]))
+                        framelabel = "{} {} {} {}".format(frame - baseframe, 0, label[0], " ".join(label[1:]))
                         f.write(framelabel + '\n')
                 p += 1
         baseframe = endframe
