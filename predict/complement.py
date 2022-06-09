@@ -358,6 +358,8 @@ if __name__ == "__main__":
                     scene = os.path.dirname(trajectory)
                     box = "0 0 0 0 0 0 0 0 0 0 " + str(h) + " " + str(w) + " " + str(l) + " " + str(pred_x) + " " + str(
                         pred_y) + " " + str(pred_z) + " " + str(pred_theta)
+                    if os.path.basename(scene) == "0001" and 177 <= first_frame - 1 <= 180:
+                        continue
                     points = extract_points(scene, first_frame - 1, box).reshape(-1, 3)
                     points_name = str(first_frame).zfill(6) + ".npy"
                     points_path = os.path.join(trajectory + "/points", points_name)
