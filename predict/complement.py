@@ -307,6 +307,7 @@ if __name__ == "__main__":
     # Predict both ends of the trajectory and merge overlapping trajectories.
     print("Begin to merge overlapping trajectories")
     scene_paths = get_scene_list(data_dir)
+    scene_paths = sorted(scene_paths)
     for scene in scene_paths:
         print("Processing trajectories in scene " + scene)
         trajectory_names = os.listdir(scene)
@@ -387,7 +388,8 @@ if __name__ == "__main__":
                                     # Move files in trajectory_path/labels and trajectory_path/points to trajectory/labels and trajectory/points
                                     move_files(trajectory_path, trajectory)
                                     # Delete the trajectory path
-                                    trajectory_paths.remove(trajectory_path)
+                                    if trajectory_path in trajectory_paths:
+                                        trajectory_paths.remove(trajectory_path)
                                     print("Merge trajectory " + trajectory + " with trajectory " + trajectory_path)
                                     merged = True
                                     break
@@ -452,7 +454,8 @@ if __name__ == "__main__":
                                 # Move files in trajectory_path/labels and trajectory_path/points to trajectory/labels and trajectory/points
                                 move_files(trajectory_path, trajectory)
                                 # Delete the trajectory path
-                                trajectory_paths.remove(trajectory_path)
+                                if trajectory_path in trajectory_paths:
+                                    trajectory_paths.remove(trajectory_path)
                                 print("Merge trajectory " + trajectory + " with trajectory " + trajectory_path)
                                 merged = True
                                 break
