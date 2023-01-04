@@ -4,6 +4,12 @@ Project's name is ***Joint Detection and Tracking for Automatic Annotation of 3D
 
 The project is based on [SUSTechPOINTS](https://github.com/naurril/SUSTechPOINTS) platform.
 
+| Teammates                   | Contributions                                                |
+| --------------------------- | ------------------------------------------------------------ |
+| Ruihao Zhang (ObsisMc)      | Object Detection; Pose Adjustment; Visualization; Data Processing |
+| Shuheng Zhang (jidantang55) | Object Tracking; Trajectory prediction & complement; Data Processing |
+| Lingrui Zhang (zlrzz)       | Object Tracking; Size Adjustment; Data Processing            |
+
 
 
 ## System Structure
